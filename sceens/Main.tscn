@@ -1,0 +1,65 @@
+[gd_scene load_steps=2 format=3 uid="uid://cbspt1xlcfg7k"]
+
+[ext_resource type="Script" path="res://scripts/main.gd" id="1_j8wp0"]
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_j8wp0")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.109804, 0.156863, 0.117647, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MenuPanel" type="PanelContainer" parent="CenterContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="MenuContent" type="VBoxContainer" parent="CenterContainer/MenuPanel"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="CenterContainer/MenuPanel/MenuContent"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Plant Idle"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="CenterContainer/MenuPanel/MenuContent"]
+layout_mode = 2
+text = "Minimal start screen"
+horizontal_alignment = 1
+
+[node name="StartButton" type="Button" parent="CenterContainer/MenuPanel/MenuContent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 48)
+layout_mode = 2
+text = "Start Game"
+
+[node name="ExitButton" type="Button" parent="CenterContainer/MenuPanel/MenuContent"]
+custom_minimum_size = Vector2(240, 48)
+layout_mode = 2
+text = "Exit"
+
+[connection signal="pressed" from="CenterContainer/MenuPanel/MenuContent/StartButton" to="." method="_on_start_button_pressed"]
+[connection signal="pressed" from="CenterContainer/MenuPanel/MenuContent/ExitButton" to="." method="_on_exit_button_pressed"]
