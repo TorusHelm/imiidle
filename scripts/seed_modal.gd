@@ -9,8 +9,8 @@ signal closed
 var current_slot_index := -1
 
 
-@onready var seed_list: VBoxContainer = %SeedList
-@onready var title_label: Label = %TitleLabel
+@onready var seed_list: VBoxContainer = $CenterContainer/ModalPanel/Content/SeedList
+@onready var title_label: Label = $CenterContainer/ModalPanel/Content/TitleLabel
 
 
 func _ready() -> void:

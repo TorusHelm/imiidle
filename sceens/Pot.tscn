@@ -46,14 +46,6 @@ texture = ExtResource("3_s0s8v")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="PotStatusLabel" type="Label" parent="."]
-layout_mode = 0
-offset_top = 236.0
-offset_right = 220.0
-offset_bottom = 256.0
-text = "Empty pot"
-horizontal_alignment = 1
-
 [node name="SeedButton" type="Button" parent="."]
 layout_mode = 0
 offset_left = 66.0

@@ -12,7 +12,6 @@ var slot_index := -1
 @onready var slot_button: Button = $SlotButton
 @onready var slot_label: Label = $SlotLabel
 @onready var pot_texture: TextureRect = $PotTexture
-@onready var pot_status_label: Label = $PotStatusLabel
 @onready var seed_button: Button = $SeedButton
 @onready var plant_view: PlantView = $PlantView
 
@@ -31,31 +30,45 @@ func update_view(pot_instance: PotInstance, can_place_pot: bool, can_plant_seed:
 		slot_button.disabled = not can_place_pot
 		slot_label.visible = true
 		pot_texture.visible = false
-		pot_status_label.visible = false
 		seed_button.visible = false
 		plant_view.visible = false
+		slot_button.tooltip_text = "Empty slot\nChoose a pot for this shelf slot."
+		slot_label.tooltip_text = slot_button.tooltip_text
+		tooltip_text = slot_button.tooltip_text
 		return
 
 	slot_button.visible = false
 	slot_label.visible = false
 	pot_texture.visible = true
-	pot_status_label.visible = true
 	seed_button.visible = true
 	plant_view.visible = true
 	pot_texture.texture = load(pot_instance.definition.texture_path) if not pot_instance.definition.texture_path.is_empty() else null
 	seed_button.disabled = not can_plant_seed
 
+	var pot_details := "%s\nStatus: empty" % pot_instance.definition.display_name
+
 	if pot_instance.active_plant == null:
-		pot_status_label.text = "Empty pot"
 		plant_view.show_empty()
+		pot_texture.tooltip_text = pot_details
+		seed_button.tooltip_text = "Choose a seed for %s." % pot_instance.definition.display_name
+		tooltip_text = pot_details
 		return
 
 	if pot_instance.active_plant.is_mature():
-		pot_status_label.text = "%s is mature" % pot_instance.active_plant.definition.display_name
+		pot_details = "%s\nPlant: %s\nStatus: mature" % [
+			pot_instance.definition.display_name,
+			pot_instance.active_plant.definition.display_name,
+		]
 	else:
-		pot_status_label.text = "%s is growing" % pot_instance.active_plant.definition.display_name
+		pot_details = "%s\nPlant: %s\nStatus: growing" % [
+			pot_instance.definition.display_name,
+			pot_instance.active_plant.definition.display_name,
+		]
 
 	plant_view.show_plant(pot_instance.active_plant)
+	pot_texture.tooltip_text = pot_details
+	seed_button.tooltip_text = "This pot already has a plant."
+	tooltip_text = pot_details
 
 
 func _on_seed_button_pressed() -> void:
