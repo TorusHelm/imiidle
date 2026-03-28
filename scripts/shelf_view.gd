@@ -45,7 +45,7 @@ func _build_slot_views() -> void:
 	for index in markers.size():
 		var pot_view: PotView = POT_VIEW_SCENE.instantiate()
 		pot_view.name = "PotView%d" % index
-		pot_view.position = markers[index].position - (pot_view.size / 2.0)
+		pot_view.position = markers[index].position - pot_view.get_pot_baseline_local_position()
 		pot_view.set_slot_index(index)
 		pot_view.pot_button_pressed.connect(_on_pot_button_pressed)
 		pot_view.seed_button_pressed.connect(_on_seed_button_pressed)

@@ -24,6 +24,16 @@ func set_slot_index(value: int) -> void:
 	slot_index = value
 
 
+func get_pot_baseline_local_position() -> Vector2:
+	var marker: Marker2D = get_node("PotBaseline")
+	return marker.position
+
+
+func get_plant_attach_local_position() -> Vector2:
+	var marker: Marker2D = get_node("PlantAttachPoint")
+	return marker.position
+
+
 func update_view(pot_instance: PotInstance, can_place_pot: bool, can_plant_seed: bool) -> void:
 	if pot_instance == null:
 		slot_button.visible = true

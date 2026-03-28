@@ -1,57 +1,78 @@
-[gd_scene load_steps=3 format=3 uid="uid://cyxm86es2rekc"]
+[gd_scene format=3 uid="uid://cyxm86es2rekc"]
 
 [ext_resource type="PackedScene" uid="uid://jqsl7rrtvqmt" path="res://sceens/Plant.tscn" id="1_b3lk0"]
-[ext_resource type="Script" path="res://scripts/pot_view.gd" id="2_447lc"]
-[ext_resource type="Texture2D" path="res://assets/pots/pot-default.png" id="3_s0s8v"]
+[ext_resource type="Script" uid="uid://d2mx4eqpirxoj" path="res://scripts/pot_view.gd" id="2_447lc"]
 
-[node name="Pot" type="Control"]
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_dbo30"]
+load_path = "res://.godot/imported/pot-default.png-cdd777727358179efa170b6020939042.ctex"
+
+[node name="Pot" type="Control" unique_id=2064265332]
 layout_mode = 3
 anchors_preset = 0
 offset_right = 220.0
-offset_bottom = 260.0
+offset_bottom = 320.0
 script = ExtResource("2_447lc")
 
-[node name="SlotButton" type="Button" parent="."]
-layout_mode = 0
-offset_left = 22.0
-offset_top = 92.0
-offset_right = 198.0
-offset_bottom = 206.0
-text = ""
+[node name="PlantAttachPoint" type="Marker2D" parent="." unique_id=1022001]
+position = Vector2(110, 190)
 
-[node name="SlotLabel" type="Label" parent="."]
-layout_mode = 0
-offset_left = 18.0
-offset_top = 126.0
-offset_right = 202.0
-offset_bottom = 170.0
-text = "Empty Slot\nChoose Pot"
+[node name="PotBaseline" type="Marker2D" parent="." unique_id=1022002]
+position = Vector2(110, 300)
+
+[node name="SlotButton" type="Button" parent="." unique_id=2077643061]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -76.0
+offset_top = 18.0
+offset_right = 78.0
+offset_bottom = 132.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="SlotLabel" type="Label" parent="." unique_id=1636784625]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -92.0
+offset_top = 50.0
+offset_right = 92.0
+offset_bottom = 99.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Empty Slot
+Choose Pot"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="PlantView" parent="." instance=ExtResource("1_b3lk0")]
+[node name="PlantView" parent="." unique_id=1459346288 instance=ExtResource("1_b3lk0")]
 layout_mode = 0
-offset_left = 32.0
-offset_top = 8.0
-offset_right = 188.0
-offset_bottom = 178.0
+offset_left = 30.0
+offset_right = 190.0
+offset_bottom = 190.0
 
-[node name="PotTexture" type="TextureRect" parent="."]
+[node name="PotTexture" type="TextureRect" parent="." unique_id=1934178569]
 layout_mode = 0
-offset_left = 38.0
-offset_top = 118.0
-offset_right = 182.0
-offset_bottom = 236.0
-texture = ExtResource("3_s0s8v")
+offset_left = 50.0
+offset_top = 190.0
+offset_right = 170.0
+offset_bottom = 300.00003
+texture = SubResource("CompressedTexture2D_dbo30")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="SeedButton" type="Button" parent="."]
+[node name="SeedButton" type="Button" parent="." unique_id=2018840382]
 layout_mode = 0
 offset_left = 66.0
-offset_top = 156.0
+offset_top = 228.0
 offset_right = 154.0
-offset_bottom = 192.0
+offset_bottom = 264.0
 text = "Seed"
 
 [connection signal="pressed" from="SlotButton" to="." method="_on_slot_button_pressed"]

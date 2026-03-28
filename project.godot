@@ -11,9 +11,9 @@ config_version=5
 [application]
 
 config/name="imiidle"
+run/main_scene="res://sceens/Main.tscn"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://icon.svg"
-run/main_scene="res://sceens/Main.tscn"
 
 [physics]
 

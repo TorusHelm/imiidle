@@ -1,19 +1,19 @@
-[gd_scene load_steps=2 format=3 uid="uid://jqsl7rrtvqmt"]
+[gd_scene format=3 uid="uid://jqsl7rrtvqmt"]
 
-[ext_resource type="Script" path="res://scripts/plant_view.gd" id="1_p2dpt"]
+[ext_resource type="Script" uid="uid://c22sli4brxej0" path="res://scripts/plant_view.gd" id="1_p2dpt"]
+[ext_resource type="Texture2D" uid="uid://clteibl7jgxnt" path="res://assets/plants/plant-sansevieria.png" id="2_r8600"]
 
-[node name="Plant" type="Control"]
+[node name="Plant" type="Control" unique_id=1307791276]
 layout_mode = 3
 anchors_preset = 0
-offset_right = 140.0
-offset_bottom = 170.0
+offset_right = 160.0
+offset_bottom = 220.0
 script = ExtResource("1_p2dpt")
 
-[node name="PlantTexture" type="TextureRect" parent="."]
+[node name="PlantTexture" type="TextureRect" parent="." unique_id=1246144421]
 layout_mode = 0
-offset_left = 6.0
-offset_top = 0.0
-offset_right = 134.0
-offset_bottom = 128.0
+offset_right = 160.0
+offset_bottom = 190.0
+texture = ExtResource("2_r8600")
 expand_mode = 1
 stretch_mode = 5

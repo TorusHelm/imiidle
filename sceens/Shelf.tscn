@@ -1,17 +1,17 @@
-[gd_scene load_steps=4 format=3 uid="uid://chrt8p8hrj4v6"]
+[gd_scene format=3 uid="uid://chrt8p8hrj4v6"]
 
-[ext_resource type="Script" path="res://scripts/shelf_view.gd" id="1_5y27c"]
-[ext_resource type="Texture2D" path="res://assets/shelfs/shelf-default.png" id="2_khl7n"]
-[ext_resource type="Script" path="res://scripts/shelf_slot_marker.gd" id="3_7qvui"]
+[ext_resource type="Script" uid="uid://4bs1nkthtrjh" path="res://scripts/shelf_view.gd" id="1_5y27c"]
+[ext_resource type="Texture2D" uid="uid://cd5im7630llp2" path="res://assets/shelfs/shelf-default.png" id="2_khl7n"]
+[ext_resource type="Script" uid="uid://c3iu55gousea8" path="res://scripts/shelf_slot_marker.gd" id="3_7qvui"]
 
-[node name="Shelf" type="Control"]
+[node name="Shelf" type="Control" unique_id=1424021836]
 layout_mode = 3
 anchors_preset = 0
 offset_right = 700.0
 offset_bottom = 300.0
 script = ExtResource("1_5y27c")
 
-[node name="ShelfTexture" type="TextureRect" parent="."]
+[node name="ShelfTexture" type="TextureRect" parent="." unique_id=822184106]
 layout_mode = 0
 offset_left = 64.0
 offset_top = 198.0
@@ -21,7 +21,7 @@ texture = ExtResource("2_khl7n")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="ShelfTitle" type="Label" parent="."]
+[node name="ShelfTitle" type="Label" parent="." unique_id=2135451817]
 layout_mode = 0
 offset_top = 260.0
 offset_right = 700.0
@@ -29,16 +29,16 @@ offset_bottom = 284.0
 text = "Shelf A"
 horizontal_alignment = 1
 
-[node name="SlotsRoot" type="Node2D" parent="."]
+[node name="SlotsRoot" type="Node2D" parent="." unique_id=1517078579]
 
-[node name="SlotMarker0" type="Marker2D" parent="SlotsRoot"]
-position = Vector2(180, 133)
+[node name="SlotMarker0" type="Marker2D" parent="SlotsRoot" unique_id=808226034]
+position = Vector2(180, 202)
 script = ExtResource("3_7qvui")
 
-[node name="SlotMarker1" type="Marker2D" parent="SlotsRoot"]
-position = Vector2(350, 133)
+[node name="SlotMarker1" type="Marker2D" parent="SlotsRoot" unique_id=1438039084]
+position = Vector2(350, 202)
 script = ExtResource("3_7qvui")
 
-[node name="SlotMarker2" type="Marker2D" parent="SlotsRoot"]
-position = Vector2(520, 133)
+[node name="SlotMarker2" type="Marker2D" parent="SlotsRoot" unique_id=538087709]
+position = Vector2(520, 202)
 script = ExtResource("3_7qvui")
