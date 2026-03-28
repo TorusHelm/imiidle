@@ -1,0 +1,54 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/shelf_view.gd" id="1_d9s2r"]
+[ext_resource type="Texture2D" path="res://assets/shelfs/shelf-two-floor.png" id="2_ajk1f"]
+[ext_resource type="Script" path="res://scripts/shelf_slot_marker.gd" id="3_vx3n1"]
+
+[node name="ShelfTwoFloor" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 771.0
+offset_bottom = 562.0
+script = ExtResource("1_d9s2r")
+
+[node name="ShelfTexture" type="TextureRect" parent="."]
+layout_mode = 0
+offset_right = 771.0
+offset_bottom = 562.0
+texture = ExtResource("2_ajk1f")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ShelfTitle" type="Label" parent="."]
+layout_mode = 0
+offset_top = 528.0
+offset_right = 771.0
+offset_bottom = 552.0
+text = "Shelf B"
+horizontal_alignment = 1
+
+[node name="SlotsRoot" type="Node2D" parent="."]
+
+[node name="SlotMarker0" type="Marker2D" parent="SlotsRoot"]
+position = Vector2(160, 142)
+script = ExtResource("3_vx3n1")
+
+[node name="SlotMarker1" type="Marker2D" parent="SlotsRoot"]
+position = Vector2(386, 142)
+script = ExtResource("3_vx3n1")
+
+[node name="SlotMarker2" type="Marker2D" parent="SlotsRoot"]
+position = Vector2(610, 142)
+script = ExtResource("3_vx3n1")
+
+[node name="SlotMarker3" type="Marker2D" parent="SlotsRoot"]
+position = Vector2(160, 422)
+script = ExtResource("3_vx3n1")
+
+[node name="SlotMarker4" type="Marker2D" parent="SlotsRoot"]
+position = Vector2(386, 422)
+script = ExtResource("3_vx3n1")
+
+[node name="SlotMarker5" type="Marker2D" parent="SlotsRoot"]
+position = Vector2(610, 422)
+script = ExtResource("3_vx3n1")

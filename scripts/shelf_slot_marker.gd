@@ -1,0 +1,2 @@
+class_name ShelfSlotMarker
+extends Marker2D

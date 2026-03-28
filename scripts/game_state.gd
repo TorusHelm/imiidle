@@ -8,7 +8,7 @@ var seed_inventory: Dictionary = {}
 var plant_definitions: Dictionary = {}
 var pot_inventory: Dictionary = {}
 var pot_definitions: Dictionary = {}
-var shelf_slots: Array = [null, null, null]
+var shelf_slots: Array = []
 var growth_system := GrowthSystem.new()
 
 
@@ -67,6 +67,20 @@ func _init() -> void:
 	pot_inventory[default_pot.id] = 1
 	pot_inventory[orange_pot.id] = 1
 	pot_inventory[purple_pot.id] = 1
+
+	ensure_shelf_slot_capacity(3)
+
+
+func ensure_shelf_slot_capacity(slot_count: int) -> void:
+	if slot_count <= 0:
+		shelf_slots.clear()
+		return
+
+	while shelf_slots.size() < slot_count:
+		shelf_slots.append(null)
+
+	while shelf_slots.size() > slot_count:
+		shelf_slots.resize(slot_count)
 
 
 func has_any_seed() -> bool:
