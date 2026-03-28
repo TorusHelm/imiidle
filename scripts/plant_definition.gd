@@ -1,11 +1,10 @@
-extends Node
+class_name PlantDefinition
+extends Resource
 
 
-# Called when the node enters the scene tree for the first time.
-func _ready() -> void:
-	pass # Replace with function body.
-
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-	pass
+@export var id := ""
+@export var display_name := ""
+@export var growth_duration := 10.0
+@export var coins_per_second := 1.0
+@export var display_color := Color(0.247059, 0.639216, 0.301961, 1)
+@export_file("*.png") var texture_path := ""

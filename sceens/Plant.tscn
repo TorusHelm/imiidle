@@ -1,3 +1,44 @@
-[gd_scene format=3 uid="uid://jqsl7rrtvqmt"]
+[gd_scene load_steps=2 format=3 uid="uid://jqsl7rrtvqmt"]
 
-[node name="Plant" type="Node2D" unique_id=1823048839]
+[ext_resource type="Script" path="res://scripts/plant_view.gd" id="1_p2dpt"]
+
+[node name="Plant" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 140.0
+offset_bottom = 170.0
+script = ExtResource("1_p2dpt")
+
+[node name="PlantTexture" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = 6.0
+offset_top = 0.0
+offset_right = 134.0
+offset_bottom = 112.0
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PlantNameLabel" type="Label" parent="."]
+layout_mode = 0
+offset_top = 110.0
+offset_right = 140.0
+offset_bottom = 130.0
+text = "No plant"
+horizontal_alignment = 1
+
+[node name="PlantStageLabel" type="Label" parent="."]
+layout_mode = 0
+offset_top = 130.0
+offset_right = 140.0
+offset_bottom = 150.0
+text = "Status: empty"
+horizontal_alignment = 1
+
+[node name="GrowthValueLabel" type="Label" parent="."]
+layout_mode = 0
+offset_top = 150.0
+offset_right = 140.0
+offset_bottom = 170.0
+text = "Plant a seed to start growing."
+horizontal_alignment = 1
+autowrap_mode = 3
