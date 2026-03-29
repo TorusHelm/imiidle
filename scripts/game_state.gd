@@ -9,6 +9,7 @@ var seed_inventory: Dictionary = {}
 var plant_definitions: Dictionary = {}
 var pot_inventory: Dictionary = {}
 var pot_definitions: Dictionary = {}
+var shelf_inventory: Dictionary = {}
 var shelf_definitions: Dictionary = {}
 var active_shelf_definition: ShelfDefinition
 var background_color_hex := "#e3efdf"
@@ -47,6 +48,9 @@ func can_plant_seed(seed_id := "") -> bool:
 
 
 func can_place_pot(slot_index: int, pot_id := "") -> bool:
+	if active_shelf_definition == null:
+		return false
+
 	if not _is_valid_slot_index(slot_index):
 		return false
 
@@ -160,6 +164,57 @@ func get_pot_in_slot(slot_index: int) -> PotInstance:
 	return shelf_slots[slot_index]
 
 
+func has_any_shelf() -> bool:
+	for shelf_count in shelf_inventory.values():
+		if int(shelf_count) > 0:
+			return true
+	return false
+
+
+func can_place_shelf(shelf_id := "") -> bool:
+	if active_shelf_definition != null:
+		return false
+
+	if shelf_id.is_empty():
+		return has_any_shelf()
+
+	return get_shelf_count(shelf_id) > 0
+
+
+func place_shelf(shelf_id: String) -> bool:
+	if not can_place_shelf(shelf_id):
+		return false
+
+	var definition: ShelfDefinition = shelf_definitions.get(shelf_id)
+	if definition == null:
+		return false
+
+	shelf_inventory[shelf_id] = get_shelf_count(shelf_id) - 1
+	active_shelf_definition = definition
+	ensure_shelf_slot_capacity(active_shelf_definition.slot_positions.size())
+	return true
+
+
+func get_shelf_options() -> Array[Dictionary]:
+	var options: Array[Dictionary] = []
+
+	for shelf_id in shelf_definitions.keys():
+		var definition: ShelfDefinition = shelf_definitions[shelf_id]
+		options.append(
+			{
+				"id": definition.id,
+				"display_name": definition.display_name,
+				"count": get_shelf_count(definition.id),
+			}
+		)
+
+	return options
+
+
+func get_shelf_count(shelf_id: String) -> int:
+	return int(shelf_inventory.get(shelf_id, 0))
+
+
 func get_active_shelf_definition() -> ShelfDefinition:
 	return active_shelf_definition
 
@@ -185,6 +240,7 @@ func _load_catalog(catalog: GameCatalog) -> void:
 	shelf_definitions.clear()
 	seed_inventory.clear()
 	pot_inventory.clear()
+	shelf_inventory.clear()
 	active_shelf_definition = null
 	background_color_hex = "#e3efdf"
 
@@ -213,9 +269,10 @@ func _load_catalog(catalog: GameCatalog) -> void:
 	for pot_id in catalog.starting_pot_inventory.keys():
 		pot_inventory[pot_id] = int(catalog.starting_pot_inventory[pot_id])
 
+	for shelf_id in catalog.starting_shelf_inventory.keys():
+		shelf_inventory[shelf_id] = int(catalog.starting_shelf_inventory[shelf_id])
+
 	active_shelf_definition = shelf_definitions.get(catalog.active_shelf_id)
-	if active_shelf_definition == null and not catalog.shelf_definitions.is_empty():
-		active_shelf_definition = catalog.shelf_definitions[0]
 
 	background_color_hex = catalog.background_color_hex
 

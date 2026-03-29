@@ -15,13 +15,13 @@ run/main_scene="res://sceens/Main.tscn"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://icon.svg"
 
-[physics]
-
-3d/physics_engine="Jolt Physics"
-
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/imiidle_inspector/plugin.cfg")
+
+[physics]
+
+3d/physics_engine="Jolt Physics"
 
 [rendering]
 

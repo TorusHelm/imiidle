@@ -9,3 +9,4 @@ extends Resource
 @export var background_color_hex := "#e3efdf"
 @export var starting_seed_inventory: Dictionary = {}
 @export var starting_pot_inventory: Dictionary = {}
+@export var starting_shelf_inventory: Dictionary = {}
