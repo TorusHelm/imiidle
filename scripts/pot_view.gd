@@ -1,9 +1,32 @@
+@tool
 class_name PotView
 extends Control
 
 
 signal seed_button_pressed(slot_index: int)
 signal pot_button_pressed(slot_index: int)
+
+
+@export var preview_definition: PotDefinition = null:
+	set(value):
+		_disconnect_pot_resource(preview_definition)
+		preview_definition = value
+		_connect_pot_resource(preview_definition)
+		_queue_preview_refresh()
+
+@export var preview_plant_definition: PlantDefinition = null:
+	set(value):
+		_disconnect_plant_resource(preview_plant_definition)
+		preview_plant_definition = value
+		_connect_plant_resource(preview_plant_definition)
+		_queue_preview_refresh()
+
+@export var use_internal_preview := true:
+	set(value):
+		use_internal_preview = value
+		if is_node_ready():
+			plant_view.use_internal_preview = value
+		_queue_preview_refresh()
 
 
 var slot_index := -1
@@ -18,6 +41,16 @@ var slot_index := -1
 
 func _ready() -> void:
 	slot_button.grab_focus()
+	_connect_pot_resource(preview_definition)
+	_connect_plant_resource(preview_plant_definition)
+	plant_view.use_internal_preview = use_internal_preview
+	set_process(Engine.is_editor_hint())
+	_refresh_preview()
+
+
+func _process(_delta: float) -> void:
+	if Engine.is_editor_hint() and use_internal_preview:
+		_refresh_preview()
 
 
 func set_slot_index(value: int) -> void:
@@ -100,7 +133,11 @@ func _apply_definition_layout(definition: PotDefinition) -> void:
 	size = definition.view_size
 	pot_texture.position = definition.pot_texture_position
 	pot_texture.size = definition.pot_texture_size
-	plant_view.position = definition.plant_view_position
+	var plant_view_top_left := definition.plant_attach_point - Vector2(
+		definition.plant_view_size.x * 0.5,
+		definition.plant_view_size.y
+	)
+	plant_view.position = plant_view_top_left + definition.plant_view_position
 	plant_view.custom_minimum_size = definition.plant_view_size
 	plant_view.size = definition.plant_view_size
 	seed_button.position = definition.seed_button_position
@@ -111,3 +148,62 @@ func _apply_definition_layout(definition: PotDefinition) -> void:
 	slot_label.size = definition.slot_label_size
 	get_node("PlantAttachPoint").position = definition.plant_attach_point
 	get_node("PotBaseline").position = definition.pot_baseline
+
+
+func _queue_preview_refresh() -> void:
+	if not is_node_ready():
+		return
+	call_deferred("_refresh_preview")
+
+
+func _refresh_preview() -> void:
+	if not is_node_ready():
+		return
+
+	if not Engine.is_editor_hint():
+		return
+
+	if not use_internal_preview:
+		return
+
+	if preview_definition == null:
+		update_view(null, true, false)
+		return
+
+	var pot_instance := PotInstance.new(preview_definition)
+	if preview_plant_definition != null:
+		pot_instance.active_plant = PlantInstance.new(preview_plant_definition)
+
+	update_view(pot_instance, true, preview_plant_definition == null)
+
+
+func _connect_pot_resource(definition: PotDefinition) -> void:
+	if definition == null:
+		return
+	if not definition.changed.is_connected(_on_preview_resource_changed):
+		definition.changed.connect(_on_preview_resource_changed)
+
+
+func _disconnect_pot_resource(definition: PotDefinition) -> void:
+	if definition == null:
+		return
+	if definition.changed.is_connected(_on_preview_resource_changed):
+		definition.changed.disconnect(_on_preview_resource_changed)
+
+
+func _connect_plant_resource(definition: PlantDefinition) -> void:
+	if definition == null:
+		return
+	if not definition.changed.is_connected(_on_preview_resource_changed):
+		definition.changed.connect(_on_preview_resource_changed)
+
+
+func _disconnect_plant_resource(definition: PlantDefinition) -> void:
+	if definition == null:
+		return
+	if definition.changed.is_connected(_on_preview_resource_changed):
+		definition.changed.disconnect(_on_preview_resource_changed)
+
+
+func _on_preview_resource_changed() -> void:
+	_queue_preview_refresh()

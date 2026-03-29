@@ -1,17 +1,28 @@
 [gd_scene format=3 uid="uid://jqsl7rrtvqmt"]
 
 [ext_resource type="Script" uid="uid://c22sli4brxej0" path="res://scripts/plant_view.gd" id="1_p2dpt"]
+[ext_resource type="Texture2D" uid="uid://kpbbgioh6tgn" path="res://Plants/Gerbera/assets/plant-gerbera.png" id="2_4u66c"]
+[ext_resource type="Resource" uid="uid://8n815svtusxd" path="res://Plants/Gerbera/data/plant_gerbera.tres" id="3_plant"]
 
 [node name="Plant" type="Control" unique_id=1307791276]
 layout_mode = 3
 anchors_preset = 0
 offset_right = 160.0
 offset_bottom = 220.0
+tooltip_text = "Gerbera
+Status: growing
+Growth: 0%"
 script = ExtResource("1_p2dpt")
+preview_definition = ExtResource("3_plant")
 
 [node name="PlantTexture" type="TextureRect" parent="." unique_id=1246144421]
 layout_mode = 0
+offset_top = 30.0
 offset_right = 160.0
-offset_bottom = 190.0
+offset_bottom = 220.0
+tooltip_text = "Gerbera
+Status: growing
+Growth: 0%"
+texture = ExtResource("2_4u66c")
 expand_mode = 1
 stretch_mode = 5

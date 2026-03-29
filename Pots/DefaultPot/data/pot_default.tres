@@ -1,22 +1,12 @@
-[gd_resource type="Resource" script_class="PotDefinition" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="PotDefinition" format=3 uid="uid://cygoi83vimm71"]
 
-[ext_resource type="Script" path="res://scripts/pot_definition.gd" id="1_pot"]
+[ext_resource type="Script" uid="uid://d3a0qsl3v5l53" path="res://scripts/pot_definition.gd" id="1_pot"]
 
 [resource]
 script = ExtResource("1_pot")
 id = "default_pot"
 display_name = "Clay Pot"
 texture_path = "res://Pots/DefaultPot/assets/pot-default.png"
-view_size = Vector2(220, 320)
-pot_texture_position = Vector2(50, 190)
-pot_texture_size = Vector2(120, 110)
-plant_view_position = Vector2(30, 0)
-plant_view_size = Vector2(160, 190)
-seed_button_position = Vector2(66, 228)
-seed_button_size = Vector2(88, 36)
-slot_button_position = Vector2(34, 178)
-slot_button_size = Vector2(154, 114)
-slot_label_position = Vector2(18, 210)
-slot_label_size = Vector2(184, 49)
-plant_attach_point = Vector2(110, 190)
-pot_baseline = Vector2(110, 300)
+pot_texture_position = Vector2(50, 198)
+plant_view_position = Vector2(0, 0)
+plant_attach_point = Vector2(110, 205)

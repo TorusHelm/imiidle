@@ -2,13 +2,22 @@
 
 [ext_resource type="PackedScene" uid="uid://jqsl7rrtvqmt" path="res://Plants/_shared/sceens/Plant.tscn" id="1_b3lk0"]
 [ext_resource type="Script" uid="uid://d2mx4eqpirxoj" path="res://scripts/pot_view.gd" id="2_447lc"]
+[ext_resource type="Resource" uid="uid://cygoi83vimm71" path="res://Pots/DefaultPot/data/pot_default.tres" id="3_pot"]
+[ext_resource type="Resource" uid="uid://8n815svtusxd" path="res://Plants/Gerbera/data/plant_gerbera.tres" id="4_plant"]
+[ext_resource type="Texture2D" uid="uid://ixg7qjnpdyc2" path="res://Pots/DefaultPot/assets/pot-default.png" id="5_emhl3"]
 
 [node name="Pot" type="Control" unique_id=2064265332]
+custom_minimum_size = Vector2(220, 320)
 layout_mode = 3
 anchors_preset = 0
 offset_right = 220.0
 offset_bottom = 320.0
+tooltip_text = "Clay Pot
+Plant: Gerbera
+Status: growing"
 script = ExtResource("2_447lc")
+preview_definition = ExtResource("3_pot")
+preview_plant_definition = ExtResource("4_plant")
 
 [node name="PlantAttachPoint" type="Marker2D" parent="." unique_id=1022001]
 position = Vector2(110, 190)
@@ -17,6 +26,7 @@ position = Vector2(110, 190)
 position = Vector2(110, 300)
 
 [node name="SlotButton" type="Button" parent="." unique_id=2077643061]
+visible = false
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -31,6 +41,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="SlotLabel" type="Label" parent="." unique_id=1636784625]
+visible = false
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -49,6 +60,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="PlantView" parent="." unique_id=1459346288 instance=ExtResource("1_b3lk0")]
+custom_minimum_size = Vector2(160, 190)
 layout_mode = 0
 offset_left = 30.0
 offset_right = 190.0
@@ -59,7 +71,11 @@ layout_mode = 0
 offset_left = 50.0
 offset_top = 190.0
 offset_right = 170.0
-offset_bottom = 300.00003
+offset_bottom = 300.0
+tooltip_text = "Clay Pot
+Plant: Gerbera
+Status: growing"
+texture = ExtResource("5_emhl3")
 expand_mode = 1
 stretch_mode = 5
 
@@ -69,6 +85,8 @@ offset_left = 66.0
 offset_top = 228.0
 offset_right = 154.0
 offset_bottom = 264.0
+tooltip_text = "This pot already has a plant."
+disabled = true
 text = "Seed"
 
 [connection signal="pressed" from="SlotButton" to="." method="_on_slot_button_pressed"]

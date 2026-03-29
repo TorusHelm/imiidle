@@ -9,5 +9,5 @@ display_name = "Cactus"
 growth_duration = 6.0
 coins_per_second = 0.8
 texture_path = "res://Plants/Cactus/assets/plant-cactus.png"
-texture_offset = Vector2(18, 40)
+texture_offset = Vector2(2, 3)
 texture_size = Vector2(110, 130)
