@@ -7,10 +7,10 @@
 [ext_resource type="Texture2D" uid="uid://cd5im7630llp2" path="res://Shelfs/ShelfA/assets/shelf-default.png" id="5_asejt"]
 
 [node name="Shelf" type="Control" unique_id=1424021836]
-custom_minimum_size = Vector2(700, 300)
+custom_minimum_size = Vector2(524, 300)
 layout_mode = 3
 anchors_preset = 0
-offset_right = 700.0
+offset_right = 524.0
 offset_bottom = 300.0
 script = ExtResource("1_5y27c")
 preview_shelf_definition = ExtResource("2_luqdx")
@@ -30,7 +30,7 @@ stretch_mode = 5
 [node name="ShelfTitle" type="Label" parent="." unique_id=2135451817]
 layout_mode = 0
 offset_top = 260.0
-offset_right = 700.0
+offset_right = 524.0
 offset_bottom = 284.0
 text = "Shelf A"
 horizontal_alignment = 1
