@@ -1,14 +1,14 @@
 [gd_resource type="Resource" script_class="PotDefinition" format=3 uid="uid://vfj2f3piwebi"]
 
 [ext_resource type="Script" uid="uid://d3a0qsl3v5l53" path="res://scripts/pot_definition.gd" id="1_pot"]
-[ext_resource type="Resource" path="res://Game/data/default_slot_layout_metrics.tres" id="2_metrics"]
+[ext_resource type="Resource" path="res://Game/data/default_slot_layout.tres" id="2_layout"]
 
 [resource]
 script = ExtResource("1_pot")
 id = "orange_pot"
 display_name = "Orange Pot"
 texture_path = "res://Pots/OrangePot/assets/pot-orange.png"
-slot_layout_metrics = ExtResource("2_metrics")
+slot_layout = ExtResource("2_layout")
 view_size = Vector2(220, 332)
 pot_texture_position = Vector2(42, 192)
 pot_texture_size = Vector2(136, 126)

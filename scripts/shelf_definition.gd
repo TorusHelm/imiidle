@@ -2,7 +2,7 @@
 class_name ShelfDefinition
 extends Resource
 
-const DEFAULT_SLOT_LAYOUT_METRICS: SlotLayoutMetrics = preload("res://Game/data/default_slot_layout_metrics.tres")
+const DEFAULT_SLOT_LAYOUT: SlotLayout = preload("res://Game/data/default_slot_layout.tres")
 
 @export_group("Identity")
 ## Stable internal id used by catalogs and lookups.
@@ -27,8 +27,8 @@ const DEFAULT_SLOT_LAYOUT_METRICS: SlotLayoutMetrics = preload("res://Game/data/
 @export var title_size := Vector2(700.0, 24.0)
 
 @export_group("Slots")
-## Shared slot metrics used as the base unit for shelf work areas.
-@export var slot_layout_metrics: SlotLayoutMetrics
+## Shared slot layout used as the base unit for shelf work areas.
+@export var slot_layout: SlotLayout
 ## When enabled, slot anchors are generated from a fixed slot grid instead of manual positions.
 @export var use_slot_grid := false
 ## Number of slot columns in the working area.
@@ -37,11 +37,11 @@ const DEFAULT_SLOT_LAYOUT_METRICS: SlotLayoutMetrics = preload("res://Game/data/
 @export_range(0, 32, 1) var slot_grid_rows := 1
 ## Top-left origin of the first slot work area.
 @export var slot_area_origin := Vector2.ZERO
-## Fixed work area size for one slot. Uses shared metrics when left empty.
-@export var slot_area_size := Vector2(170.0, 281.0)
+## Fixed work area size for one slot. Uses shared slot layout when left empty.
+@export var slot_area_size := Vector2(170.0, 280.0)
 ## Gap between slot work areas.
 @export var slot_area_gap := Vector2.ZERO
-## Baseline anchor inside one slot work area. Uses shared metrics when left empty.
+## Baseline anchor inside one slot work area. Uses shared slot layout when left empty.
 @export var slot_anchor_offset := Vector2(85.0, 202.0)
 ## Manual anchor points on the shelf where pot baselines are placed.
 @export var slot_positions: Array[Vector2] = []
@@ -98,21 +98,21 @@ func get_resolved_view_size() -> Vector2:
 	)
 
 
-func get_slot_layout_metrics() -> SlotLayoutMetrics:
-	return slot_layout_metrics if slot_layout_metrics != null else DEFAULT_SLOT_LAYOUT_METRICS
+func get_slot_layout() -> SlotLayout:
+	return slot_layout if slot_layout != null else DEFAULT_SLOT_LAYOUT
 
 
 func get_slot_area_size() -> Vector2:
-	if slot_layout_metrics != null:
-		return slot_layout_metrics.slot_area_size
-	if slot_area_size != Vector2(170.0, 281.0):
+	if slot_layout != null:
+		return slot_layout.slot_area_size
+	if slot_area_size != Vector2(170.0, 280.0):
 		return slot_area_size
-	return get_slot_layout_metrics().slot_area_size
+	return get_slot_layout().slot_area_size
 
 
 func get_slot_anchor_offset() -> Vector2:
-	if slot_layout_metrics != null:
-		return slot_layout_metrics.slot_anchor_offset
+	if slot_layout != null:
+		return slot_layout.slot_anchor_offset
 	if slot_anchor_offset != Vector2(85.0, 202.0):
 		return slot_anchor_offset
-	return get_slot_layout_metrics().slot_anchor_offset
+	return get_slot_layout().slot_anchor_offset

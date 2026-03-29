@@ -1,11 +1,11 @@
 @tool
-class_name SlotLayoutMetrics
+class_name SlotLayout
 extends Resource
 
 
 @export_group("Slot Area")
 ## Fixed work area size for one slot.
-@export var slot_area_size := Vector2(170.0, 281.0)
+@export var slot_area_size := Vector2(170.0, 280.0)
 ## Baseline anchor inside one slot work area.
 @export var slot_anchor_offset := Vector2(85.0, 202.0)
 

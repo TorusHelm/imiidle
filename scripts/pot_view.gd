@@ -73,7 +73,7 @@ func get_slot_footprint_local_rect() -> Rect2:
 		return _current_definition.get_slot_footprint_local_rect()
 
 	var marker: Marker2D = get_node("PotBaseline")
-	return Rect2(marker.position + Vector2(-85.0, -202.0), Vector2(170.0, 281.0))
+	return Rect2(marker.position + Vector2(-85.0, -202.0), Vector2(170.0, 280.0))
 
 
 func update_view(pot_instance: PotInstance, can_place_pot: bool, can_plant_seed: bool) -> void:
@@ -193,9 +193,9 @@ func _connect_pot_resource(definition: PotDefinition) -> void:
 		return
 	if not definition.changed.is_connected(_on_preview_resource_changed):
 		definition.changed.connect(_on_preview_resource_changed)
-	var slot_metrics := definition.get_slot_layout_metrics()
-	if slot_metrics != null and not slot_metrics.changed.is_connected(_on_preview_resource_changed):
-		slot_metrics.changed.connect(_on_preview_resource_changed)
+	var slot_layout := definition.get_slot_layout()
+	if slot_layout != null and not slot_layout.changed.is_connected(_on_preview_resource_changed):
+		slot_layout.changed.connect(_on_preview_resource_changed)
 
 
 func _disconnect_pot_resource(definition: PotDefinition) -> void:
@@ -203,9 +203,9 @@ func _disconnect_pot_resource(definition: PotDefinition) -> void:
 		return
 	if definition.changed.is_connected(_on_preview_resource_changed):
 		definition.changed.disconnect(_on_preview_resource_changed)
-	var slot_metrics := definition.get_slot_layout_metrics()
-	if slot_metrics != null and slot_metrics.changed.is_connected(_on_preview_resource_changed):
-		slot_metrics.changed.disconnect(_on_preview_resource_changed)
+	var slot_layout := definition.get_slot_layout()
+	if slot_layout != null and slot_layout.changed.is_connected(_on_preview_resource_changed):
+		slot_layout.changed.disconnect(_on_preview_resource_changed)
 
 
 func _connect_plant_resource(definition: PlantDefinition) -> void:

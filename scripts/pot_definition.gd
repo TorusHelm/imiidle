@@ -2,7 +2,7 @@
 class_name PotDefinition
 extends Resource
 
-const DEFAULT_SLOT_LAYOUT_METRICS: SlotLayoutMetrics = preload("res://Game/data/default_slot_layout_metrics.tres")
+const DEFAULT_SLOT_LAYOUT: SlotLayout = preload("res://Game/data/default_slot_layout.tres")
 
 @export_group("Identity")
 ## Stable internal id used by saves, inventory, and lookups.
@@ -47,10 +47,10 @@ const DEFAULT_SLOT_LAYOUT_METRICS: SlotLayoutMetrics = preload("res://Game/data/
 @export var pot_baseline := Vector2(110.0, 300.0)
 
 @export_group("Slot Fit")
-## Shared slot metrics used as the base unit for this pot.
-@export var slot_layout_metrics: SlotLayoutMetrics
-## Fixed slot work area this pot is designed to fit against. Uses shared metrics when assigned.
-@export var slot_footprint_size := Vector2(170.0, 281.0)
+## Shared slot layout used as the base unit for this pot.
+@export var slot_layout: SlotLayout
+## Fixed slot work area this pot is designed to fit against. Uses shared slot layout when assigned.
+@export var slot_footprint_size := Vector2(170.0, 280.0)
 ## Top-left slot offset relative to the pot baseline.
 @export var slot_footprint_offset := Vector2(-85.0, -202.0)
 
@@ -59,21 +59,21 @@ func get_slot_footprint_local_rect() -> Rect2:
 	return Rect2(pot_baseline + get_slot_footprint_offset(), get_slot_footprint_size())
 
 
-func get_slot_layout_metrics() -> SlotLayoutMetrics:
-	return slot_layout_metrics if slot_layout_metrics != null else DEFAULT_SLOT_LAYOUT_METRICS
+func get_slot_layout() -> SlotLayout:
+	return slot_layout if slot_layout != null else DEFAULT_SLOT_LAYOUT
 
 
 func get_slot_footprint_size() -> Vector2:
-	if slot_layout_metrics != null:
-		return slot_layout_metrics.slot_area_size
-	if slot_footprint_size != Vector2(170.0, 281.0):
+	if slot_layout != null:
+		return slot_layout.slot_area_size
+	if slot_footprint_size != Vector2(170.0, 280.0):
 		return slot_footprint_size
-	return get_slot_layout_metrics().slot_area_size
+	return get_slot_layout().slot_area_size
 
 
 func get_slot_footprint_offset() -> Vector2:
-	if slot_layout_metrics != null:
-		return -get_slot_layout_metrics().slot_anchor_offset
+	if slot_layout != null:
+		return -get_slot_layout().slot_anchor_offset
 	if slot_footprint_offset != Vector2(-85.0, -202.0):
 		return slot_footprint_offset
-	return -get_slot_layout_metrics().slot_anchor_offset
+	return -get_slot_layout().slot_anchor_offset

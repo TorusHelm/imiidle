@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="ShelfDefinition" format=3 uid="uid://dw7p7gin6ryap"]
 
 [ext_resource type="Script" uid="uid://cucjjk2bjbhk4" path="res://scripts/shelf_definition.gd" id="1_shelf"]
-[ext_resource type="Resource" path="res://Game/data/default_slot_layout_metrics.tres" id="2_metrics"]
+[ext_resource type="Resource" uid="uid://dhlxyggm3121l" path="res://Game/data/default_slot_layout.tres" id="2_layout"]
 
 [resource]
 script = ExtResource("1_shelf")
@@ -12,7 +12,8 @@ view_size = Vector2(524, 300)
 texture_position = Vector2(0, 196)
 texture_size = Vector2(524, 72)
 title_size = Vector2(524, 24)
-slot_layout_metrics = ExtResource("2_metrics")
+slot_layout = ExtResource("2_layout")
 use_slot_grid = true
 slot_grid_columns = 3
-slot_area_origin = Vector2(7, 0)
+slot_area_origin = Vector2(7, 2)
+slot_area_size = Vector2(170, 280)

@@ -283,9 +283,9 @@ func _connect_shelf_resource(definition: ShelfDefinition) -> void:
 		return
 	if not definition.changed.is_connected(_on_preview_resource_changed):
 		definition.changed.connect(_on_preview_resource_changed)
-	var slot_metrics := definition.get_slot_layout_metrics()
-	if slot_metrics != null and not slot_metrics.changed.is_connected(_on_preview_resource_changed):
-		slot_metrics.changed.connect(_on_preview_resource_changed)
+	var slot_layout := definition.get_slot_layout()
+	if slot_layout != null and not slot_layout.changed.is_connected(_on_preview_resource_changed):
+		slot_layout.changed.connect(_on_preview_resource_changed)
 
 
 func _disconnect_shelf_resource(definition: ShelfDefinition) -> void:
@@ -293,9 +293,9 @@ func _disconnect_shelf_resource(definition: ShelfDefinition) -> void:
 		return
 	if definition.changed.is_connected(_on_preview_resource_changed):
 		definition.changed.disconnect(_on_preview_resource_changed)
-	var slot_metrics := definition.get_slot_layout_metrics()
-	if slot_metrics != null and slot_metrics.changed.is_connected(_on_preview_resource_changed):
-		slot_metrics.changed.disconnect(_on_preview_resource_changed)
+	var slot_layout := definition.get_slot_layout()
+	if slot_layout != null and slot_layout.changed.is_connected(_on_preview_resource_changed):
+		slot_layout.changed.disconnect(_on_preview_resource_changed)
 
 
 func _connect_pot_resource(definition: PotDefinition) -> void:
@@ -303,9 +303,9 @@ func _connect_pot_resource(definition: PotDefinition) -> void:
 		return
 	if not definition.changed.is_connected(_on_preview_resource_changed):
 		definition.changed.connect(_on_preview_resource_changed)
-	var slot_metrics := definition.get_slot_layout_metrics()
-	if slot_metrics != null and not slot_metrics.changed.is_connected(_on_preview_resource_changed):
-		slot_metrics.changed.connect(_on_preview_resource_changed)
+	var slot_layout := definition.get_slot_layout()
+	if slot_layout != null and not slot_layout.changed.is_connected(_on_preview_resource_changed):
+		slot_layout.changed.connect(_on_preview_resource_changed)
 
 
 func _disconnect_pot_resource(definition: PotDefinition) -> void:
@@ -313,9 +313,9 @@ func _disconnect_pot_resource(definition: PotDefinition) -> void:
 		return
 	if definition.changed.is_connected(_on_preview_resource_changed):
 		definition.changed.disconnect(_on_preview_resource_changed)
-	var slot_metrics := definition.get_slot_layout_metrics()
-	if slot_metrics != null and slot_metrics.changed.is_connected(_on_preview_resource_changed):
-		slot_metrics.changed.disconnect(_on_preview_resource_changed)
+	var slot_layout := definition.get_slot_layout()
+	if slot_layout != null and slot_layout.changed.is_connected(_on_preview_resource_changed):
+		slot_layout.changed.disconnect(_on_preview_resource_changed)
 
 
 func _connect_plant_resource(definition: PlantDefinition) -> void:
