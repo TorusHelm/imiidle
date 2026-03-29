@@ -1,11 +1,11 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene format=3 uid="uid://bvmjc7j6q2wag"]
 
-[ext_resource type="Script" path="res://scripts/game_screen.gd" id="1_s8r8u"]
+[ext_resource type="Script" uid="uid://brxgjxcjr4el8" path="res://scripts/game_screen.gd" id="1_s8r8u"]
 [ext_resource type="PackedScene" uid="uid://chrt8p8hrj4v6" path="res://Shelfs/_shared/sceens/Shelf.tscn" id="2_r3bh2"]
-[ext_resource type="Script" path="res://scripts/seed_modal.gd" id="3_3ui8b"]
-[ext_resource type="Script" path="res://scripts/pot_modal.gd" id="4_qk2u3"]
+[ext_resource type="Script" uid="uid://crvlhsjxasb0b" path="res://scripts/seed_modal.gd" id="3_3ui8b"]
+[ext_resource type="Script" uid="uid://c8m2lvh1dic43" path="res://scripts/pot_modal.gd" id="4_qk2u3"]
 
-[node name="Game" type="Control"]
+[node name="Game" type="Control" unique_id=874124362]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -14,16 +14,15 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_s8r8u")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="ColorRect" parent="." unique_id=1845956389]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.890196, 0.937255, 0.878431, 1)
 
-[node name="Title" type="Label" parent="."]
+[node name="Title" type="Label" parent="." unique_id=1250270890]
 layout_mode = 0
 offset_left = 24.0
 offset_top = 18.0
@@ -31,9 +30,8 @@ offset_right = 356.0
 offset_bottom = 54.0
 theme_override_font_sizes/font_size = 28
 text = "Plant Idle Prototype"
-horizontal_alignment = 0
 
-[node name="Description" type="Label" parent="."]
+[node name="Description" type="Label" parent="." unique_id=1365571814]
 layout_mode = 0
 offset_left = 24.0
 offset_top = 58.0
@@ -41,9 +39,8 @@ offset_right = 420.0
 offset_bottom = 82.0
 text = "One shelf, one pot, one starter seed."
 
-[node name="StatsPanel" type="PanelContainer" parent="."]
+[node name="StatsPanel" type="PanelContainer" parent="." unique_id=734697401]
 layout_mode = 0
-anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
 offset_left = -244.0
@@ -51,43 +48,42 @@ offset_top = 20.0
 offset_right = -20.0
 offset_bottom = 136.0
 
-[node name="StatsContent" type="GridContainer" parent="StatsPanel"]
+[node name="StatsContent" type="GridContainer" parent="StatsPanel" unique_id=1824475117]
 layout_mode = 2
-columns = 2
 theme_override_constants/h_separation = 24
 theme_override_constants/v_separation = 8
+columns = 2
 
-[node name="CoinsLabel" type="Label" parent="StatsPanel/StatsContent"]
+[node name="CoinsLabel" type="Label" parent="StatsPanel/StatsContent" unique_id=1129739521]
 layout_mode = 2
 text = "Coins"
 
-[node name="CoinsValueLabel" type="Label" parent="StatsPanel/StatsContent"]
+[node name="CoinsValueLabel" type="Label" parent="StatsPanel/StatsContent" unique_id=658154369]
 unique_name_in_owner = true
 layout_mode = 2
 text = "0.0"
 
-[node name="ExperienceLabel" type="Label" parent="StatsPanel/StatsContent"]
+[node name="ExperienceLabel" type="Label" parent="StatsPanel/StatsContent" unique_id=1959850104]
 layout_mode = 2
 text = "Experience"
 
-[node name="ExperienceValueLabel" type="Label" parent="StatsPanel/StatsContent"]
+[node name="ExperienceValueLabel" type="Label" parent="StatsPanel/StatsContent" unique_id=1333372076]
 unique_name_in_owner = true
 layout_mode = 2
 text = "0.0"
 
-[node name="SeedsLabel" type="Label" parent="StatsPanel/StatsContent"]
+[node name="SeedsLabel" type="Label" parent="StatsPanel/StatsContent" unique_id=875948931]
 layout_mode = 2
 text = "Seeds"
 
-[node name="SeedsValueLabel" type="Label" parent="StatsPanel/StatsContent"]
+[node name="SeedsValueLabel" type="Label" parent="StatsPanel/StatsContent" unique_id=617892545]
 unique_name_in_owner = true
 layout_mode = 2
 text = "2"
 
-[node name="ShelfView" parent="." instance=ExtResource("2_r3bh2")]
+[node name="ShelfView" parent="." unique_id=357212328 instance=ExtResource("2_r3bh2")]
 unique_name_in_owner = true
 layout_mode = 0
-anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
@@ -97,7 +93,7 @@ offset_top = -330.0
 offset_right = 350.0
 offset_bottom = -30.0
 
-[node name="BackButton" type="Button" parent="."]
+[node name="BackButton" type="Button" parent="." unique_id=1511248742]
 custom_minimum_size = Vector2(220, 44)
 layout_mode = 0
 offset_left = 24.0
@@ -106,7 +102,7 @@ offset_right = 244.0
 offset_bottom = 140.0
 text = "Back to Menu"
 
-[node name="SeedModal" type="Control" parent="."]
+[node name="SeedModal" type="Control" parent="." unique_id=1320918375]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
@@ -118,7 +114,7 @@ grow_vertical = 2
 mouse_filter = 1
 script = ExtResource("3_3ui8b")
 
-[node name="Overlay" type="ColorRect" parent="SeedModal"]
+[node name="Overlay" type="ColorRect" parent="SeedModal" unique_id=1772242242]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -128,7 +124,7 @@ grow_vertical = 2
 mouse_filter = 1
 color = Color(0, 0, 0, 0.35)
 
-[node name="CenterContainer" type="CenterContainer" parent="SeedModal"]
+[node name="CenterContainer" type="CenterContainer" parent="SeedModal" unique_id=109032154]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -136,30 +132,30 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="ModalPanel" type="PanelContainer" parent="SeedModal/CenterContainer"]
+[node name="ModalPanel" type="PanelContainer" parent="SeedModal/CenterContainer" unique_id=1968570679]
 layout_mode = 2
 
-[node name="Content" type="VBoxContainer" parent="SeedModal/CenterContainer/ModalPanel"]
+[node name="Content" type="VBoxContainer" parent="SeedModal/CenterContainer/ModalPanel" unique_id=2078067700]
 custom_minimum_size = Vector2(280, 0)
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="TitleLabel" type="Label" parent="SeedModal/CenterContainer/ModalPanel/Content"]
+[node name="TitleLabel" type="Label" parent="SeedModal/CenterContainer/ModalPanel/Content" unique_id=1683624041]
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
 text = "Choose a seed"
 horizontal_alignment = 1
 
-[node name="SeedList" type="VBoxContainer" parent="SeedModal/CenterContainer/ModalPanel/Content"]
+[node name="SeedList" type="VBoxContainer" parent="SeedModal/CenterContainer/ModalPanel/Content" unique_id=1464539135]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="CloseButton" type="Button" parent="SeedModal/CenterContainer/ModalPanel/Content"]
+[node name="CloseButton" type="Button" parent="SeedModal/CenterContainer/ModalPanel/Content" unique_id=1066151249]
 custom_minimum_size = Vector2(220, 40)
 layout_mode = 2
 text = "Close"
 
-[node name="PotModal" type="Control" parent="."]
+[node name="PotModal" type="Control" parent="." unique_id=266302538]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
@@ -171,7 +167,7 @@ grow_vertical = 2
 mouse_filter = 1
 script = ExtResource("4_qk2u3")
 
-[node name="Overlay" type="ColorRect" parent="PotModal"]
+[node name="Overlay" type="ColorRect" parent="PotModal" unique_id=1903525037]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -181,7 +177,7 @@ grow_vertical = 2
 mouse_filter = 1
 color = Color(0, 0, 0, 0.35)
 
-[node name="CenterContainer" type="CenterContainer" parent="PotModal"]
+[node name="CenterContainer" type="CenterContainer" parent="PotModal" unique_id=1172307044]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -189,25 +185,25 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="ModalPanel" type="PanelContainer" parent="PotModal/CenterContainer"]
+[node name="ModalPanel" type="PanelContainer" parent="PotModal/CenterContainer" unique_id=788831540]
 layout_mode = 2
 
-[node name="Content" type="VBoxContainer" parent="PotModal/CenterContainer/ModalPanel"]
+[node name="Content" type="VBoxContainer" parent="PotModal/CenterContainer/ModalPanel" unique_id=8975890]
 custom_minimum_size = Vector2(280, 0)
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="TitleLabel" type="Label" parent="PotModal/CenterContainer/ModalPanel/Content"]
+[node name="TitleLabel" type="Label" parent="PotModal/CenterContainer/ModalPanel/Content" unique_id=1049362587]
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
 text = "Choose a pot"
 horizontal_alignment = 1
 
-[node name="PotList" type="VBoxContainer" parent="PotModal/CenterContainer/ModalPanel/Content"]
+[node name="PotList" type="VBoxContainer" parent="PotModal/CenterContainer/ModalPanel/Content" unique_id=1333196674]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="CloseButton" type="Button" parent="PotModal/CenterContainer/ModalPanel/Content"]
+[node name="CloseButton" type="Button" parent="PotModal/CenterContainer/ModalPanel/Content" unique_id=834962070]
 custom_minimum_size = Vector2(220, 40)
 layout_mode = 2
 text = "Close"
@@ -215,9 +211,9 @@ text = "Close"
 [connection signal="pot_slot_pressed" from="ShelfView" to="." method="_on_pot_slot_pressed"]
 [connection signal="seed_slot_pressed" from="ShelfView" to="." method="_on_seed_button_pressed"]
 [connection signal="pressed" from="BackButton" to="." method="_on_back_button_pressed"]
-[connection signal="pressed" from="SeedModal/CenterContainer/ModalPanel/Content/CloseButton" to="SeedModal" method="_on_close_button_pressed"]
-[connection signal="gui_input" from="SeedModal/Overlay" to="SeedModal" method="_on_overlay_gui_input"]
 [connection signal="seed_selected" from="SeedModal" to="." method="_on_seed_selected"]
-[connection signal="pressed" from="PotModal/CenterContainer/ModalPanel/Content/CloseButton" to="PotModal" method="_on_close_button_pressed"]
-[connection signal="gui_input" from="PotModal/Overlay" to="PotModal" method="_on_overlay_gui_input"]
+[connection signal="gui_input" from="SeedModal/Overlay" to="SeedModal" method="_on_overlay_gui_input"]
+[connection signal="pressed" from="SeedModal/CenterContainer/ModalPanel/Content/CloseButton" to="SeedModal" method="_on_close_button_pressed"]
 [connection signal="pot_selected" from="PotModal" to="." method="_on_pot_selected"]
+[connection signal="gui_input" from="PotModal/Overlay" to="PotModal" method="_on_overlay_gui_input"]
+[connection signal="pressed" from="PotModal/CenterContainer/ModalPanel/Content/CloseButton" to="PotModal" method="_on_close_button_pressed"]

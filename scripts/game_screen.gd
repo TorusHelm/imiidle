@@ -7,6 +7,7 @@ var game_state := GameState.new()
 @onready var coins_value_label: Label = %CoinsValueLabel
 @onready var experience_value_label: Label = %ExperienceValueLabel
 @onready var seeds_value_label: Label = %SeedsValueLabel
+@onready var background: ColorRect = $Background
 @onready var shelf_view: ShelfView = %ShelfView
 @onready var seed_modal: SeedModal = %SeedModal
 @onready var pot_modal: PotModal = %PotModal
@@ -50,6 +51,7 @@ func _on_back_button_pressed() -> void:
 
 
 func _refresh_ui() -> void:
+	background.color = game_state.get_background_color()
 	coins_value_label.text = "%.1f" % game_state.coins
 	experience_value_label.text = "%.1f" % game_state.experience
 	seeds_value_label.text = str(game_state.get_total_seed_count())

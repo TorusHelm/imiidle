@@ -11,6 +11,7 @@ var pot_inventory: Dictionary = {}
 var pot_definitions: Dictionary = {}
 var shelf_definitions: Dictionary = {}
 var active_shelf_definition: ShelfDefinition
+var background_color_hex := "#e3efdf"
 var shelf_slots: Array = []
 var growth_system := GrowthSystem.new()
 
@@ -163,6 +164,10 @@ func get_active_shelf_definition() -> ShelfDefinition:
 	return active_shelf_definition
 
 
+func get_background_color() -> Color:
+	return Color.from_string(background_color_hex, Color(0.890196, 0.937255, 0.878431, 1))
+
+
 func tick(delta: float) -> void:
 	for pot in shelf_slots:
 		if pot == null or pot.active_plant == null:
@@ -181,6 +186,7 @@ func _load_catalog(catalog: GameCatalog) -> void:
 	seed_inventory.clear()
 	pot_inventory.clear()
 	active_shelf_definition = null
+	background_color_hex = "#e3efdf"
 
 	if catalog == null:
 		ensure_shelf_slot_capacity(0)
@@ -210,5 +216,7 @@ func _load_catalog(catalog: GameCatalog) -> void:
 	active_shelf_definition = shelf_definitions.get(catalog.active_shelf_id)
 	if active_shelf_definition == null and not catalog.shelf_definitions.is_empty():
 		active_shelf_definition = catalog.shelf_definitions[0]
+
+	background_color_hex = catalog.background_color_hex
 
 	ensure_shelf_slot_capacity(active_shelf_definition.slot_positions.size() if active_shelf_definition != null else 0)

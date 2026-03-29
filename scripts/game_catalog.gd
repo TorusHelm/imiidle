@@ -6,5 +6,6 @@ extends Resource
 @export var pot_definitions: Array[PotDefinition] = []
 @export var shelf_definitions: Array[ShelfDefinition] = []
 @export var active_shelf_id := ""
+@export var background_color_hex := "#e3efdf"
 @export var starting_seed_inventory: Dictionary = {}
 @export var starting_pot_inventory: Dictionary = {}

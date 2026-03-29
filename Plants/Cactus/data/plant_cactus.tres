@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="PlantDefinition" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="PlantDefinition" format=3 uid="uid://cd6vv47rgnqgq"]
 
-[ext_resource type="Script" path="res://scripts/plant_definition.gd" id="1_plant"]
+[ext_resource type="Script" uid="uid://dfjsq0o06h8ye" path="res://scripts/plant_definition.gd" id="1_plant"]
 
 [resource]
 script = ExtResource("1_plant")
@@ -8,7 +8,6 @@ id = "cactus"
 display_name = "Cactus"
 growth_duration = 6.0
 coins_per_second = 0.8
-display_color = Color(0.278431, 0.631373, 0.321569, 1)
 texture_path = "res://Plants/Cactus/assets/plant-cactus.png"
 texture_offset = Vector2(18, 40)
 texture_size = Vector2(110, 130)
