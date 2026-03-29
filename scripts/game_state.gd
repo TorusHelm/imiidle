@@ -1,7 +1,7 @@
 class_name GameState
 extends RefCounted
 
-const DEFAULT_CATALOG: GameCatalog = preload("res://data/catalogs/default_catalog.tres")
+const DEFAULT_CATALOG: GameCatalog = preload("res://Game/data/default_catalog.tres")
 
 var coins := 0.0
 var experience := 0.0
