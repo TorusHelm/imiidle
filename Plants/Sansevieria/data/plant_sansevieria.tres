@@ -8,5 +8,5 @@ id = "pothos"
 display_name = "Sansevieria"
 growth_duration = 8.0
 texture_path = "res://Plants/Sansevieria/assets/plant-sansevieria.png"
-texture_offset = Vector2(-6, 5)
+texture_offset = Vector2(-6, 4)
 texture_size = Vector2(140, 170)

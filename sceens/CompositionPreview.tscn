@@ -1,14 +1,13 @@
 [gd_scene format=3 uid="uid://ds6lnt50v7h4b"]
 
 [ext_resource type="Script" uid="uid://dmfu6ok84286" path="res://scripts/composition_preview.gd" id="1_preview"]
-[ext_resource type="Resource" path="res://Shelfs/ShelfB/data/shelf_b.tres" id="2_7rext"]
+[ext_resource type="Resource" uid="uid://dhc57hueqoa7f" path="res://Shelfs/ShelfB/data/shelf_b.tres" id="2_7rext"]
 [ext_resource type="PackedScene" uid="uid://chrt8p8hrj4v6" path="res://Shelfs/_shared/sceens/Shelf.tscn" id="2_shelf"]
 [ext_resource type="Script" uid="uid://c0yga88sjc8e7" path="res://scripts/composition_preview_slot.gd" id="4_slot_script"]
 [ext_resource type="Resource" uid="uid://8n815svtusxd" path="res://Plants/Gerbera/data/plant_gerbera.tres" id="5_plant_data"]
 [ext_resource type="Resource" uid="uid://cd6vv47rgnqgq" path="res://Plants/Cactus/data/plant_cactus.tres" id="6_8xwby"]
 [ext_resource type="Resource" uid="uid://vfj2f3piwebi" path="res://Pots/OrangePot/data/pot_orange.tres" id="7_1lydj"]
 [ext_resource type="Resource" uid="uid://b02l4ounb2kyr" path="res://Plants/Sansevieria/data/plant_sansevieria.tres" id="8_r75k2"]
-[ext_resource type="Resource" uid="uid://cygoi83vimm71" path="res://Pots/DefaultPot/data/pot_default.tres" id="9_8o2jl"]
 
 [sub_resource type="Resource" id="Resource_slot0"]
 script = ExtResource("4_slot_script")
@@ -18,20 +17,20 @@ plant_definition = ExtResource("5_plant_data")
 [sub_resource type="Resource" id="Resource_slot1"]
 script = ExtResource("4_slot_script")
 pot_definition = ExtResource("7_1lydj")
-plant_definition = ExtResource("6_8xwby")
+plant_definition = ExtResource("8_r75k2")
 
 [sub_resource type="Resource" id="Resource_jptxb"]
 script = ExtResource("4_slot_script")
-pot_definition = ExtResource("9_8o2jl")
-plant_definition = ExtResource("8_r75k2")
+pot_definition = ExtResource("7_1lydj")
+plant_definition = ExtResource("6_8xwby")
+
+[sub_resource type="Resource" id="Resource_112nc"]
+script = ExtResource("4_slot_script")
+
+[sub_resource type="Resource" id="Resource_7rext"]
+script = ExtResource("4_slot_script")
 
 [sub_resource type="Resource" id="Resource_8xwby"]
-script = ExtResource("4_slot_script")
-
-[sub_resource type="Resource" id="Resource_1lydj"]
-script = ExtResource("4_slot_script")
-
-[sub_resource type="Resource" id="Resource_r75k2"]
 script = ExtResource("4_slot_script")
 
 [node name="CompositionPreview" type="Control" unique_id=1108040986]
@@ -43,7 +42,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_preview")
 shelf_definition = ExtResource("2_7rext")
-preview_slots = Array[ExtResource("4_slot_script")]([SubResource("Resource_slot0"), SubResource("Resource_slot1"), SubResource("Resource_jptxb"), SubResource("Resource_8xwby"), SubResource("Resource_1lydj"), SubResource("Resource_r75k2")])
+preview_slots = Array[ExtResource("4_slot_script")]([SubResource("Resource_slot0"), SubResource("Resource_slot1"), SubResource("Resource_jptxb"), SubResource("Resource_112nc"), SubResource("Resource_7rext"), SubResource("Resource_8xwby")])
 background_color_hex = "#8baa95"
 
 [node name="Background" type="ColorRect" parent="." unique_id=950405949]

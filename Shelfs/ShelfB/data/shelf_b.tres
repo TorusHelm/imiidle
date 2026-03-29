@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="ShelfDefinition" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="ShelfDefinition" format=3 uid="uid://dhc57hueqoa7f"]
 
-[ext_resource type="Script" path="res://scripts/shelf_definition.gd" id="1_shelf"]
+[ext_resource type="Script" uid="uid://cucjjk2bjbhk4" path="res://scripts/shelf_definition.gd" id="1_shelf"]
 
 [resource]
 script = ExtResource("1_shelf")
@@ -12,4 +12,4 @@ texture_position = Vector2(0, 0)
 texture_size = Vector2(771, 562)
 title_position = Vector2(0, 528)
 title_size = Vector2(771, 24)
-slot_positions = [Vector2(160, 142), Vector2(386, 142), Vector2(610, 142), Vector2(160, 422), Vector2(386, 422), Vector2(610, 422)]
+slot_positions = Array[Vector2]([Vector2(160, 217), Vector2(386, 217), Vector2(610, 217), Vector2(160, 498), Vector2(386, 498), Vector2(610, 498)])
