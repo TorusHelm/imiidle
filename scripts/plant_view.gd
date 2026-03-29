@@ -17,6 +17,7 @@ func show_plant(plant: PlantInstance) -> void:
 		show_empty()
 		return
 
+	_apply_definition_layout(plant.definition)
 	plant_texture.visible = true
 	plant_texture.texture = load(plant.definition.texture_path) if not plant.definition.texture_path.is_empty() else null
 	plant_texture.modulate = plant.definition.display_color
@@ -30,3 +31,14 @@ func show_plant(plant: PlantInstance) -> void:
 
 	tooltip_text = "%s\n%s\n%s" % [plant.definition.display_name, status_text, details_text]
 	plant_texture.tooltip_text = tooltip_text
+
+
+func _apply_definition_layout(definition: PlantDefinition) -> void:
+	if definition == null:
+		return
+
+	position = definition.texture_offset
+	custom_minimum_size = definition.texture_size
+	size = definition.texture_size
+	plant_texture.position = Vector2.ZERO
+	plant_texture.size = definition.texture_size

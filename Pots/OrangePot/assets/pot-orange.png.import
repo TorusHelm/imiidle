@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://clteibl7jgxnt"
-path="res://.godot/imported/plant-sansevieria.png-40a147eb9f3f6b3da4e456d3631c102c.ctex"
+uid="uid://c6fuv2cu5hskd"
+path="res://.godot/imported/pot-orange.png-3fc70aa1232eb737c684b92323a391ba.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/plants/plant-sansevieria.png"
-dest_files=["res://.godot/imported/plant-sansevieria.png-40a147eb9f3f6b3da4e456d3631c102c.ctex"]
+source_file="res://Pots/OrangePot/assets/pot-orange.png"
+dest_files=["res://.godot/imported/pot-orange.png-3fc70aa1232eb737c684b92323a391ba.ctex"]
 
 [params]
 

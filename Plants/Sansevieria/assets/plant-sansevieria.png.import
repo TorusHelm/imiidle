@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cfwjx0jv03cqu"
-path="res://.godot/imported/shelf-two-floor.png-9e2cd2e1babdd3004dbcbbe9739e1068.ctex"
+uid="uid://clteibl7jgxnt"
+path="res://.godot/imported/plant-sansevieria.png-fb053d5576493dbcfbd713af0d50d478.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/shelfs/shelf-two-floor.png"
-dest_files=["res://.godot/imported/shelf-two-floor.png-9e2cd2e1babdd3004dbcbbe9739e1068.ctex"]
+source_file="res://Plants/Sansevieria/assets/plant-sansevieria.png"
+dest_files=["res://.godot/imported/plant-sansevieria.png-fb053d5576493dbcfbd713af0d50d478.ctex"]
 
 [params]
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bk86um2omt3kl"
-path="res://.godot/imported/plant-cactus.png-7a79a473f2ce7ded8b410e5e8a4564d8.ctex"
+uid="uid://ixg7qjnpdyc2"
+path="res://.godot/imported/pot-default.png-1a89bb1e10bebd4afc912b7d9c2455c3.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/plants/plant-cactus.png"
-dest_files=["res://.godot/imported/plant-cactus.png-7a79a473f2ce7ded8b410e5e8a4564d8.ctex"]
+source_file="res://Pots/DefaultPot/assets/pot-default.png"
+dest_files=["res://.godot/imported/pot-default.png-1a89bb1e10bebd4afc912b7d9c2455c3.ctex"]
 
 [params]
 

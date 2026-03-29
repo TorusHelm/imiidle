@@ -1,7 +1,6 @@
 [gd_scene format=3 uid="uid://chrt8p8hrj4v6"]
 
 [ext_resource type="Script" uid="uid://4bs1nkthtrjh" path="res://scripts/shelf_view.gd" id="1_5y27c"]
-[ext_resource type="Texture2D" uid="uid://cd5im7630llp2" path="res://assets/shelfs/shelf-default.png" id="2_khl7n"]
 [ext_resource type="Script" uid="uid://c3iu55gousea8" path="res://scripts/shelf_slot_marker.gd" id="3_7qvui"]
 
 [node name="Shelf" type="Control" unique_id=1424021836]
@@ -17,7 +16,6 @@ offset_left = 64.0
 offset_top = 198.0
 offset_right = 636.0
 offset_bottom = 252.0
-texture = ExtResource("2_khl7n")
 expand_mode = 1
 stretch_mode = 5
 

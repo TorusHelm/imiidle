@@ -1,10 +1,7 @@
 [gd_scene format=3 uid="uid://cyxm86es2rekc"]
 
-[ext_resource type="PackedScene" uid="uid://jqsl7rrtvqmt" path="res://sceens/Plant.tscn" id="1_b3lk0"]
+[ext_resource type="PackedScene" uid="uid://jqsl7rrtvqmt" path="res://Plants/_shared/sceens/Plant.tscn" id="1_b3lk0"]
 [ext_resource type="Script" uid="uid://d2mx4eqpirxoj" path="res://scripts/pot_view.gd" id="2_447lc"]
-
-[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_dbo30"]
-load_path = "res://.godot/imported/pot-default.png-cdd777727358179efa170b6020939042.ctex"
 
 [node name="Pot" type="Control" unique_id=2064265332]
 layout_mode = 3
@@ -63,7 +60,6 @@ offset_left = 50.0
 offset_top = 190.0
 offset_right = 170.0
 offset_bottom = 300.00003
-texture = SubResource("CompressedTexture2D_dbo30")
 expand_mode = 1
 stretch_mode = 5
 

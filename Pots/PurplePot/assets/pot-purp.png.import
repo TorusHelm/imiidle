@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cd5im7630llp2"
-path="res://.godot/imported/shelf-default.png-7b980339843dd142594a06d7fb592d64.ctex"
+uid="uid://ckobqs1lu3nxp"
+path="res://.godot/imported/pot-purp.png-bcbeed55dc1610c1ebdba925782ebf90.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/shelfs/shelf-default.png"
-dest_files=["res://.godot/imported/shelf-default.png-7b980339843dd142594a06d7fb592d64.ctex"]
+source_file="res://Pots/PurplePot/assets/pot-purp.png"
+dest_files=["res://.godot/imported/pot-purp.png-bcbeed55dc1610c1ebdba925782ebf90.ctex"]
 
 [params]
 

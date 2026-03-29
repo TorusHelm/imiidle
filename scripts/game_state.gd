@@ -1,6 +1,7 @@
 class_name GameState
 extends RefCounted
 
+const DEFAULT_CATALOG: GameCatalog = preload("res://data/catalogs/default_catalog.tres")
 
 var coins := 0.0
 var experience := 0.0
@@ -8,67 +9,14 @@ var seed_inventory: Dictionary = {}
 var plant_definitions: Dictionary = {}
 var pot_inventory: Dictionary = {}
 var pot_definitions: Dictionary = {}
+var shelf_definitions: Dictionary = {}
+var active_shelf_definition: ShelfDefinition
 var shelf_slots: Array = []
 var growth_system := GrowthSystem.new()
 
 
 func _init() -> void:
-	var pothos := PlantDefinition.new()
-	pothos.id = "pothos"
-	pothos.display_name = "Sansevieria"
-	pothos.growth_duration = 8.0
-	pothos.coins_per_second = 1.0
-	pothos.display_color = Color(0.286275, 0.717647, 0.341176, 1)
-	pothos.texture_path = "res://assets/plants/plant-sansevieria.png"
-
-	var monstera := PlantDefinition.new()
-	monstera.id = "gerbera"
-	monstera.display_name = "Gerbera"
-	monstera.growth_duration = 12.0
-	monstera.coins_per_second = 1.6
-	monstera.display_color = Color(0.164706, 0.6, 0.270588, 1)
-	monstera.texture_path = "res://assets/plants/plant-gerbera.png"
-
-	var cactus := PlantDefinition.new()
-	cactus.id = "cactus"
-	cactus.display_name = "Cactus"
-	cactus.growth_duration = 6.0
-	cactus.coins_per_second = 0.8
-	cactus.display_color = Color(0.278431, 0.631373, 0.321569, 1)
-	cactus.texture_path = "res://assets/plants/plant-cactus.png"
-
-	plant_definitions[pothos.id] = pothos
-	plant_definitions[monstera.id] = monstera
-	plant_definitions[cactus.id] = cactus
-
-	seed_inventory[pothos.id] = 1
-	seed_inventory[monstera.id] = 1
-	seed_inventory[cactus.id] = 1
-
-	var default_pot := PotDefinition.new()
-	default_pot.id = "default_pot"
-	default_pot.display_name = "Clay Pot"
-	default_pot.texture_path = "res://assets/pots/pot-default.png"
-
-	var orange_pot := PotDefinition.new()
-	orange_pot.id = "orange_pot"
-	orange_pot.display_name = "Orange Pot"
-	orange_pot.texture_path = "res://assets/pots/pot-orange.png"
-
-	var purple_pot := PotDefinition.new()
-	purple_pot.id = "purple_pot"
-	purple_pot.display_name = "Purple Pot"
-	purple_pot.texture_path = "res://assets/pots/pot-purp.png"
-
-	pot_definitions[default_pot.id] = default_pot
-	pot_definitions[orange_pot.id] = orange_pot
-	pot_definitions[purple_pot.id] = purple_pot
-
-	pot_inventory[default_pot.id] = 1
-	pot_inventory[orange_pot.id] = 1
-	pot_inventory[purple_pot.id] = 1
-
-	ensure_shelf_slot_capacity(3)
+	_load_catalog(DEFAULT_CATALOG)
 
 
 func ensure_shelf_slot_capacity(slot_count: int) -> void:
@@ -211,6 +159,10 @@ func get_pot_in_slot(slot_index: int) -> PotInstance:
 	return shelf_slots[slot_index]
 
 
+func get_active_shelf_definition() -> ShelfDefinition:
+	return active_shelf_definition
+
+
 func tick(delta: float) -> void:
 	for pot in shelf_slots:
 		if pot == null or pot.active_plant == null:
@@ -220,3 +172,43 @@ func tick(delta: float) -> void:
 
 func _is_valid_slot_index(slot_index: int) -> bool:
 	return slot_index >= 0 and slot_index < shelf_slots.size()
+
+
+func _load_catalog(catalog: GameCatalog) -> void:
+	plant_definitions.clear()
+	pot_definitions.clear()
+	shelf_definitions.clear()
+	seed_inventory.clear()
+	pot_inventory.clear()
+	active_shelf_definition = null
+
+	if catalog == null:
+		ensure_shelf_slot_capacity(0)
+		return
+
+	for definition in catalog.plant_definitions:
+		if definition == null or definition.id.is_empty():
+			continue
+		plant_definitions[definition.id] = definition
+
+	for definition in catalog.pot_definitions:
+		if definition == null or definition.id.is_empty():
+			continue
+		pot_definitions[definition.id] = definition
+
+	for definition in catalog.shelf_definitions:
+		if definition == null or definition.id.is_empty():
+			continue
+		shelf_definitions[definition.id] = definition
+
+	for seed_id in catalog.starting_seed_inventory.keys():
+		seed_inventory[seed_id] = int(catalog.starting_seed_inventory[seed_id])
+
+	for pot_id in catalog.starting_pot_inventory.keys():
+		pot_inventory[pot_id] = int(catalog.starting_pot_inventory[pot_id])
+
+	active_shelf_definition = shelf_definitions.get(catalog.active_shelf_id)
+	if active_shelf_definition == null and not catalog.shelf_definitions.is_empty():
+		active_shelf_definition = catalog.shelf_definitions[0]
+
+	ensure_shelf_slot_capacity(active_shelf_definition.slot_positions.size() if active_shelf_definition != null else 0)

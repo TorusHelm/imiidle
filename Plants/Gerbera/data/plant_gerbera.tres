@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="PlantDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/plant_definition.gd" id="1_plant"]
+
+[resource]
+script = ExtResource("1_plant")
+id = "gerbera"
+display_name = "Gerbera"
+growth_duration = 12.0
+coins_per_second = 1.6
+display_color = Color(0.164706, 0.6, 0.270588, 1)
+texture_path = "res://Plants/Gerbera/assets/plant-gerbera.png"
+texture_offset = Vector2(0, 0)
+texture_size = Vector2(160, 190)

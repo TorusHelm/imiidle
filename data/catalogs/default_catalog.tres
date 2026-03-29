@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="GameCatalog" load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://scripts/game_catalog.gd" id="1_catalog"]
+[ext_resource type="Resource" path="res://Plants/Sansevieria/data/plant_sansevieria.tres" id="2_plant"]
+[ext_resource type="Resource" path="res://Plants/Gerbera/data/plant_gerbera.tres" id="3_plant"]
+[ext_resource type="Resource" path="res://Plants/Cactus/data/plant_cactus.tres" id="4_plant"]
+[ext_resource type="Resource" path="res://Pots/DefaultPot/data/pot_default.tres" id="5_pot"]
+[ext_resource type="Resource" path="res://Pots/OrangePot/data/pot_orange.tres" id="6_pot"]
+[ext_resource type="Resource" path="res://Pots/PurplePot/data/pot_purple.tres" id="7_pot"]
+[ext_resource type="Resource" path="res://Shelfs/ShelfA/data/shelf_a.tres" id="8_shelf"]
+[ext_resource type="Resource" path="res://Shelfs/ShelfB/data/shelf_b.tres" id="9_shelf"]
+
+[resource]
+script = ExtResource("1_catalog")
+plant_definitions = [ExtResource("2_plant"), ExtResource("3_plant"), ExtResource("4_plant")]
+pot_definitions = [ExtResource("5_pot"), ExtResource("6_pot"), ExtResource("7_pot")]
+shelf_definitions = [ExtResource("8_shelf"), ExtResource("9_shelf")]
+active_shelf_id = "shelf_a"
+starting_seed_inventory = {
+"cactus": 1,
+"gerbera": 1,
+"pothos": 1
+}
+starting_pot_inventory = {
+"default_pot": 1,
+"orange_pot": 1,
+"purple_pot": 1
+}

@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/game_screen.gd" id="1_s8r8u"]
-[ext_resource type="PackedScene" uid="uid://chrt8p8hrj4v6" path="res://sceens/Shelf.tscn" id="2_r3bh2"]
+[ext_resource type="PackedScene" uid="uid://chrt8p8hrj4v6" path="res://Shelfs/_shared/sceens/Shelf.tscn" id="2_r3bh2"]
 [ext_resource type="Script" path="res://scripts/seed_modal.gd" id="3_3ui8b"]
 [ext_resource type="Script" path="res://scripts/pot_modal.gd" id="4_qk2u3"]
 

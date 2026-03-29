@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ShelfDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/shelf_definition.gd" id="1_shelf"]
+
+[resource]
+script = ExtResource("1_shelf")
+id = "shelf_b"
+display_name = "Shelf B"
+texture_path = "res://Shelfs/ShelfB/assets/shelf-two-floor.png"
+view_size = Vector2(771, 562)
+texture_position = Vector2(0, 0)
+texture_size = Vector2(771, 562)
+title_position = Vector2(0, 528)
+title_size = Vector2(771, 24)
+slot_positions = [Vector2(160, 142), Vector2(386, 142), Vector2(610, 142), Vector2(160, 422), Vector2(386, 422), Vector2(610, 422)]

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://kpbbgioh6tgn"
-path="res://.godot/imported/plant-gerbera.png-adb5e3b1834a143dc8d55f8aaa2fa24a.ctex"
+uid="uid://cd5im7630llp2"
+path="res://.godot/imported/shelf-default.png-2b10947a450f45564c8e2207cf0c63e3.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/plants/plant-gerbera.png"
-dest_files=["res://.godot/imported/plant-gerbera.png-adb5e3b1834a143dc8d55f8aaa2fa24a.ctex"]
+source_file="res://Shelfs/ShelfA/assets/shelf-default.png"
+dest_files=["res://.godot/imported/shelf-default.png-2b10947a450f45564c8e2207cf0c63e3.ctex"]
 
 [params]
 

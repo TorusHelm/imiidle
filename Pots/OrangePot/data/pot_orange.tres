@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="PotDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/pot_definition.gd" id="1_pot"]
+
+[resource]
+script = ExtResource("1_pot")
+id = "orange_pot"
+display_name = "Orange Pot"
+texture_path = "res://Pots/OrangePot/assets/pot-orange.png"
+view_size = Vector2(220, 332)
+pot_texture_position = Vector2(42, 182)
+pot_texture_size = Vector2(136, 126)
+plant_view_position = Vector2(24, 4)
+plant_view_size = Vector2(172, 184)
+seed_button_position = Vector2(62, 226)
+seed_button_size = Vector2(96, 38)
+slot_button_position = Vector2(30, 172)
+slot_button_size = Vector2(160, 120)
+slot_label_position = Vector2(18, 206)
+slot_label_size = Vector2(184, 52)
+plant_attach_point = Vector2(110, 182)
+pot_baseline = Vector2(110, 308)

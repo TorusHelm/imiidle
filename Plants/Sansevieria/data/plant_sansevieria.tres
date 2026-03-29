@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="PlantDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/plant_definition.gd" id="1_plant"]
+
+[resource]
+script = ExtResource("1_plant")
+id = "pothos"
+display_name = "Sansevieria"
+growth_duration = 8.0
+coins_per_second = 1.0
+display_color = Color(0.286275, 0.717647, 0.341176, 1)
+texture_path = "res://Plants/Sansevieria/assets/plant-sansevieria.png"
+texture_offset = Vector2(6, 18)
+texture_size = Vector2(140, 170)

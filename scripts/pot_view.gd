@@ -35,6 +35,9 @@ func get_plant_attach_local_position() -> Vector2:
 
 
 func update_view(pot_instance: PotInstance, can_place_pot: bool, can_plant_seed: bool) -> void:
+	var pot_definition: PotDefinition = pot_instance.definition if pot_instance != null else null
+	_apply_definition_layout(pot_definition)
+
 	if pot_instance == null:
 		slot_button.visible = true
 		slot_button.disabled = not can_place_pot
@@ -87,3 +90,24 @@ func _on_seed_button_pressed() -> void:
 
 func _on_slot_button_pressed() -> void:
 	pot_button_pressed.emit(slot_index)
+
+
+func _apply_definition_layout(definition: PotDefinition) -> void:
+	if definition == null:
+		return
+
+	custom_minimum_size = definition.view_size
+	size = definition.view_size
+	pot_texture.position = definition.pot_texture_position
+	pot_texture.size = definition.pot_texture_size
+	plant_view.position = definition.plant_view_position
+	plant_view.custom_minimum_size = definition.plant_view_size
+	plant_view.size = definition.plant_view_size
+	seed_button.position = definition.seed_button_position
+	seed_button.size = definition.seed_button_size
+	slot_button.position = definition.slot_button_position
+	slot_button.size = definition.slot_button_size
+	slot_label.position = definition.slot_label_position
+	slot_label.size = definition.slot_label_size
+	get_node("PlantAttachPoint").position = definition.plant_attach_point
+	get_node("PotBaseline").position = definition.pot_baseline

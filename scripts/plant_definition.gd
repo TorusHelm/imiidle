@@ -8,3 +8,5 @@ extends Resource
 @export var coins_per_second := 1.0
 @export var display_color := Color(0.247059, 0.639216, 0.301961, 1)
 @export_file("*.png") var texture_path := ""
+@export var texture_offset := Vector2.ZERO
+@export var texture_size := Vector2(160.0, 190.0)

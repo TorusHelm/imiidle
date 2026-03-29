@@ -13,6 +13,7 @@ var game_state := GameState.new()
 
 
 func _ready() -> void:
+	shelf_view.configure(game_state.get_active_shelf_definition())
 	game_state.ensure_shelf_slot_capacity(shelf_view.get_slot_count())
 	_refresh_ui()
 
