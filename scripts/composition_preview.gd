@@ -128,7 +128,7 @@ func _ensure_preview_slot_capacity() -> void:
 	if shelf_definition == null:
 		return
 
-	var expected_size := shelf_definition.slot_positions.size()
+	var expected_size := shelf_definition.get_slot_count()
 	if preview_slots.size() == expected_size:
 		return
 
@@ -217,11 +217,15 @@ func _draw_pot_guides() -> void:
 		return
 
 	var pot_rect := Rect2(shelf_view.position + pot_view.position, pot_view.size)
+	var slot_rect := Rect2(shelf_view.position + pot_view.position + pot_view.get_slot_footprint_local_rect().position, pot_view.get_slot_footprint_local_rect().size)
 	var baseline_local: Vector2 = pot_view.get_pot_baseline_local_position()
 	var baseline_y: float = pot_rect.position.y + baseline_local.y
 	var baseline_center_x: float = pot_rect.position.x + baseline_local.x
 	var plant_rect := Rect2(pot_rect.position + pot_view.plant_view.position, pot_view.plant_view.size)
 	var label_font: Font = ThemeDB.fallback_font
+
+	draw_rect(slot_rect, Color(1.0, 0.8, 0.2, 0.12), true)
+	draw_rect(slot_rect, Color(1.0, 0.8, 0.2, 0.75), false, 2.0)
 
 	draw_rect(pot_rect, Color(0.4, 0.75, 1.0, 0.12), true)
 	draw_rect(pot_rect, Color(0.4, 0.75, 1.0, 0.75), false, 2.0)
@@ -238,6 +242,7 @@ func _draw_pot_guides() -> void:
 	draw_circle(Vector2(baseline_center_x, baseline_y), 5.0, Color(1.0, 0.4, 0.4, 1.0))
 
 	if label_font != null:
+		draw_string(label_font, slot_rect.position + Vector2(0, -10), "slot footprint", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(1.0, 0.85, 0.45, 1.0))
 		draw_string(label_font, pot_rect.position + Vector2(0, -10), "pot bounds", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(0.7, 0.9, 1.0, 1.0))
 		draw_string(label_font, plant_rect.position + Vector2(0, -10), "plant view", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(0.6, 1.0, 0.7, 1.0))
 		draw_string(label_font, Vector2(baseline_center_x + 10.0, baseline_y - 8.0), "baseline", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(1.0, 0.55, 0.55, 1.0))

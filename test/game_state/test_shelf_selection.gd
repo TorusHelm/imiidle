@@ -18,5 +18,5 @@ func test_place_shelf_consumes_inventory_and_builds_slots() -> void:
 	assert_true(placed, "Expected shelf placement to succeed.")
 	assert_eq(game_state.get_active_shelf_definition().id, "shelf_b", "Placed shelf should become active.")
 	assert_eq(game_state.get_shelf_count("shelf_b"), 0, "Placed shelf should be removed from inventory.")
-	assert_eq(game_state.shelf_slots.size(), game_state.get_active_shelf_definition().slot_positions.size(), "Shelf slots should match the selected shelf.")
+	assert_eq(game_state.shelf_slots.size(), game_state.get_active_shelf_definition().get_slot_count(), "Shelf slots should match the selected shelf.")
 	assert_false(game_state.can_place_shelf("shelf_a"), "Another shelf should not be placeable once one is active.")

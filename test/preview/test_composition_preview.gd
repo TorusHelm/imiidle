@@ -47,14 +47,14 @@ func test_changing_shelf_definition_rebuilds_preview_with_target_shelf() -> void
 	await wait_process_frames(2)
 
 	var shelf_view: ShelfView = preview.get_node("ShelfView")
-	assert_eq(shelf_view.get_slot_count(), SHELF_B.slot_positions.size(), "Preview should start with Shelf B slot count.")
+	assert_eq(shelf_view.get_slot_count(), SHELF_B.get_slot_count(), "Preview should start with Shelf B slot count.")
 	assert_eq(shelf_view.get_node("ShelfTitle").text, SHELF_B.display_name, "Preview should start with Shelf B title.")
 
 	preview.shelf_definition = SHELF_A
 	preview._refresh_preview()
 	await wait_process_frames(2)
 
-	assert_eq(shelf_view.get_slot_count(), SHELF_A.slot_positions.size(), "Preview should rebuild slot count after switching shelf definition.")
+	assert_eq(shelf_view.get_slot_count(), SHELF_A.get_slot_count(), "Preview should rebuild slot count after switching shelf definition.")
 	assert_eq(shelf_view.get_node("ShelfTitle").text, SHELF_A.display_name, "Preview should display the selected shelf title after switching.")
 
 	var first_pot_view: PotView = shelf_view.get_pot_view(0)

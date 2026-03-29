@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" uid="uid://4bs1nkthtrjh" path="res://scripts/shelf_view.gd" id="1_5y27c"]
 [ext_resource type="Resource" uid="uid://dw7p7gin6ryap" path="res://Shelfs/ShelfA/data/shelf_a.tres" id="2_luqdx"]
-[ext_resource type="Script" uid="uid://c3iu55gousea8" path="res://scripts/shelf_slot_marker.gd" id="3_7qvui"]
 [ext_resource type="Resource" uid="uid://cygoi83vimm71" path="res://Pots/DefaultPot/data/pot_default.tres" id="3_yts6t"]
 [ext_resource type="Resource" uid="uid://8n815svtusxd" path="res://Plants/Gerbera/data/plant_gerbera.tres" id="4_plant"]
 [ext_resource type="Texture2D" uid="uid://cd5im7630llp2" path="res://Shelfs/ShelfA/assets/shelf-default.png" id="5_asejt"]
@@ -37,15 +36,3 @@ text = "Shelf A"
 horizontal_alignment = 1
 
 [node name="SlotsRoot" type="Node2D" parent="." unique_id=1517078579]
-
-[node name="SlotMarker0" type="Marker2D" parent="SlotsRoot" unique_id=808226034]
-position = Vector2(180, 202)
-script = ExtResource("3_7qvui")
-
-[node name="SlotMarker1" type="Marker2D" parent="SlotsRoot" unique_id=1438039084]
-position = Vector2(350, 202)
-script = ExtResource("3_7qvui")
-
-[node name="SlotMarker2" type="Marker2D" parent="SlotsRoot" unique_id=538087709]
-position = Vector2(520, 202)
-script = ExtResource("3_7qvui")

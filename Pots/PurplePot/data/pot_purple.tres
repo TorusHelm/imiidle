@@ -1,12 +1,14 @@
 [gd_resource type="Resource" script_class="PotDefinition" format=3 uid="uid://0m8tp443pwtk"]
 
 [ext_resource type="Script" uid="uid://d3a0qsl3v5l53" path="res://scripts/pot_definition.gd" id="1_pot"]
+[ext_resource type="Resource" path="res://Game/data/default_slot_layout_metrics.tres" id="2_metrics"]
 
 [resource]
 script = ExtResource("1_pot")
 id = "purple_pot"
 display_name = "Purple Pot"
 texture_path = "res://Pots/PurplePot/assets/pot-purp.png"
+slot_layout_metrics = ExtResource("2_metrics")
 view_size = Vector2(232, 312)
 pot_texture_position = Vector2(46, 193)
 pot_texture_size = Vector2(140, 102)

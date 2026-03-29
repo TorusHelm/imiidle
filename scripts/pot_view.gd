@@ -30,6 +30,7 @@ signal pot_button_pressed(slot_index: int)
 
 
 var slot_index := -1
+var _current_definition: PotDefinition = null
 
 
 @onready var slot_button: Button = $SlotButton
@@ -65,6 +66,14 @@ func get_pot_baseline_local_position() -> Vector2:
 func get_plant_attach_local_position() -> Vector2:
 	var marker: Marker2D = get_node("PlantAttachPoint")
 	return marker.position
+
+
+func get_slot_footprint_local_rect() -> Rect2:
+	if _current_definition != null:
+		return _current_definition.get_slot_footprint_local_rect()
+
+	var marker: Marker2D = get_node("PotBaseline")
+	return Rect2(marker.position + Vector2(-85.0, -202.0), Vector2(170.0, 281.0))
 
 
 func update_view(pot_instance: PotInstance, can_place_pot: bool, can_plant_seed: bool) -> void:
@@ -127,8 +136,10 @@ func _on_slot_button_pressed() -> void:
 
 func _apply_definition_layout(definition: PotDefinition) -> void:
 	if definition == null:
+		_current_definition = null
 		return
 
+	_current_definition = definition
 	custom_minimum_size = definition.view_size
 	size = definition.view_size
 	pot_texture.position = definition.pot_texture_position
@@ -182,6 +193,9 @@ func _connect_pot_resource(definition: PotDefinition) -> void:
 		return
 	if not definition.changed.is_connected(_on_preview_resource_changed):
 		definition.changed.connect(_on_preview_resource_changed)
+	var slot_metrics := definition.get_slot_layout_metrics()
+	if slot_metrics != null and not slot_metrics.changed.is_connected(_on_preview_resource_changed):
+		slot_metrics.changed.connect(_on_preview_resource_changed)
 
 
 func _disconnect_pot_resource(definition: PotDefinition) -> void:
@@ -189,6 +203,9 @@ func _disconnect_pot_resource(definition: PotDefinition) -> void:
 		return
 	if definition.changed.is_connected(_on_preview_resource_changed):
 		definition.changed.disconnect(_on_preview_resource_changed)
+	var slot_metrics := definition.get_slot_layout_metrics()
+	if slot_metrics != null and slot_metrics.changed.is_connected(_on_preview_resource_changed):
+		slot_metrics.changed.disconnect(_on_preview_resource_changed)
 
 
 func _connect_plant_resource(definition: PlantDefinition) -> void:

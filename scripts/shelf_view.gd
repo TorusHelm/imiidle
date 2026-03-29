@@ -40,6 +40,12 @@ const POT_VIEW_SCENE := preload("res://Pots/_shared/sceens/Pot.tscn")
 		use_internal_preview = value
 		_queue_preview_refresh()
 
+@export_group("Editor Guides")
+@export var show_slot_guides_in_editor := true:
+	set(value):
+		show_slot_guides_in_editor = value
+		queue_redraw()
+
 
 var _pot_views: Array[PotView] = []
 var _current_shelf_id := ""
@@ -64,6 +70,17 @@ func _process(_delta: float) -> void:
 		_refresh_preview()
 
 
+func _draw() -> void:
+	if not Engine.is_editor_hint():
+		return
+	if not show_slot_guides_in_editor:
+		return
+	if preview_shelf_definition == null:
+		return
+
+	_draw_slot_guides(preview_shelf_definition)
+
+
 func update_view(game_state: GameState) -> void:
 	configure(game_state.get_active_shelf_definition())
 
@@ -79,6 +96,9 @@ func update_view(game_state: GameState) -> void:
 
 func preview(shelf_definition: ShelfDefinition, pot_definition: PotDefinition, plant_definition: PlantDefinition, preview_slot_index := 0) -> void:
 	configure(shelf_definition)
+	if not _are_slot_views_ready():
+		_queue_preview_refresh()
+		return
 
 	for index in _pot_views.size():
 		var pot_instance: PotInstance = null
@@ -94,6 +114,9 @@ func preview(shelf_definition: ShelfDefinition, pot_definition: PotDefinition, p
 
 func preview_slots(shelf_definition: ShelfDefinition, slot_previews: Array[CompositionPreviewSlot]) -> void:
 	configure(shelf_definition)
+	if not _are_slot_views_ready():
+		_queue_preview_refresh()
+		return
 
 	for index in _pot_views.size():
 		var pot_instance: PotInstance = null
@@ -134,10 +157,12 @@ func configure(definition: ShelfDefinition) -> void:
 	if definition == null:
 		return
 
-	var needs_rebuild := _current_shelf_id != definition.id or _pot_views.size() != definition.slot_positions.size()
+	var resolved_slot_positions := definition.get_slot_positions()
+	var needs_rebuild := _current_shelf_id != definition.id or _pot_views.size() != definition.get_slot_count()
 	_current_shelf_id = definition.id
-	_slot_positions = definition.slot_positions.duplicate()
+	_slot_positions = resolved_slot_positions
 	_apply_definition_layout(definition)
+	queue_redraw()
 
 	if needs_rebuild:
 		_rebuild_slot_views(definition)
@@ -149,12 +174,13 @@ func _rebuild_slot_views(definition: ShelfDefinition) -> void:
 			child.queue_free()
 
 	_pot_views.clear()
+	var resolved_slot_positions := definition.get_slot_positions()
 
-	for index in definition.slot_positions.size():
+	for index in resolved_slot_positions.size():
 		var pot_view: PotView = POT_VIEW_SCENE.instantiate()
 		pot_view.name = "PotView%d" % index
 		pot_view.use_internal_preview = false
-		pot_view.position = definition.slot_positions[index] - pot_view.get_pot_baseline_local_position()
+		pot_view.position = resolved_slot_positions[index] - pot_view.get_pot_baseline_local_position()
 		pot_view.set_slot_index(index)
 		pot_view.pot_button_pressed.connect(_on_pot_button_pressed)
 		pot_view.seed_button_pressed.connect(_on_seed_button_pressed)
@@ -163,8 +189,9 @@ func _rebuild_slot_views(definition: ShelfDefinition) -> void:
 
 
 func _apply_definition_layout(definition: ShelfDefinition) -> void:
-	custom_minimum_size = definition.view_size
-	size = definition.view_size
+	var resolved_view_size := definition.get_resolved_view_size()
+	custom_minimum_size = resolved_view_size
+	size = resolved_view_size
 	shelf_texture.position = definition.texture_position
 	shelf_texture.size = definition.texture_size
 	shelf_texture.texture = load(definition.texture_path) if not definition.texture_path.is_empty() else null
@@ -177,6 +204,13 @@ func _queue_preview_refresh() -> void:
 	if not is_node_ready():
 		return
 	call_deferred("_refresh_preview")
+
+
+func _are_slot_views_ready() -> bool:
+	for pot_view in _pot_views:
+		if pot_view == null or not is_instance_valid(pot_view) or not pot_view.is_node_ready():
+			return false
+	return true
 
 
 func _refresh_preview() -> void:
@@ -192,8 +226,56 @@ func _refresh_preview() -> void:
 	if preview_shelf_definition == null:
 		return
 
-	var safe_slot_index := clampi(preview_slot_index, 0, max(preview_shelf_definition.slot_positions.size() - 1, 0))
+	var safe_slot_index := clampi(preview_slot_index, 0, max(preview_shelf_definition.get_slot_count() - 1, 0))
 	preview(preview_shelf_definition, preview_pot_definition, preview_plant_definition, safe_slot_index)
+	queue_redraw()
+
+
+func _draw_slot_guides(definition: ShelfDefinition) -> void:
+	if definition == null or not definition.use_slot_grid:
+		return
+
+	var slot_size := definition.get_slot_area_size()
+	var slot_anchor := definition.get_slot_anchor_offset()
+	var dash_color := Color(1.0, 0.85, 0.25, 0.95)
+	var fill_color := Color(1.0, 0.85, 0.25, 0.08)
+	var anchor_color := Color(1.0, 0.45, 0.45, 0.95)
+
+	for row in maxi(definition.slot_grid_rows, 0):
+		for column in maxi(definition.slot_grid_columns, 0):
+			var slot_origin := definition.slot_area_origin + Vector2(
+				column * (slot_size.x + definition.slot_area_gap.x),
+				row * (slot_size.y + definition.slot_area_gap.y)
+			)
+			var slot_rect := Rect2(slot_origin, slot_size)
+			var anchor_point := slot_origin + slot_anchor
+			draw_rect(slot_rect, fill_color, true)
+			_draw_dashed_rect(slot_rect, dash_color, 2.0, 10.0, 6.0)
+			draw_circle(anchor_point, 4.0, anchor_color)
+			draw_line(anchor_point + Vector2(-8.0, 0.0), anchor_point + Vector2(8.0, 0.0), anchor_color, 2.0)
+			draw_line(anchor_point + Vector2(0.0, -8.0), anchor_point + Vector2(0.0, 8.0), anchor_color, 2.0)
+
+
+func _draw_dashed_rect(rect: Rect2, color: Color, width: float, dash_length: float, gap_length: float) -> void:
+	_draw_dashed_line(rect.position, Vector2(rect.end.x, rect.position.y), color, width, dash_length, gap_length)
+	_draw_dashed_line(Vector2(rect.end.x, rect.position.y), rect.end, color, width, dash_length, gap_length)
+	_draw_dashed_line(rect.end, Vector2(rect.position.x, rect.end.y), color, width, dash_length, gap_length)
+	_draw_dashed_line(Vector2(rect.position.x, rect.end.y), rect.position, color, width, dash_length, gap_length)
+
+
+func _draw_dashed_line(from: Vector2, to: Vector2, color: Color, width: float, dash_length: float, gap_length: float) -> void:
+	var segment := to - from
+	var total_length := segment.length()
+	if total_length <= 0.0:
+		return
+
+	var direction := segment / total_length
+	var distance := 0.0
+	while distance < total_length:
+		var dash_start := from + direction * distance
+		var dash_end := from + direction * minf(distance + dash_length, total_length)
+		draw_line(dash_start, dash_end, color, width)
+		distance += dash_length + gap_length
 
 
 func _connect_shelf_resource(definition: ShelfDefinition) -> void:
@@ -201,6 +283,9 @@ func _connect_shelf_resource(definition: ShelfDefinition) -> void:
 		return
 	if not definition.changed.is_connected(_on_preview_resource_changed):
 		definition.changed.connect(_on_preview_resource_changed)
+	var slot_metrics := definition.get_slot_layout_metrics()
+	if slot_metrics != null and not slot_metrics.changed.is_connected(_on_preview_resource_changed):
+		slot_metrics.changed.connect(_on_preview_resource_changed)
 
 
 func _disconnect_shelf_resource(definition: ShelfDefinition) -> void:
@@ -208,6 +293,9 @@ func _disconnect_shelf_resource(definition: ShelfDefinition) -> void:
 		return
 	if definition.changed.is_connected(_on_preview_resource_changed):
 		definition.changed.disconnect(_on_preview_resource_changed)
+	var slot_metrics := definition.get_slot_layout_metrics()
+	if slot_metrics != null and slot_metrics.changed.is_connected(_on_preview_resource_changed):
+		slot_metrics.changed.disconnect(_on_preview_resource_changed)
 
 
 func _connect_pot_resource(definition: PotDefinition) -> void:
@@ -215,6 +303,9 @@ func _connect_pot_resource(definition: PotDefinition) -> void:
 		return
 	if not definition.changed.is_connected(_on_preview_resource_changed):
 		definition.changed.connect(_on_preview_resource_changed)
+	var slot_metrics := definition.get_slot_layout_metrics()
+	if slot_metrics != null and not slot_metrics.changed.is_connected(_on_preview_resource_changed):
+		slot_metrics.changed.connect(_on_preview_resource_changed)
 
 
 func _disconnect_pot_resource(definition: PotDefinition) -> void:
@@ -222,6 +313,9 @@ func _disconnect_pot_resource(definition: PotDefinition) -> void:
 		return
 	if definition.changed.is_connected(_on_preview_resource_changed):
 		definition.changed.disconnect(_on_preview_resource_changed)
+	var slot_metrics := definition.get_slot_layout_metrics()
+	if slot_metrics != null and slot_metrics.changed.is_connected(_on_preview_resource_changed):
+		slot_metrics.changed.disconnect(_on_preview_resource_changed)
 
 
 func _connect_plant_resource(definition: PlantDefinition) -> void:

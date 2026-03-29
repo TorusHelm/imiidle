@@ -191,7 +191,7 @@ func place_shelf(shelf_id: String) -> bool:
 
 	shelf_inventory[shelf_id] = get_shelf_count(shelf_id) - 1
 	active_shelf_definition = definition
-	ensure_shelf_slot_capacity(active_shelf_definition.slot_positions.size())
+	ensure_shelf_slot_capacity(active_shelf_definition.get_slot_count())
 	return true
 
 
@@ -276,4 +276,4 @@ func _load_catalog(catalog: GameCatalog) -> void:
 
 	background_color_hex = catalog.background_color_hex
 
-	ensure_shelf_slot_capacity(active_shelf_definition.slot_positions.size() if active_shelf_definition != null else 0)
+	ensure_shelf_slot_capacity(active_shelf_definition.get_slot_count() if active_shelf_definition != null else 0)
