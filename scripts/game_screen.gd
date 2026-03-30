@@ -4,11 +4,14 @@ extends Control
 var game_state := GameState.new()
 var _view_offset := Vector2.ZERO
 var _is_panning := false
+var _zoom_level := 1.0
 
 @export_group("World Navigation")
 @export var pan_screen_span := Vector2(2.0, 2.0)
-@export_range(8.0, 256.0, 1.0) var wheel_pan_step := 96.0
 @export_range(0.1, 4.0, 0.1) var drag_pan_multiplier := 1.0
+@export_range(0.1, 4.0, 0.05) var min_zoom := 0.8
+@export_range(0.1, 4.0, 0.05) var max_zoom := 1.6
+@export_range(0.01, 1.0, 0.01) var wheel_zoom_step := 0.1
 
 @onready var coins_value_label: Label = %CoinsValueLabel
 @onready var experience_value_label: Label = %ExperienceValueLabel
@@ -26,7 +29,8 @@ var _is_panning := false
 
 func _ready() -> void:
 	_connect_ui_signals()
-	_apply_world_offset()
+	_clamp_zoom_level()
+	_apply_world_transform()
 	_refresh_ui()
 
 
@@ -40,7 +44,7 @@ func _notification(what: int) -> void:
 		if not is_node_ready():
 			return
 		_clamp_view_offset()
-		_apply_world_offset()
+		_apply_world_transform()
 		_position_world_content()
 
 
@@ -68,15 +72,15 @@ func _input(event: InputEvent) -> void:
 			return
 
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			_pan_view(Vector2.RIGHT if Input.is_key_pressed(KEY_SHIFT) else Vector2.DOWN)
+			_zoom_view(1.0)
 			get_viewport().set_input_as_handled()
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			_pan_view(Vector2.LEFT if Input.is_key_pressed(KEY_SHIFT) else Vector2.UP)
+			_zoom_view(-1.0)
 			get_viewport().set_input_as_handled()
 	elif event is InputEventMouseMotion and _is_panning:
 		_view_offset += event.relative * drag_pan_multiplier
 		_clamp_view_offset()
-		_apply_world_offset()
+		_apply_world_transform()
 		get_viewport().set_input_as_handled()
 
 
@@ -145,26 +149,36 @@ func _can_pan_view() -> bool:
 	return not seed_modal.visible and not pot_modal.visible and not shelf_modal.visible
 
 
-func _pan_view(direction: Vector2) -> void:
-	_view_offset += direction * wheel_pan_step
+func _zoom_view(direction: float) -> void:
+	_zoom_level += direction * wheel_zoom_step
+	_clamp_zoom_level()
 	_clamp_view_offset()
-	_apply_world_offset()
+	_apply_world_transform()
 
 
 func _clamp_view_offset() -> void:
 	var viewport_size := get_viewport_rect().size
+	var effective_pan_span := pan_screen_span * _zoom_level
 	var max_offset := Vector2(
-		maxf(viewport_size.x * maxf(pan_screen_span.x - 1.0, 0.0) * 0.5, 0.0),
-		maxf(viewport_size.y * maxf(pan_screen_span.y - 1.0, 0.0) * 0.5, 0.0)
+		maxf(viewport_size.x * maxf(effective_pan_span.x - 1.0, 0.0) * 0.5, 0.0),
+		maxf(viewport_size.y * maxf(effective_pan_span.y - 1.0, 0.0) * 0.5, 0.0)
 	)
 	_view_offset.x = clampf(_view_offset.x, -max_offset.x, max_offset.x)
 	_view_offset.y = clampf(_view_offset.y, -max_offset.y, max_offset.y)
 
 
-func _apply_world_offset() -> void:
+func _clamp_zoom_level() -> void:
+	var zoom_min := minf(min_zoom, max_zoom)
+	var zoom_max := maxf(min_zoom, max_zoom)
+	_zoom_level = clampf(_zoom_level, zoom_min, zoom_max)
+
+
+func _apply_world_transform() -> void:
 	if world_root == null:
 		return
+	world_root.pivot_offset = get_viewport_rect().size * 0.5
 	world_root.position = _view_offset
+	world_root.scale = Vector2.ONE * _zoom_level
 
 
 func _connect_ui_signals() -> void:

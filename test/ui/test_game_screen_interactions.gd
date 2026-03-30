@@ -53,6 +53,47 @@ func test_clicking_empty_pot_slot_opens_pot_modal() -> void:
 	assert_true(pot_modal.visible, "Clicking an empty pot slot should open the pot modal.")
 
 
+func test_mouse_wheel_zooms_world_without_changing_pan_offset() -> void:
+	var game: Control = add_child_autofree(GAME_SCENE.instantiate())
+	await wait_process_frames(3)
+
+	game._on_shelf_selected("shelf_a")
+	await wait_process_frames(3)
+
+	var world_root: Control = game.get_node("%WorldRoot")
+	var initial_position := world_root.position
+
+	_scroll_wheel(game, MOUSE_BUTTON_WHEEL_UP)
+	await wait_process_frames(3)
+
+	assert_eq(world_root.position, initial_position, "Mouse wheel zoom should not change world pan offset.")
+	assert_almost_eq(world_root.scale.x, 1.1, 0.001, "Mouse wheel up should zoom the world in.")
+	assert_almost_eq(world_root.scale.y, 1.1, 0.001, "World scale should stay uniform after zoom in.")
+
+
+func test_mouse_wheel_zoom_respects_min_and_max_limits() -> void:
+	var game: Control = add_child_autofree(GAME_SCENE.instantiate())
+	await wait_process_frames(3)
+
+	game._on_shelf_selected("shelf_a")
+	await wait_process_frames(3)
+
+	var world_root: Control = game.get_node("%WorldRoot")
+
+	for _index in range(20):
+		_scroll_wheel(game, MOUSE_BUTTON_WHEEL_UP)
+	await wait_process_frames(3)
+
+	assert_almost_eq(world_root.scale.x, 1.6, 0.001, "Zoom in should stop at the configured maximum scale.")
+
+	for _index in range(20):
+		_scroll_wheel(game, MOUSE_BUTTON_WHEEL_DOWN)
+	await wait_process_frames(3)
+
+	assert_almost_eq(world_root.scale.x, 0.8, 0.001, "Zoom out should stop at the configured minimum scale.")
+	assert_almost_eq(world_root.scale.y, 0.8, 0.001, "World scale should stay uniform at minimum zoom.")
+
+
 func test_emitting_choose_shelf_button_pressed_opens_shelf_modal() -> void:
 	var game: Control = add_child_autofree(GAME_SCENE.instantiate())
 	await wait_process_frames(3)
@@ -90,3 +131,13 @@ func _click_control(control: Control) -> void:
 	var global_position := control.get_global_rect().get_center()
 	sender.mouse_left_button_down(global_position, global_position)
 	sender.mouse_left_button_up(global_position, global_position)
+
+
+func _scroll_wheel(control: Control, button_index: MouseButton) -> void:
+	var event := InputEventMouseButton.new()
+	var global_position := control.get_global_rect().get_center()
+	event.position = global_position
+	event.global_position = global_position
+	event.button_index = button_index
+	event.pressed = true
+	Input.parse_input_event(event)
