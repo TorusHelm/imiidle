@@ -3,6 +3,7 @@ class_name ShelfDefinition
 extends Resource
 
 const DEFAULT_SLOT_LAYOUT: SlotLayout = preload("res://Game/data/default_slot_layout.tres")
+const SHELF_MODEL_SCRIPT = preload("res://scripts/shelf_model.gd")
 
 @export_group("Identity")
 ## Stable internal id used by catalogs and lookups.
@@ -48,28 +49,18 @@ const DEFAULT_SLOT_LAYOUT: SlotLayout = preload("res://Game/data/default_slot_la
 
 
 func get_slot_count() -> int:
-	if use_slot_grid:
-		return maxi(slot_grid_columns, 0) * maxi(slot_grid_rows, 0)
-	return slot_positions.size()
+	return get_shelf_model().get_slot_count()
 
 
 func get_slot_positions() -> Array[Vector2]:
+	return get_shelf_model().get_slot_positions()
+
+
+func get_shelf_model():
+	var resolved_slot_positions := _build_slot_positions()
 	if not use_slot_grid:
-		return slot_positions.duplicate()
-
-	var positions: Array[Vector2] = []
-	var resolved_slot_area_size := get_slot_area_size()
-	var resolved_slot_anchor_offset := get_slot_anchor_offset()
-
-	for row in maxi(slot_grid_rows, 0):
-		for column in maxi(slot_grid_columns, 0):
-			var slot_origin := slot_area_origin + Vector2(
-				column * (resolved_slot_area_size.x + slot_area_gap.x),
-				row * (resolved_slot_area_size.y + slot_area_gap.y)
-			)
-			positions.append(slot_origin + resolved_slot_anchor_offset)
-
-	return positions
+		return SHELF_MODEL_SCRIPT.new(resolved_slot_positions, 1 if not resolved_slot_positions.is_empty() else 0, resolved_slot_positions.size())
+	return SHELF_MODEL_SCRIPT.new(resolved_slot_positions, maxi(slot_grid_rows, 0), maxi(slot_grid_columns, 0))
 
 
 func get_slot_work_area_size() -> Vector2:
@@ -116,3 +107,22 @@ func get_slot_anchor_offset() -> Vector2:
 	if slot_anchor_offset != Vector2(85.0, 202.0):
 		return slot_anchor_offset
 	return get_slot_layout().slot_anchor_offset
+
+
+func _build_slot_positions() -> Array[Vector2]:
+	if not use_slot_grid:
+		return slot_positions.duplicate()
+
+	var positions: Array[Vector2] = []
+	var resolved_slot_area_size := get_slot_area_size()
+	var resolved_slot_anchor_offset := get_slot_anchor_offset()
+
+	for row in maxi(slot_grid_rows, 0):
+		for column in maxi(slot_grid_columns, 0):
+			var slot_origin := slot_area_origin + Vector2(
+				column * (resolved_slot_area_size.x + slot_area_gap.x),
+				row * (resolved_slot_area_size.y + slot_area_gap.y)
+			)
+			positions.append(slot_origin + resolved_slot_anchor_offset)
+
+	return positions

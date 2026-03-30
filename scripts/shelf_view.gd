@@ -7,6 +7,7 @@ signal pot_slot_pressed(slot_index: int)
 signal seed_slot_pressed(slot_index: int)
 
 const POT_VIEW_SCENE := preload("res://Pots/_shared/sceens/Pot.tscn")
+const SHELF_MODEL_SCRIPT = preload("res://scripts/shelf_model.gd")
 
 
 @export var preview_shelf_definition: ShelfDefinition = null:
@@ -49,7 +50,7 @@ const POT_VIEW_SCENE := preload("res://Pots/_shared/sceens/Pot.tscn")
 
 var _pot_views: Array[PotView] = []
 var _current_shelf_id := ""
-var _slot_positions: Array[Vector2] = []
+var _shelf_model = SHELF_MODEL_SCRIPT.new()
 
 
 @onready var slots_root: Node2D = $SlotsRoot
@@ -91,7 +92,7 @@ func update_view(game_state: GameState) -> void:
 			game_state.can_place_pot(index),
 			game_state.can_plant_seed_in_slot(index)
 		)
-		_pot_views[index].position = _slot_positions[index] - _pot_views[index].get_pot_baseline_local_position()
+		_pot_views[index].position = _shelf_model.get_slot_position_by_index(index) - _pot_views[index].get_pot_baseline_local_position()
 
 
 func preview(shelf_definition: ShelfDefinition, pot_definition: PotDefinition, plant_definition: PlantDefinition, preview_slot_index := 0) -> void:
@@ -109,7 +110,7 @@ func preview(shelf_definition: ShelfDefinition, pot_definition: PotDefinition, p
 				pot_instance.active_plant = PlantInstance.new(plant_definition)
 
 		_pot_views[index].update_view(pot_instance, true, pot_instance != null and pot_instance.active_plant == null)
-		_pot_views[index].position = _slot_positions[index] - _pot_views[index].get_pot_baseline_local_position()
+		_pot_views[index].position = _shelf_model.get_slot_position_by_index(index) - _pot_views[index].get_pot_baseline_local_position()
 
 
 func preview_slots(shelf_definition: ShelfDefinition, slot_previews: Array[CompositionPreviewSlot]) -> void:
@@ -128,15 +129,15 @@ func preview_slots(shelf_definition: ShelfDefinition, slot_previews: Array[Compo
 				pot_instance.active_plant = PlantInstance.new(slot_preview.plant_definition)
 
 		_pot_views[index].update_view(pot_instance, true, pot_instance != null and pot_instance.active_plant == null)
-		_pot_views[index].position = _slot_positions[index] - _pot_views[index].get_pot_baseline_local_position()
+		_pot_views[index].position = _shelf_model.get_slot_position_by_index(index) - _pot_views[index].get_pot_baseline_local_position()
 
 
 func get_slot_count() -> int:
-	return _pot_views.size()
+	return _shelf_model.get_slot_count()
 
 
 func get_slot_positions() -> Array[Vector2]:
-	return _slot_positions.duplicate()
+	return _shelf_model.get_slot_positions()
 
 
 func get_pot_view(slot_index: int) -> PotView:
@@ -157,24 +158,24 @@ func configure(definition: ShelfDefinition) -> void:
 	if definition == null:
 		return
 
-	var resolved_slot_positions := definition.get_slot_positions()
-	var needs_rebuild := _current_shelf_id != definition.id or _pot_views.size() != definition.get_slot_count()
+	var shelf_model = definition.get_shelf_model()
+	var needs_rebuild = _current_shelf_id != definition.id or _pot_views.size() != shelf_model.get_slot_count()
 	_current_shelf_id = definition.id
-	_slot_positions = resolved_slot_positions
+	_shelf_model = shelf_model
 	_apply_definition_layout(definition)
 	queue_redraw()
 
 	if needs_rebuild:
-		_rebuild_slot_views(definition)
+		_rebuild_slot_views()
 
 
-func _rebuild_slot_views(definition: ShelfDefinition) -> void:
+func _rebuild_slot_views() -> void:
 	for child in slots_root.get_children():
 		if child is PotView:
 			child.queue_free()
 
 	_pot_views.clear()
-	var resolved_slot_positions := definition.get_slot_positions()
+	var resolved_slot_positions = _shelf_model.get_slot_positions()
 
 	for index in resolved_slot_positions.size():
 		var pot_view: PotView = POT_VIEW_SCENE.instantiate()
