@@ -1,6 +1,6 @@
 # Примеры Для Game Loop
 
-Этот файл вторичен. Главный source of truth находится в `ai-rules/game-loop.md`.
+Этот файл вторичен. Главный source of truth находится в `ai-rules/gameplay/game-loop.md`.
 
 ## Пример Одного Тика
 

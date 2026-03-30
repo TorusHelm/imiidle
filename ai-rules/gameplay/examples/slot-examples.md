@@ -1,6 +1,6 @@
 # Примеры Для Slot
 
-Этот файл вторичен. Главный source of truth находится в `ai-rules/slot.md`.
+Этот файл вторичен. Главный source of truth находится в `ai-rules/gameplay/slot.md`.
 
 ## Valid
 
