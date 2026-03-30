@@ -127,7 +127,9 @@
 - aura не является instant effect,
 - aura не имеет `duration` как modifier,
 - aura не переапплаится событием каждый tick,
-- aura не должна спамить очередь событий.
+- aura не должна спамить очередь событий,
+- aura не использует event queue,
+- aura учитывается при расчете во время `UPDATE`.
 
 Архитектурное правило:
 - aura — это постоянное правило влияния, пока активен ее source,
@@ -150,7 +152,7 @@
 
 Разделение ответственности:
 - source задает правило выбора целей,
-- `Shelf` выполняет target selection, включая deterministic и random выбор,
+- `Shelf` выполняет target selection, включая deterministic и random выбор, в текущем тике при построении следующей очереди,
 - цель валидирует применимость modifier к себе.
 
 ## Flow Применения
@@ -161,15 +163,12 @@
 Нельзя:
 - `Metronome` напрямую вызывает `PlantB.apply_modifier()`.
 
-Правильно:
-1. `PlantA` активируется.
-2. `PlantA` сообщает об этом в `Shelf`.
-3. `Shelf` рассылает локальное событие внутри своей полки.
-4. `Totem` получает это событие.
-5. `Totem` определяет target rule и какой эффект запросить.
-6. `Totem` возвращает в `Shelf` запрос на применение.
-7. `Shelf` выбирает конкретную цель и помещает эффект в event loop.
-8. `Shelf` применяет modifier или instant effect к цели только в `APPLY` фазе следующего тика.
+Единая модель:
+1. В `tick N` actor делает `report`.
+2. В конце `tick N` `Shelf` преобразует `report` в gameplay event для `N+1`.
+3. В `tick N+1` другой actor видит gameplay event прошлого тика и создает `request`.
+4. В конце `tick N+1` `Shelf` выполняет target selection и строит очередь применения.
+5. В `tick N+2` `Shelf` применяет modifier или instant effect в `APPLY`.
 
 Следствие:
 - взаимодействие идет через `Shelf`,
@@ -187,18 +186,17 @@
 - slot 3: `Plant B`
 
 Flow:
-- `Plant A` активируется,
-- `Shelf` рассылает локальное событие,
-- `Metronome` задает target rule: зеркальная цель по другую сторону,
-- `Metronome` создает запрос: применить `haste x2 for 1s`,
-- `Shelf` определяет конкретную цель: `Plant B`,
-- `Shelf` ставит применение эффекта в свой event loop,
-- `Shelf` применяет modifier к `Plant B` в `APPLY` фазе следующего тика,
-- `Plant B` ускоряется на следующих тиках.
+- `tick N`: `Plant A` активируется,
+- конец `tick N`: `Shelf` строит gameplay event для `N+1`,
+- `tick N+1`: `Metronome` видит gameplay event прошлого тика,
+- `tick N+1`: `Metronome` задает target rule и создает `request`,
+- конец `tick N+1`: `Shelf` определяет конкретную цель `Plant B`,
+- `tick N+2`: `Shelf` применяет modifier к `Plant B` в `APPLY`.
 
 Важно:
-- эффект не обязан проявляться в ту же микросекунду,
-- допустима задержка до следующего tick.
+- same-tick реакция отсутствует,
+- target selection происходит раньше применения,
+- применение отделено от реакции отдельным тиком.
 
 ## Instant Effects
 
@@ -209,7 +207,8 @@ Flow:
 
 Следствие:
 - instant effect, созданный в тике `N`, не применяется немедленно в тике `N`,
-- instant effect применяется только через `APPLY` фазу следующего тика.
+- если instant effect создан реакцией на gameplay event в `N+1`, он применяется только в `N+2`,
+- instant effect применяется только через `APPLY` фазу соответствующего тика.
 
 ## Глобальные Modifiers
 
@@ -263,5 +262,6 @@ Flow:
 - source = тот, кто запросил применение эффекта,
 - source задает target rule, но не выбирает конкретную цель,
 - конкретные цели определяет `Shelf`,
+- target selection выполняется при построении следующей очереди,
 - эффекты применяются через `Shelf` и его deferred event loop, а не actor -> actor,
 - active modifiers хранятся на самих целях, а не в `Slot` и не в `Shelf`.

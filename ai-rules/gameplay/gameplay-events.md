@@ -106,6 +106,14 @@
 Правило:
 - системы не должны по умолчанию строиться вокруг реакции на applied events.
 
+## Связь Gameplay Events И Tick
+
+Правила:
+- gameplay events из `tick N` становятся доступны только в `tick N+1`,
+- actors не видят gameplay events текущего тика,
+- actors реагируют только на gameplay events прошлого тика,
+- `Shelf` рассылает gameplay events, а actor сам решает, реагировать на них или нет.
+
 ## Связь Gameplay Events И Totem
 
 `Totem` реагирует только на gameplay events.
@@ -124,7 +132,7 @@
 
 Правила:
 - payload не должен раздуваться без необходимости,
-- нельзя вводить абстрактные поля "на будущее" без явной причины,
+- нельзя вводить абстрактные поля на будущее без явной причины,
 - payload должен быть минимальным и понятным.
 
 ## Локальность Gameplay Events
@@ -152,4 +160,5 @@ Gameplay events не должны:
 - report, gameplay event и request являются разными категориями,
 - базовый набор gameplay events ограничен `plant_activated` и `totem_activated`,
 - gameplay events локальны для одной `Shelf`,
+- gameplay events из `N` становятся доступны только в `N+1`,
 - gameplay systems, включая `Totem`, реагируют только на gameplay events, а не на технические шаги event loop.
