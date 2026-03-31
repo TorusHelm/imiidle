@@ -52,7 +52,7 @@ func show_plant(plant: PlantInstance) -> void:
 
 	if plant.is_mature():
 		status_text = "Status: mature"
-		details_text = "Income: %.1f coins/sec" % plant.definition.coins_per_second
+		details_text = _get_income_tooltip_text(plant)
 
 	tooltip_text = "%s\n%s\n%s" % [plant.definition.display_name, status_text, details_text]
 	plant_texture.tooltip_text = tooltip_text
@@ -115,3 +115,12 @@ func _disconnect_preview_resource(definition: PlantDefinition) -> void:
 
 func _on_preview_resource_changed() -> void:
 	_queue_preview_refresh()
+
+
+func _get_income_tooltip_text(plant: PlantInstance) -> String:
+	if plant == null or plant.definition == null:
+		return ""
+
+	var reward := plant.get_activation_reward()
+	var interval := plant.get_cycle_time()
+	return "Income: %.1f coins every %.1f sec" % [reward, interval]
