@@ -1,0 +1,13 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/shelf_slot_view.gd" id="1_shelf_slot"]
+[ext_resource type="PackedScene" uid="uid://cyxm86es2rekc" path="res://Pots/_shared/sceens/Pot.tscn" id="2_pot"]
+[ext_resource type="PackedScene" path="res://Totems/_shared/sceens/Totem.tscn" id="3_totem"]
+
+[node name="ShelfSlotView" type="Node2D"]
+script = ExtResource("1_shelf_slot")
+
+[node name="PotView" parent="." instance=ExtResource("2_pot")]
+
+[node name="TotemView" parent="." instance=ExtResource("3_totem")]
+visible = false

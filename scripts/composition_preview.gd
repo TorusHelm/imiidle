@@ -212,12 +212,17 @@ func _draw_slot_markers() -> void:
 
 
 func _draw_pot_guides() -> void:
-	var pot_view: PotView = shelf_view.get_pot_view(preview_slot_index)
+	var slot_view: ShelfSlotView = shelf_view.get_slot_view(preview_slot_index)
+	if slot_view == null:
+		return
+
+	var pot_view: PotView = slot_view.get_pot_view()
 	if pot_view == null:
 		return
 
-	var pot_rect := Rect2(shelf_view.position + pot_view.position, pot_view.size)
-	var slot_rect := Rect2(shelf_view.position + pot_view.position + pot_view.get_slot_footprint_local_rect().position, pot_view.get_slot_footprint_local_rect().size)
+	var slot_origin := shelf_view.position + slot_view.position
+	var pot_rect := Rect2(slot_origin + pot_view.position, pot_view.size)
+	var slot_rect := Rect2(slot_origin + pot_view.position + pot_view.get_slot_footprint_local_rect().position, pot_view.get_slot_footprint_local_rect().size)
 	var baseline_local: Vector2 = pot_view.get_pot_baseline_local_position()
 	var baseline_y: float = pot_rect.position.y + baseline_local.y
 	var baseline_center_x: float = pot_rect.position.x + baseline_local.x

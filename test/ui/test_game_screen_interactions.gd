@@ -8,7 +8,7 @@ func test_clicking_choose_shelf_button_opens_shelf_modal() -> void:
 	var game: Control = add_child_autofree(GAME_SCENE.instantiate())
 	await wait_process_frames(3)
 
-	var empty_shelf_state: Control = game.get_node("Room/WorldRoot/SlotsRoot/RoomSlot0/EmptyShelfState")
+	var empty_shelf_state: Control = _get_room_slot_view(game).empty_shelf_state
 	var choose_shelf_button: Button = empty_shelf_state.get_node("Panel/Content/ChooseShelfButton")
 	var shelf_modal: ShelfModal = game.get_node("ShelfModal")
 
@@ -23,7 +23,7 @@ func test_clicking_empty_shelf_click_area_opens_shelf_modal() -> void:
 	var game: Control = add_child_autofree(GAME_SCENE.instantiate())
 	await wait_process_frames(3)
 
-	var empty_shelf_state: Control = game.get_node("Room/WorldRoot/SlotsRoot/RoomSlot0/EmptyShelfState")
+	var empty_shelf_state: Control = _get_room_slot_view(game).empty_shelf_state
 	var click_area: Button = empty_shelf_state.get_node("Panel/ClickArea")
 	var shelf_modal: ShelfModal = game.get_node("ShelfModal")
 
@@ -41,7 +41,7 @@ func test_clicking_empty_pot_slot_opens_pot_modal() -> void:
 	game._on_shelf_selected("shelf_a")
 	await wait_process_frames(3)
 
-	var shelf_view: ShelfView = game.get_node("Room/WorldRoot/SlotsRoot/RoomSlot0/ShelfView")
+	var shelf_view: ShelfView = _get_room_slot_view(game).shelf_view
 	var first_pot_view: PotView = shelf_view.get_pot_view(0)
 	var pot_modal: PotModal = game.get_node("PotModal")
 
@@ -62,7 +62,7 @@ func test_mouse_wheel_zooms_world_without_changing_pan_offset() -> void:
 	game._on_shelf_selected("shelf_a")
 	await wait_process_frames(3)
 
-	var world_root: Control = game.get_node("%WorldRoot")
+	var world_root: Control = _get_world_root(game)
 	var initial_position := world_root.position
 
 	_scroll_wheel(game, MOUSE_BUTTON_WHEEL_UP)
@@ -81,7 +81,7 @@ func test_mouse_wheel_zoom_respects_min_and_max_limits() -> void:
 	game._on_shelf_selected("shelf_a")
 	await wait_process_frames(3)
 
-	var world_root: Control = game.get_node("%WorldRoot")
+	var world_root: Control = _get_world_root(game)
 
 	for _index in range(20):
 		_scroll_wheel(game, MOUSE_BUTTON_WHEEL_UP)
@@ -101,7 +101,7 @@ func test_emitting_choose_shelf_button_pressed_opens_shelf_modal() -> void:
 	var game: Control = add_child_autofree(GAME_SCENE.instantiate())
 	await wait_process_frames(3)
 
-	var empty_shelf_state: Control = game.get_node("Room/WorldRoot/SlotsRoot/RoomSlot0/EmptyShelfState")
+	var empty_shelf_state: Control = _get_room_slot_view(game).empty_shelf_state
 	var choose_shelf_button: Button = empty_shelf_state.get_node("Panel/Content/ChooseShelfButton")
 	var shelf_modal: ShelfModal = game.get_node("ShelfModal")
 
@@ -119,7 +119,7 @@ func test_emitting_empty_pot_slot_button_pressed_opens_pot_modal() -> void:
 	game._on_shelf_selected("shelf_a")
 	await wait_process_frames(3)
 
-	var shelf_view: ShelfView = game.get_node("Room/WorldRoot/SlotsRoot/RoomSlot0/ShelfView")
+	var shelf_view: ShelfView = _get_room_slot_view(game).shelf_view
 	var first_pot_view: PotView = shelf_view.get_pot_view(0)
 	var pot_modal: PotModal = game.get_node("PotModal")
 
@@ -127,6 +127,28 @@ func test_emitting_empty_pot_slot_button_pressed_opens_pot_modal() -> void:
 	await wait_process_frames(3)
 
 	assert_true(pot_modal.visible, "Direct slot button signal should open the pot modal.")
+
+
+func test_room_slot_renders_totem_view_when_totem_is_placed() -> void:
+	var game: Control = add_child_autofree(GAME_SCENE.instantiate())
+	await wait_process_frames(3)
+
+	assert_true(game.game_state.place_shelf(0, "shelf_a"), "Test setup should place a shelf into room slot 0.")
+	assert_true(game.game_state.place_totem(0, "metronome"), "Test setup should place the starter Metronome into shelf slot 0.")
+	game._refresh_ui()
+	await wait_process_frames(3)
+
+	var shelf_view: ShelfView = _get_room_slot_view(game).shelf_view
+	var slot_view := shelf_view.get_slot_view(0)
+	var pot_view := shelf_view.get_pot_view(0)
+	var totem_view := shelf_view.get_totem_view(0)
+
+	assert_not_null(slot_view, "Shelf slot container should exist for the rendered shelf slot.")
+	assert_not_null(pot_view, "Pot view should still exist inside the slot container for compatibility.")
+	assert_not_null(totem_view, "Totem view should be created inside the slot container.")
+	assert_false(pot_view.visible, "Pot view should be hidden when the slot is occupied by a totem.")
+	assert_true(totem_view.visible, "Totem view should be visible when a totem occupies the slot.")
+	assert_eq(totem_view.get_parent(), slot_view, "Totem view should live under the slot container, not directly under ShelfView.")
 
 
 func _click_control(control: Control) -> void:
@@ -145,3 +167,19 @@ func _scroll_wheel(control: Control, button_index: MouseButton) -> void:
 	event.button_index = button_index
 	event.pressed = true
 	Input.parse_input_event(event)
+
+
+func _get_room_view(game: Control) -> RoomView:
+	return game.find_child("Room", true, false) as RoomView
+
+
+func _get_room_slot_view(game: Control, room_slot_index := 0) -> RoomSlotView:
+	var room_view := _get_room_view(game)
+	var slots_root: Control = room_view.get_node("WorldRoot/SlotsRoot")
+	if room_slot_index < 0 or room_slot_index >= slots_root.get_child_count():
+		return null
+	return slots_root.get_child(room_slot_index) as RoomSlotView
+
+
+func _get_world_root(game: Control) -> Control:
+	return _get_room_view(game).world_root

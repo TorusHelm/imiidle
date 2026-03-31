@@ -5,7 +5,6 @@
 [ext_resource type="Resource" uid="uid://cygoi83vimm71" path="res://Pots/DefaultPot/data/pot_default.tres" id="3_yts6t"]
 [ext_resource type="Resource" uid="uid://8n815svtusxd" path="res://Plants/Gerbera/data/plant_gerbera.tres" id="4_plant"]
 [ext_resource type="Texture2D" uid="uid://cfwjx0jv03cqu" path="res://Shelfs/ShelfB/assets/shelf-two-floor.png" id="5_asejt"]
-
 [node name="Shelf" type="Control" unique_id=1424021836]
 custom_minimum_size = Vector2(524, 684)
 layout_mode = 3
