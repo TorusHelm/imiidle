@@ -11,10 +11,11 @@ var pot_inventory: Dictionary = {}
 var pot_definitions: Dictionary = {}
 var shelf_inventory: Dictionary = {}
 var shelf_definitions: Dictionary = {}
-var active_shelf_definition: ShelfDefinition
+var room_definition: RoomDefinition
 var background_color_hex := "#e3efdf"
 var shelf_slots: Array = []
-var growth_system := GrowthSystem.new()
+var room := RoomInstance.new()
+var active_room_slot_index := -1
 
 
 func _init() -> void:
@@ -48,13 +49,14 @@ func can_plant_seed(seed_id := "") -> bool:
 
 
 func can_place_pot(slot_index: int, pot_id := "") -> bool:
-	if active_shelf_definition == null:
+	var active_shelf := get_active_shelf()
+	if active_shelf == null:
 		return false
 
 	if not _is_valid_slot_index(slot_index):
 		return false
 
-	if shelf_slots[slot_index] != null:
+	if not active_shelf.can_place_pot(slot_index):
 		return false
 
 	if pot_id.is_empty():
@@ -64,6 +66,7 @@ func can_place_pot(slot_index: int, pot_id := "") -> bool:
 
 
 func place_pot(slot_index: int, pot_id: String) -> bool:
+	var active_shelf := get_active_shelf()
 	if not can_place_pot(slot_index, pot_id):
 		return false
 
@@ -71,23 +74,27 @@ func place_pot(slot_index: int, pot_id: String) -> bool:
 	if definition == null:
 		return false
 
+	if not active_shelf.place_pot(slot_index, definition):
+		return false
+
 	pot_inventory[pot_id] = get_pot_count(pot_id) - 1
-	shelf_slots[slot_index] = PotInstance.new(definition)
+	_sync_shelf_slots()
 	return true
 
 
 func can_plant_seed_in_slot(slot_index: int, seed_id := "") -> bool:
-	if not _is_valid_slot_index(slot_index):
+	var active_shelf := get_active_shelf()
+	if active_shelf == null or not _is_valid_slot_index(slot_index):
 		return false
 
-	var pot: PotInstance = shelf_slots[slot_index]
-	if pot == null or pot.active_plant != null:
+	if not active_shelf.can_plant_seed(slot_index):
 		return false
 
 	return can_plant_seed(seed_id)
 
 
 func plant_seed(slot_index: int, seed_id: String) -> bool:
+	var active_shelf := get_active_shelf()
 	if not can_plant_seed_in_slot(slot_index, seed_id):
 		return false
 
@@ -95,9 +102,11 @@ func plant_seed(slot_index: int, seed_id: String) -> bool:
 	if definition == null:
 		return false
 
+	if not active_shelf.plant_seed(slot_index, definition):
+		return false
+
 	seed_inventory[seed_id] = get_seed_count(seed_id) - 1
-	var pot: PotInstance = shelf_slots[slot_index]
-	pot.active_plant = PlantInstance.new(definition)
+	_sync_shelf_slots()
 	return true
 
 
@@ -159,9 +168,39 @@ func get_pot_count(pot_id: String) -> int:
 
 
 func get_pot_in_slot(slot_index: int) -> PotInstance:
-	if not _is_valid_slot_index(slot_index):
+	var active_shelf := get_active_shelf()
+	if active_shelf == null or not _is_valid_slot_index(slot_index):
 		return null
-	return shelf_slots[slot_index]
+	return active_shelf.get_pot_in_slot(slot_index)
+
+
+func can_place_pot_in_room_slot(room_slot_index: int, slot_index: int, pot_id := "") -> bool:
+	var shelf := get_shelf_in_room_slot(room_slot_index)
+	if shelf == null or slot_index < 0 or slot_index >= shelf.slots.size():
+		return false
+	if not shelf.can_place_pot(slot_index):
+		return false
+	if pot_id.is_empty():
+		return has_any_pot()
+	return get_pot_count(pot_id) > 0
+
+
+func can_plant_seed_in_room_slot(room_slot_index: int, slot_index: int, seed_id := "") -> bool:
+	var shelf := get_shelf_in_room_slot(room_slot_index)
+	if shelf == null or slot_index < 0 or slot_index >= shelf.slots.size():
+		return false
+	if not shelf.can_plant_seed(slot_index):
+		return false
+	return can_plant_seed(seed_id)
+
+
+func get_pot_in_room_slot(room_slot_index: int, slot_index: int) -> PotInstance:
+	var shelf := get_shelf_in_room_slot(room_slot_index)
+	if shelf == null:
+		return null
+	if slot_index < 0 or slot_index >= shelf.slots.size():
+		return null
+	return shelf.get_pot_in_slot(slot_index)
 
 
 func has_any_shelf() -> bool:
@@ -171,8 +210,8 @@ func has_any_shelf() -> bool:
 	return false
 
 
-func can_place_shelf(shelf_id := "") -> bool:
-	if active_shelf_definition != null:
+func can_place_shelf(room_slot_index: int, shelf_id := "") -> bool:
+	if not room.can_place_shelf(room_slot_index):
 		return false
 
 	if shelf_id.is_empty():
@@ -181,17 +220,21 @@ func can_place_shelf(shelf_id := "") -> bool:
 	return get_shelf_count(shelf_id) > 0
 
 
-func place_shelf(shelf_id: String) -> bool:
-	if not can_place_shelf(shelf_id):
+func place_shelf(room_slot_index: int, shelf_id: String) -> bool:
+	if not can_place_shelf(room_slot_index, shelf_id):
 		return false
 
 	var definition: ShelfDefinition = shelf_definitions.get(shelf_id)
 	if definition == null:
 		return false
 
+	var shelf := ShelfInstance.new(definition, room)
+	if not room.place_shelf(room_slot_index, shelf):
+		return false
+
 	shelf_inventory[shelf_id] = get_shelf_count(shelf_id) - 1
-	active_shelf_definition = definition
-	ensure_shelf_slot_capacity(active_shelf_definition.get_slot_count())
+	active_room_slot_index = room_slot_index
+	_sync_shelf_slots()
 	return true
 
 
@@ -215,8 +258,34 @@ func get_shelf_count(shelf_id: String) -> int:
 	return int(shelf_inventory.get(shelf_id, 0))
 
 
+func get_room_definition() -> RoomDefinition:
+	return room_definition
+
+
 func get_active_shelf_definition() -> ShelfDefinition:
-	return active_shelf_definition
+	var active_shelf := get_active_shelf()
+	return active_shelf.definition if active_shelf != null else null
+
+
+func get_active_room_slot_index() -> int:
+	return active_room_slot_index
+
+
+func set_active_room_slot_index(room_slot_index: int) -> void:
+	if room_slot_index < 0 or room_slot_index >= room.shelf_slots.size():
+		active_room_slot_index = -1
+		return
+	active_room_slot_index = room_slot_index
+
+
+func get_active_shelf() -> ShelfInstance:
+	if active_room_slot_index < 0:
+		return null
+	return room.get_shelf(active_room_slot_index)
+
+
+func get_shelf_in_room_slot(room_slot_index: int) -> ShelfInstance:
+	return room.get_shelf(room_slot_index)
 
 
 func get_background_color() -> Color:
@@ -224,14 +293,26 @@ func get_background_color() -> Color:
 
 
 func tick(delta: float) -> void:
-	for pot in shelf_slots:
-		if pot == null or pot.active_plant == null:
+	for shelf in room.shelf_slots:
+		if shelf == null:
 			continue
-		coins += growth_system.tick_plant(pot.active_plant, delta)
+		shelf.tick(delta)
+		coins += shelf.drain_generated_coins()
+
+	_sync_shelf_slots()
 
 
 func _is_valid_slot_index(slot_index: int) -> bool:
 	return slot_index >= 0 and slot_index < shelf_slots.size()
+
+
+func _sync_shelf_slots() -> void:
+	var active_shelf := get_active_shelf()
+	if active_shelf == null:
+		ensure_shelf_slot_capacity(0)
+		return
+
+	shelf_slots = active_shelf.slots
 
 
 func _load_catalog(catalog: GameCatalog) -> void:
@@ -241,12 +322,18 @@ func _load_catalog(catalog: GameCatalog) -> void:
 	seed_inventory.clear()
 	pot_inventory.clear()
 	shelf_inventory.clear()
-	active_shelf_definition = null
+	room_definition = null
+	room = RoomInstance.new()
+	active_room_slot_index = -1
 	background_color_hex = "#e3efdf"
 
 	if catalog == null:
 		ensure_shelf_slot_capacity(0)
 		return
+
+	room_definition = catalog.room_definition
+	room = RoomInstance.new()
+	room.setup(room_definition)
 
 	for definition in catalog.plant_definitions:
 		if definition == null or definition.id.is_empty():
@@ -272,8 +359,5 @@ func _load_catalog(catalog: GameCatalog) -> void:
 	for shelf_id in catalog.starting_shelf_inventory.keys():
 		shelf_inventory[shelf_id] = int(catalog.starting_shelf_inventory[shelf_id])
 
-	active_shelf_definition = shelf_definitions.get(catalog.active_shelf_id)
-
 	background_color_hex = catalog.background_color_hex
-
-	ensure_shelf_slot_capacity(active_shelf_definition.get_slot_count() if active_shelf_definition != null else 0)
+	ensure_shelf_slot_capacity(0)

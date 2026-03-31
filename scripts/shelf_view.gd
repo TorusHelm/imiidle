@@ -82,15 +82,19 @@ func _draw() -> void:
 	_draw_slot_guides(preview_shelf_definition)
 
 
-func update_view(game_state: GameState) -> void:
-	configure(game_state.get_active_shelf_definition())
+func update_view(game_state: GameState, room_slot_index := -1) -> void:
+	if room_slot_index >= 0:
+		var room_shelf := game_state.get_shelf_in_room_slot(room_slot_index)
+		configure(room_shelf.definition if room_shelf != null else null)
+	else:
+		configure(game_state.get_active_shelf_definition())
 
 	for index in _pot_views.size():
-		var pot_instance := game_state.get_pot_in_slot(index)
+		var pot_instance := game_state.get_pot_in_room_slot(room_slot_index, index) if room_slot_index >= 0 else game_state.get_pot_in_slot(index)
 		_pot_views[index].update_view(
 			pot_instance,
-			game_state.can_place_pot(index),
-			game_state.can_plant_seed_in_slot(index)
+			game_state.can_place_pot_in_room_slot(room_slot_index, index) if room_slot_index >= 0 else game_state.can_place_pot(index),
+			game_state.can_plant_seed_in_room_slot(room_slot_index, index) if room_slot_index >= 0 else game_state.can_plant_seed_in_slot(index)
 		)
 		_pot_views[index].position = _shelf_model.get_slot_position_by_index(index) - _pot_views[index].get_pot_baseline_local_position()
 

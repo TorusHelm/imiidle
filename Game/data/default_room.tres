@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RoomDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/room_definition.gd" id="1_room"]
+
+[resource]
+script = ExtResource("1_room")
+id = "default_room"
+display_name = "Default Room"
+use_slot_grid = true
+slot_grid_columns = 2
+slot_grid_rows = 2
+slot_area_origin = Vector2(120, 180)
+slot_area_size = Vector2(760, 360)
+slot_area_gap = Vector2(80, 60)
+slot_anchor_offset = Vector2(0, 0)

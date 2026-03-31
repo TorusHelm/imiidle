@@ -38,15 +38,15 @@ func test_shelf_and_pot_share_the_same_slot_layout_resource() -> void:
 	assert_eq(DEFAULT_POT.get_slot_footprint_offset(), -SHELF_A.get_slot_anchor_offset(), "Pot footprint origin should be derived from the shared slot anchor.")
 
 
-func test_shelf_model_exposes_grid_navigation_api() -> void:
+func test_shelf_model_exposes_row_order_and_same_row_adjacency() -> void:
 	var model := SHELF_B.get_shelf_model()
 	var center_slot := model.get_slot(1, 1)
 	var slot_by_index := model.get_slot_by_index(4)
-	var neighbors_4 := _slot_indexes(model.get_neighbors_4(0, 1))
-	var neighbors_8 := _slot_indexes(model.get_neighbors_8(0, 1))
+	var top_row_neighbors := _slot_indexes(model.get_adjacent_slots_in_row(0, 1))
+	var bottom_row_neighbors := _slot_indexes(model.get_adjacent_slots_in_row(1, 1))
 
-	neighbors_4.sort()
-	neighbors_8.sort()
+	top_row_neighbors.sort()
+	bottom_row_neighbors.sort()
 
 	assert_eq(model.rows, 2, "Shelf model should preserve the configured row count.")
 	assert_eq(model.cols, 3, "Shelf model should preserve the configured column count.")
@@ -55,8 +55,8 @@ func test_shelf_model_exposes_grid_navigation_api() -> void:
 	assert_eq(model.get_index(1, 2), 5, "Grid navigation should resolve row and column to the flat slot index.")
 	assert_eq(center_slot.get("index"), 4, "Shelf model should expose the correct index for row/column lookup.")
 	assert_eq(slot_by_index.get("position"), Vector2(262, 606), "Flat index lookup should keep the existing slot anchor position.")
-	assert_eq(neighbors_4, [0, 2, 4], "4-neighbors should include only orthogonal adjacent slots.")
-	assert_eq(neighbors_8, [0, 2, 3, 4, 5], "8-neighbors should include diagonals around the target slot.")
+	assert_eq(top_row_neighbors, [0, 2], "Adjacency should stay inside the same row.")
+	assert_eq(bottom_row_neighbors, [3, 5], "Adjacency should not leak across rows.")
 
 
 func test_manual_slot_positions_build_a_linear_shelf_model() -> void:

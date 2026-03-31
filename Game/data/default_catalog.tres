@@ -1,6 +1,7 @@
 [gd_resource type="Resource" script_class="GameCatalog" format=3 uid="uid://c5pjs2j6uv2bn"]
 
 [ext_resource type="Script" uid="uid://dp8ptmtcwngpn" path="res://scripts/game_catalog.gd" id="1_catalog"]
+[ext_resource type="Resource" path="res://Game/data/default_room.tres" id="1_room"]
 [ext_resource type="Script" uid="uid://dfjsq0o06h8ye" path="res://scripts/plant_definition.gd" id="1_qyvm0"]
 [ext_resource type="Resource" uid="uid://b02l4ounb2kyr" path="res://Plants/Sansevieria/data/plant_sansevieria.tres" id="2_plant"]
 [ext_resource type="Resource" uid="uid://8n815svtusxd" path="res://Plants/Gerbera/data/plant_gerbera.tres" id="3_plant"]
@@ -15,6 +16,7 @@
 
 [resource]
 script = ExtResource("1_catalog")
+room_definition = ExtResource("1_room")
 plant_definitions = Array[ExtResource("1_qyvm0")]([ExtResource("2_plant"), ExtResource("3_plant"), ExtResource("4_plant")])
 pot_definitions = Array[ExtResource("5_jir86")]([ExtResource("5_pot"), ExtResource("6_pot"), ExtResource("7_pot")])
 shelf_definitions = Array[ExtResource("10_ylmi7")]([ExtResource("8_shelf"), ExtResource("9_shelf")])

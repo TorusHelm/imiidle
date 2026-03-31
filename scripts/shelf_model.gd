@@ -75,33 +75,13 @@ func get_slot_position_by_index(index: int) -> Vector2:
 	return slot.get("position", Vector2.ZERO)
 
 
-func get_neighbors_4(row: int, col: int) -> Array[Dictionary]:
-	return _get_neighbors(row, col, [Vector2i(0, -1), Vector2i(-1, 0), Vector2i(1, 0), Vector2i(0, 1)])
-
-
-func get_neighbors_8(row: int, col: int) -> Array[Dictionary]:
-	return _get_neighbors(
-		row,
-		col,
-		[
-			Vector2i(-1, -1),
-			Vector2i(0, -1),
-			Vector2i(1, -1),
-			Vector2i(-1, 0),
-			Vector2i(1, 0),
-			Vector2i(-1, 1),
-			Vector2i(0, 1),
-			Vector2i(1, 1),
-		]
-	)
-
-
-func _get_neighbors(row: int, col: int, offsets: Array[Vector2i]) -> Array[Dictionary]:
+func get_adjacent_slots_in_row(row: int, col: int) -> Array[Dictionary]:
 	var neighbors: Array[Dictionary] = []
 
-	for offset in offsets:
-		var slot := get_slot(row + offset.y, col + offset.x)
-		if not slot.is_empty():
-			neighbors.append(slot)
+	for col_offset in [-1, 1]:
+		var neighbor_slot := get_slot(row, col + col_offset)
+		if neighbor_slot.is_empty():
+			continue
+		neighbors.append(neighbor_slot)
 
 	return neighbors

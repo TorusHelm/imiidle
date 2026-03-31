@@ -8,7 +8,7 @@ func test_clicking_choose_shelf_button_opens_shelf_modal() -> void:
 	var game: Control = add_child_autofree(GAME_SCENE.instantiate())
 	await wait_process_frames(3)
 
-	var empty_shelf_state: Control = game.get_node("%EmptyShelfState")
+	var empty_shelf_state: Control = game.get_node("Room/WorldRoot/SlotsRoot/RoomSlot0/EmptyShelfState")
 	var choose_shelf_button: Button = empty_shelf_state.get_node("Panel/Content/ChooseShelfButton")
 	var shelf_modal: ShelfModal = game.get_node("ShelfModal")
 
@@ -23,7 +23,7 @@ func test_clicking_empty_shelf_click_area_opens_shelf_modal() -> void:
 	var game: Control = add_child_autofree(GAME_SCENE.instantiate())
 	await wait_process_frames(3)
 
-	var empty_shelf_state: Control = game.get_node("%EmptyShelfState")
+	var empty_shelf_state: Control = game.get_node("Room/WorldRoot/SlotsRoot/RoomSlot0/EmptyShelfState")
 	var click_area: Button = empty_shelf_state.get_node("Panel/ClickArea")
 	var shelf_modal: ShelfModal = game.get_node("ShelfModal")
 
@@ -37,10 +37,11 @@ func test_clicking_empty_pot_slot_opens_pot_modal() -> void:
 	var game: Control = add_child_autofree(GAME_SCENE.instantiate())
 	await wait_process_frames(3)
 
+	game._on_choose_shelf_button_pressed(0)
 	game._on_shelf_selected("shelf_a")
 	await wait_process_frames(3)
 
-	var shelf_view: ShelfView = game.get_node("WorldRoot/ShelfView")
+	var shelf_view: ShelfView = game.get_node("Room/WorldRoot/SlotsRoot/RoomSlot0/ShelfView")
 	var first_pot_view: PotView = shelf_view.get_pot_view(0)
 	var pot_modal: PotModal = game.get_node("PotModal")
 
@@ -57,6 +58,7 @@ func test_mouse_wheel_zooms_world_without_changing_pan_offset() -> void:
 	var game: Control = add_child_autofree(GAME_SCENE.instantiate())
 	await wait_process_frames(3)
 
+	game._on_choose_shelf_button_pressed(0)
 	game._on_shelf_selected("shelf_a")
 	await wait_process_frames(3)
 
@@ -75,6 +77,7 @@ func test_mouse_wheel_zoom_respects_min_and_max_limits() -> void:
 	var game: Control = add_child_autofree(GAME_SCENE.instantiate())
 	await wait_process_frames(3)
 
+	game._on_choose_shelf_button_pressed(0)
 	game._on_shelf_selected("shelf_a")
 	await wait_process_frames(3)
 
@@ -98,7 +101,7 @@ func test_emitting_choose_shelf_button_pressed_opens_shelf_modal() -> void:
 	var game: Control = add_child_autofree(GAME_SCENE.instantiate())
 	await wait_process_frames(3)
 
-	var empty_shelf_state: Control = game.get_node("%EmptyShelfState")
+	var empty_shelf_state: Control = game.get_node("Room/WorldRoot/SlotsRoot/RoomSlot0/EmptyShelfState")
 	var choose_shelf_button: Button = empty_shelf_state.get_node("Panel/Content/ChooseShelfButton")
 	var shelf_modal: ShelfModal = game.get_node("ShelfModal")
 
@@ -112,10 +115,11 @@ func test_emitting_empty_pot_slot_button_pressed_opens_pot_modal() -> void:
 	var game: Control = add_child_autofree(GAME_SCENE.instantiate())
 	await wait_process_frames(3)
 
+	game._on_choose_shelf_button_pressed(0)
 	game._on_shelf_selected("shelf_a")
 	await wait_process_frames(3)
 
-	var shelf_view: ShelfView = game.get_node("WorldRoot/ShelfView")
+	var shelf_view: ShelfView = game.get_node("Room/WorldRoot/SlotsRoot/RoomSlot0/ShelfView")
 	var first_pot_view: PotView = shelf_view.get_pot_view(0)
 	var pot_modal: PotModal = game.get_node("PotModal")
 

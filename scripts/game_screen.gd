@@ -17,14 +17,13 @@ var _zoom_level := 1.0
 @onready var experience_value_label: Label = %ExperienceValueLabel
 @onready var seeds_value_label: Label = %SeedsValueLabel
 @onready var background: ColorRect = $Background
-@onready var world_root: Control = %WorldRoot
-@onready var shelf_view: ShelfView = %ShelfView
-@onready var empty_shelf_state: Control = %EmptyShelfState
+@onready var room_view: RoomView = %Room
+@onready var world_root: Control = room_view.world_root
 @onready var seed_modal: SeedModal = %SeedModal
 @onready var pot_modal: PotModal = %PotModal
 @onready var shelf_modal: ShelfModal = %ShelfModal
-@onready var choose_shelf_button: Button = empty_shelf_state.get_node("Panel/Content/ChooseShelfButton")
-@onready var empty_shelf_click_area: Button = empty_shelf_state.get_node("Panel/ClickArea")
+
+var _pending_room_slot_index := -1
 
 
 func _ready() -> void:
@@ -55,11 +54,6 @@ func _input(event: InputEvent) -> void:
 		return
 
 	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-			if _handle_world_primary_click(event.position):
-				get_viewport().set_input_as_handled()
-				return
-
 		if event.button_index == MOUSE_BUTTON_RIGHT:
 			_is_panning = event.pressed
 			if event.pressed:
@@ -84,7 +78,8 @@ func _input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
-func _on_pot_slot_pressed(slot_index: int) -> void:
+func _on_pot_slot_pressed(room_slot_index: int, slot_index: int) -> void:
+	game_state.set_active_room_slot_index(room_slot_index)
 	pot_modal.open_modal(slot_index, game_state.get_pot_options())
 	_refresh_ui()
 
@@ -95,7 +90,8 @@ func _on_pot_selected(slot_index: int, pot_id: String) -> void:
 	_refresh_ui()
 
 
-func _on_seed_button_pressed(slot_index: int) -> void:
+func _on_seed_button_pressed(room_slot_index: int, slot_index: int) -> void:
+	game_state.set_active_room_slot_index(room_slot_index)
 	seed_modal.open_modal(slot_index, game_state.get_seed_options())
 	_refresh_ui()
 
@@ -106,13 +102,16 @@ func _on_seed_selected(slot_index: int, seed_id: String) -> void:
 	_refresh_ui()
 
 
-func _on_choose_shelf_button_pressed() -> void:
+func _on_choose_shelf_button_pressed(room_slot_index: int) -> void:
+	_pending_room_slot_index = room_slot_index
 	shelf_modal.open_modal(game_state.get_shelf_options())
 
 
 func _on_shelf_selected(shelf_id: String) -> void:
-	if game_state.place_shelf(shelf_id):
-		shelf_view.configure(game_state.get_active_shelf_definition())
+	if _pending_room_slot_index >= 0:
+		game_state.place_shelf(_pending_room_slot_index, shelf_id)
+		game_state.set_active_room_slot_index(_pending_room_slot_index)
+	_pending_room_slot_index = -1
 	shelf_modal.close_modal()
 	_refresh_ui()
 
@@ -127,22 +126,16 @@ func _refresh_ui() -> void:
 	coins_value_label.text = "%.1f" % game_state.coins
 	experience_value_label.text = "%.1f" % game_state.experience
 	seeds_value_label.text = str(game_state.get_total_seed_count())
-	shelf_view.visible = active_shelf != null
-	empty_shelf_state.visible = active_shelf == null
-	if active_shelf != null:
-		shelf_view.configure(active_shelf)
-		_clamp_view_offset()
-		_position_world_content()
-		shelf_view.update_view(game_state)
-	else:
-		_position_world_content()
+	room_view.update_view(game_state)
+	_clamp_view_offset()
+	_position_world_content()
 
 
 func _position_world_content() -> void:
-	if world_root == null or shelf_view == null or empty_shelf_state == null:
+	if room_view == null or world_root == null:
 		return
 	var viewport_size := get_viewport_rect().size
-	shelf_view.position = (viewport_size - shelf_view.size) * 0.5
+	room_view.position_content(viewport_size)
 
 
 func _can_pan_view() -> bool:
@@ -182,43 +175,9 @@ func _apply_world_transform() -> void:
 
 
 func _connect_ui_signals() -> void:
-	if not shelf_view.pot_slot_pressed.is_connected(_on_pot_slot_pressed):
-		shelf_view.pot_slot_pressed.connect(_on_pot_slot_pressed)
-	if not shelf_view.seed_slot_pressed.is_connected(_on_seed_button_pressed):
-		shelf_view.seed_slot_pressed.connect(_on_seed_button_pressed)
-	if not choose_shelf_button.pressed.is_connected(_on_choose_shelf_button_pressed):
-		choose_shelf_button.pressed.connect(_on_choose_shelf_button_pressed)
-	if not empty_shelf_click_area.pressed.is_connected(_on_choose_shelf_button_pressed):
-		empty_shelf_click_area.pressed.connect(_on_choose_shelf_button_pressed)
-
-
-func _handle_world_primary_click(global_position: Vector2) -> bool:
-	if seed_modal.visible or pot_modal.visible or shelf_modal.visible:
-		return false
-
-	if empty_shelf_state.visible:
-		if choose_shelf_button.get_global_rect().has_point(global_position):
-			_on_choose_shelf_button_pressed()
-			return true
-		if empty_shelf_click_area.get_global_rect().has_point(global_position):
-			_on_choose_shelf_button_pressed()
-			return true
-		return false
-
-	if not shelf_view.visible:
-		return false
-
-	for slot_index in shelf_view.get_slot_count():
-		var pot_view := shelf_view.get_pot_view(slot_index)
-		if pot_view == null:
-			continue
-
-		if pot_view.slot_button.visible and not pot_view.slot_button.disabled and pot_view.slot_button.get_global_rect().has_point(global_position):
-			_on_pot_slot_pressed(slot_index)
-			return true
-
-		if pot_view.seed_button.visible and not pot_view.seed_button.disabled and pot_view.seed_button.get_global_rect().has_point(global_position):
-			_on_seed_button_pressed(slot_index)
-			return true
-
-	return false
+	if not room_view.choose_shelf_pressed.is_connected(_on_choose_shelf_button_pressed):
+		room_view.choose_shelf_pressed.connect(_on_choose_shelf_button_pressed)
+	if not room_view.pot_slot_pressed.is_connected(_on_pot_slot_pressed):
+		room_view.pot_slot_pressed.connect(_on_pot_slot_pressed)
+	if not room_view.seed_slot_pressed.is_connected(_on_seed_button_pressed):
+		room_view.seed_slot_pressed.connect(_on_seed_button_pressed)

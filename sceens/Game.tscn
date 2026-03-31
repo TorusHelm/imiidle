@@ -1,11 +1,10 @@
 [gd_scene format=3 uid="uid://bvmjc7j6q2wag"]
 
 [ext_resource type="Script" uid="uid://brxgjxcjr4el8" path="res://scripts/game_screen.gd" id="1_s8r8u"]
-[ext_resource type="PackedScene" uid="uid://chrt8p8hrj4v6" path="res://Shelfs/_shared/sceens/Shelf.tscn" id="2_r3bh2"]
+[ext_resource type="PackedScene" path="res://sceens/Room.tscn" id="2_room"]
 [ext_resource type="Script" uid="uid://crvlhsjxasb0b" path="res://scripts/seed_modal.gd" id="3_3ui8b"]
 [ext_resource type="Script" uid="uid://c8m2lvh1dic43" path="res://scripts/pot_modal.gd" id="4_qk2u3"]
 [ext_resource type="Script" uid="uid://cxaq2btg4wuc6" path="res://scripts/shelf_modal.gd" id="5_11wqp"]
-[ext_resource type="PackedScene" path="res://Ui/EmptyShelfState.tscn" id="6_empty_shelf"]
 
 [node name="Game" type="Control" unique_id=874124362]
 layout_mode = 3
@@ -24,15 +23,8 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="WorldRoot" type="Control" parent="." unique_id=160170230]
+[node name="Room" parent="." unique_id=160170230 instance=ExtResource("2_room")]
 unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 1
 
 [node name="Title" type="Label" parent="." unique_id=1250270890]
 layout_mode = 0
@@ -92,21 +84,6 @@ text = "Seeds"
 unique_name_in_owner = true
 layout_mode = 2
 text = "2"
-
-[node name="ShelfView" parent="WorldRoot" unique_id=357212328 instance=ExtResource("2_r3bh2")]
-unique_name_in_owner = true
-layout_mode = 0
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -350.0
-offset_top = -330.0
-offset_right = 174.0
-offset_bottom = 354.0
-
-[node name="EmptyShelfState" parent="WorldRoot" instance=ExtResource("6_empty_shelf")]
-unique_name_in_owner = true
 
 [node name="BackButton" type="Button" parent="." unique_id=1511248742]
 custom_minimum_size = Vector2(220, 44)
