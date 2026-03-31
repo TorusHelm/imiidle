@@ -9,6 +9,8 @@ var seed_inventory: Dictionary = {}
 var plant_definitions: Dictionary = {}
 var pot_inventory: Dictionary = {}
 var pot_definitions: Dictionary = {}
+var totem_inventory: Dictionary = {}
+var totem_definitions: Dictionary = {}
 var shelf_inventory: Dictionary = {}
 var shelf_definitions: Dictionary = {}
 var room_definition: RoomDefinition
@@ -174,6 +176,76 @@ func get_pot_in_slot(slot_index: int) -> PotInstance:
 	return active_shelf.get_pot_in_slot(slot_index)
 
 
+func has_any_totem() -> bool:
+	for totem_count in totem_inventory.values():
+		if int(totem_count) > 0:
+			return true
+	return false
+
+
+func get_totem_options() -> Array[Dictionary]:
+	var options: Array[Dictionary] = []
+
+	for totem_id in totem_definitions.keys():
+		var definition: TotemDefinition = totem_definitions[totem_id]
+		options.append(
+			{
+				"id": definition.id,
+				"display_name": definition.display_name,
+				"count": get_totem_count(definition.id),
+				"trigger_event_type": definition.trigger_event_type,
+				"target_rule": definition.target_rule,
+			}
+		)
+
+	return options
+
+
+func get_totem_count(totem_id: String) -> int:
+	return int(totem_inventory.get(totem_id, 0))
+
+
+func can_place_totem(slot_index: int, totem_id := "") -> bool:
+	var active_shelf := get_active_shelf()
+	if active_shelf == null:
+		return false
+
+	if not _is_valid_slot_index(slot_index):
+		return false
+
+	if not active_shelf.can_place_totem(slot_index):
+		return false
+
+	if totem_id.is_empty():
+		return has_any_totem()
+
+	return get_totem_count(totem_id) > 0
+
+
+func place_totem(slot_index: int, totem_id: String) -> bool:
+	var active_shelf := get_active_shelf()
+	if not can_place_totem(slot_index, totem_id):
+		return false
+
+	var definition: TotemDefinition = totem_definitions.get(totem_id)
+	if definition == null:
+		return false
+
+	if not active_shelf.place_totem(slot_index, TotemInstance.new(definition)):
+		return false
+
+	totem_inventory[totem_id] = get_totem_count(totem_id) - 1
+	_sync_shelf_slots()
+	return true
+
+
+func get_totem_in_slot(slot_index: int) -> TotemInstance:
+	var active_shelf := get_active_shelf()
+	if active_shelf == null or not _is_valid_slot_index(slot_index):
+		return null
+	return active_shelf.get_totem_in_slot(slot_index)
+
+
 func can_place_pot_in_room_slot(room_slot_index: int, slot_index: int, pot_id := "") -> bool:
 	var shelf := get_shelf_in_room_slot(room_slot_index)
 	if shelf == null or slot_index < 0 or slot_index >= shelf.slots.size():
@@ -201,6 +273,26 @@ func get_pot_in_room_slot(room_slot_index: int, slot_index: int) -> PotInstance:
 	if slot_index < 0 or slot_index >= shelf.slots.size():
 		return null
 	return shelf.get_pot_in_slot(slot_index)
+
+
+func can_place_totem_in_room_slot(room_slot_index: int, slot_index: int, totem_id := "") -> bool:
+	var shelf := get_shelf_in_room_slot(room_slot_index)
+	if shelf == null or slot_index < 0 or slot_index >= shelf.slots.size():
+		return false
+	if not shelf.can_place_totem(slot_index):
+		return false
+	if totem_id.is_empty():
+		return has_any_totem()
+	return get_totem_count(totem_id) > 0
+
+
+func get_totem_in_room_slot(room_slot_index: int, slot_index: int) -> TotemInstance:
+	var shelf := get_shelf_in_room_slot(room_slot_index)
+	if shelf == null:
+		return null
+	if slot_index < 0 or slot_index >= shelf.slots.size():
+		return null
+	return shelf.get_totem_in_slot(slot_index)
 
 
 func has_any_shelf() -> bool:
@@ -318,9 +410,11 @@ func _sync_shelf_slots() -> void:
 func _load_catalog(catalog: GameCatalog) -> void:
 	plant_definitions.clear()
 	pot_definitions.clear()
+	totem_definitions.clear()
 	shelf_definitions.clear()
 	seed_inventory.clear()
 	pot_inventory.clear()
+	totem_inventory.clear()
 	shelf_inventory.clear()
 	room_definition = null
 	room = RoomInstance.new()
@@ -345,6 +439,11 @@ func _load_catalog(catalog: GameCatalog) -> void:
 			continue
 		pot_definitions[definition.id] = definition
 
+	for definition in catalog.totem_definitions:
+		if definition == null or definition.id.is_empty():
+			continue
+		totem_definitions[definition.id] = definition
+
 	for definition in catalog.shelf_definitions:
 		if definition == null or definition.id.is_empty():
 			continue
@@ -355,6 +454,9 @@ func _load_catalog(catalog: GameCatalog) -> void:
 
 	for pot_id in catalog.starting_pot_inventory.keys():
 		pot_inventory[pot_id] = int(catalog.starting_pot_inventory[pot_id])
+
+	for totem_id in catalog.starting_totem_inventory.keys():
+		totem_inventory[totem_id] = int(catalog.starting_totem_inventory[totem_id])
 
 	for shelf_id in catalog.starting_shelf_inventory.keys():
 		shelf_inventory[shelf_id] = int(catalog.starting_shelf_inventory[shelf_id])

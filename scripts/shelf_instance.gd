@@ -61,6 +61,11 @@ func place_totem(slot_index: int, totem: TotemInstance) -> bool:
 	return true
 
 
+func can_place_totem(slot_index: int) -> bool:
+	var slot := get_slot(slot_index)
+	return slot != null and slot.is_empty()
+
+
 func get_slot(slot_index: int) -> SlotInstance:
 	if slot_index < 0 or slot_index >= slots.size():
 		return null
@@ -70,6 +75,11 @@ func get_slot(slot_index: int) -> SlotInstance:
 func get_pot_in_slot(slot_index: int) -> PotInstance:
 	var slot := get_slot(slot_index)
 	return slot.pot if slot != null else null
+
+
+func get_totem_in_slot(slot_index: int) -> TotemInstance:
+	var slot := get_slot(slot_index)
+	return slot.totem if slot != null else null
 
 
 func tick(delta: float) -> void:

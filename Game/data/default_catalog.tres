@@ -10,6 +10,8 @@
 [ext_resource type="Resource" uid="uid://cygoi83vimm71" path="res://Pots/DefaultPot/data/pot_default.tres" id="5_pot"]
 [ext_resource type="Resource" uid="uid://vfj2f3piwebi" path="res://Pots/OrangePot/data/pot_orange.tres" id="6_pot"]
 [ext_resource type="Resource" uid="uid://0m8tp443pwtk" path="res://Pots/PurplePot/data/pot_purple.tres" id="7_pot"]
+[ext_resource type="Script" path="res://scripts/totem_definition.gd" id="8_totem_script"]
+[ext_resource type="Resource" path="res://Totems/Metronome/data/totem_metronome.tres" id="8_totem"]
 [ext_resource type="Resource" uid="uid://dw7p7gin6ryap" path="res://Shelfs/ShelfA/data/shelf_a.tres" id="8_shelf"]
 [ext_resource type="Resource" uid="uid://dhc57hueqoa7f" path="res://Shelfs/ShelfB/data/shelf_b.tres" id="9_shelf"]
 [ext_resource type="Script" uid="uid://cucjjk2bjbhk4" path="res://scripts/shelf_definition.gd" id="10_ylmi7"]
@@ -19,6 +21,7 @@ script = ExtResource("1_catalog")
 room_definition = ExtResource("1_room")
 plant_definitions = Array[ExtResource("1_qyvm0")]([ExtResource("2_plant"), ExtResource("3_plant"), ExtResource("4_plant")])
 pot_definitions = Array[ExtResource("5_jir86")]([ExtResource("5_pot"), ExtResource("6_pot"), ExtResource("7_pot")])
+totem_definitions = Array[ExtResource("8_totem_script")]([ExtResource("8_totem")])
 shelf_definitions = Array[ExtResource("10_ylmi7")]([ExtResource("8_shelf"), ExtResource("9_shelf")])
 background_color_hex = "#8baa95"
 starting_seed_inventory = {
@@ -30,6 +33,9 @@ starting_pot_inventory = {
 "default_pot": 1,
 "orange_pot": 1,
 "purple_pot": 1
+}
+starting_totem_inventory = {
+"metronome": 1
 }
 starting_shelf_inventory = {
 "shelf_a": 1,

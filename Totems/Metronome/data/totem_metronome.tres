@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="TotemDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/totem_definition.gd" id="1_totem"]
+
+[resource]
+script = ExtResource("1_totem")
+id = "metronome"
+display_name = "Metronome"
+trigger_event_type = "plant_activated"
+target_rule = "mirror_from_source"
+modifier_type = "haste"
+modifier_multiplier = 2.0
+modifier_duration = 1.0
