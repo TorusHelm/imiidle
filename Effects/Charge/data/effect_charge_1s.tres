@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="InstantEffectDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/instant_effect_definition.gd" id="1_effect"]
+
+[resource]
+script = ExtResource("1_effect")
+id = "charge_1s"
+effect_type = "charge"
+display_name = "Charge"
+description = "Instantly advances plant progress by one second."
+supported_target_actor_types = Array[String](["plant"])
+progress_seconds_delta = 1.0
+reset_progress_on_activation = true

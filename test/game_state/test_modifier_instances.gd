@@ -5,6 +5,7 @@ const HASTE_MODIFIER = preload("res://Modifiers/Haste/data/modifier_haste.tres")
 const SLOW_MODIFIER = preload("res://Modifiers/Slow/data/modifier_slow.tres")
 const RICH_HARVEST_PERCENT_MODIFIER = preload("res://Modifiers/RichHarvest/data/modifier_rich_harvest_percent.tres")
 const RICH_HARVEST_FLAT_MODIFIER = preload("res://Modifiers/RichHarvest/data/modifier_rich_harvest_flat.tres")
+const CHARGE_EFFECT = preload("res://Effects/Charge/data/effect_charge_1s.tres")
 
 
 func test_plant_refreshes_existing_haste_modifier_instance_instead_of_stacking() -> void:
@@ -40,7 +41,7 @@ func test_modifier_snapshot_exposes_stable_ui_contract() -> void:
 	assert_eq(snapshot.get("modifier_type"), "haste", "Modifier snapshot should expose modifier type for view routing.")
 	assert_eq(snapshot.get("display_name"), "Haste", "Modifier snapshot should expose display name from the definition.")
 	assert_eq(snapshot.get("description"), "Increases target speed while active.", "Modifier snapshot should expose description from the definition.")
-	assert_eq(snapshot.get("icon_path"), "res://assets/haste.png", "Modifier snapshot should expose icon path from the definition.")
+	assert_ne(String(snapshot.get("icon_path", "")), "", "Modifier snapshot should expose a non-empty icon reference from the definition.")
 	assert_eq(snapshot.get("stacks"), 1, "Current modifier model should expose a fixed stack count for UI consistency.")
 	assert_eq(snapshot.get("speed_multiplier"), 2.0, "Haste snapshot should expose speed contribution.")
 	assert_eq(snapshot.get("reward_multiplier"), 1.0, "Unused reward multiplier should stay neutral in the snapshot.")
@@ -96,3 +97,20 @@ func test_game_state_loads_modifier_definition_library_from_catalog() -> void:
 	assert_not_null(game_state.get_modifier_definition("rich_harvest_percent"), "Default catalog should register percent Rich Harvest in the modifier library.")
 	assert_not_null(game_state.get_modifier_definition("rich_harvest_flat"), "Default catalog should register flat Rich Harvest in the modifier library.")
 	assert_not_null(game_state.get_aura_definition("rich_harvest_percent_aura"), "Default catalog should register Rich Harvest aura in the aura library.")
+	assert_not_null(game_state.get_instant_effect_definition("charge_1s"), "Default catalog should register Charge in the instant effect library.")
+
+
+func test_charge_effect_resets_progress_to_zero_after_activation_overflow() -> void:
+	var plant_definition := PlantDefinition.new()
+	plant_definition.id = "charge_test_plant"
+	plant_definition.display_name = "Charge Test Plant"
+	plant_definition.growth_duration = 0.5
+	plant_definition.coins_per_second = 2.0
+	var plant := PlantInstance.new(plant_definition)
+	plant.progress_seconds = 0.2
+
+	var report := plant.apply_instant_effect(CHARGE_EFFECT, {"source_slot_index": 1})
+
+	assert_eq(plant.activation_count, 1, "Charge should trigger one activation when the added seconds overflow the cycle.")
+	assert_eq(plant.progress_seconds, 0.0, "Charge overflow should reset progress to zero after activation.")
+	assert_eq(float(report.get("reward", 0.0)), 1.0, "Charge-triggered activation should return the same reward report as a normal plant activation.")

@@ -8,6 +8,8 @@ extends Resource
 @export var id := ""
 ## Human-readable name shown in UI.
 @export var display_name := ""
+## Optional gameplay tags used by targeting filters.
+@export var tags: Array[String] = []
 
 @export_group("Gameplay")
 ## How many seconds the plant needs to reach maturity.

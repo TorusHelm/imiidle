@@ -8,6 +8,7 @@ id = "rich_harvest_percent_long"
 modifier_type = "rich_harvest_percent"
 display_name = "Rich Harvest"
 description = "Multiplies the harvest reward while active."
+supported_target_actor_types = Array[String](["plant"])
 duration = 3.0
 reward_multiplier = 1.5
 icon_path = "uid://ull6spmwokkq"

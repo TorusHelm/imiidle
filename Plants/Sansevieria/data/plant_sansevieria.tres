@@ -4,10 +4,9 @@
 
 [resource]
 script = ExtResource("1_plant")
-id = "pothos"
+id = "sansevieria"
 display_name = "Sansevieria"
 growth_duration = 1.0
-coins_per_second = 1.0
 texture_path = "res://Plants/Sansevieria/assets/plant-sansevieria.png"
 texture_offset = Vector2(-6, 4)
 texture_size = Vector2(140, 170)

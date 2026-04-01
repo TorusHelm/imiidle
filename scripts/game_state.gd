@@ -10,6 +10,7 @@ var plant_definitions: Dictionary = {}
 var pot_inventory: Dictionary = {}
 var pot_definitions: Dictionary = {}
 var aura_definitions: Dictionary = {}
+var instant_effect_definitions: Dictionary = {}
 var modifier_definitions: Dictionary = {}
 var totem_inventory: Dictionary = {}
 var totem_definitions: Dictionary = {}
@@ -391,6 +392,10 @@ func get_aura_definition(aura_id: String) -> Resource:
 	return aura_definitions.get(aura_id, null)
 
 
+func get_instant_effect_definition(effect_id: String) -> Resource:
+	return instant_effect_definitions.get(effect_id, null)
+
+
 func get_modifier_definition(modifier_id: String) -> Resource:
 	return modifier_definitions.get(modifier_id, null)
 
@@ -480,6 +485,7 @@ func _load_catalog(catalog: GameCatalog) -> void:
 	plant_definitions.clear()
 	pot_definitions.clear()
 	aura_definitions.clear()
+	instant_effect_definitions.clear()
 	modifier_definitions.clear()
 	totem_definitions.clear()
 	shelf_definitions.clear()
@@ -517,6 +523,14 @@ func _load_catalog(catalog: GameCatalog) -> void:
 		if aura_id.is_empty():
 			continue
 		aura_definitions[aura_id] = definition
+
+	for definition in catalog.instant_effect_definitions:
+		if definition == null:
+			continue
+		var effect_id := String(definition.get("id"))
+		if effect_id.is_empty():
+			continue
+		instant_effect_definitions[effect_id] = definition
 
 	for definition in catalog.modifier_definitions:
 		if definition == null:

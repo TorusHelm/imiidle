@@ -12,6 +12,8 @@ extends Resource
 @export_group("Targeting")
 @export var target_rule := "all_plants"
 @export var target_actor_type := "plant"
+@export var target_required_tags: Array[String] = []
+@export var target_excluded_tags: Array[String] = []
 
 @export_group("Effects")
 @export var speed_multiplier := 1.0

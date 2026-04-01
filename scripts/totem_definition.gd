@@ -10,6 +10,8 @@ const DEFAULT_FALLBACK_MODIFIER_SCRIPT := preload("res://scripts/modifier_defini
 @export var id := ""
 ## Human-readable name shown in UI.
 @export var display_name := ""
+## Optional gameplay tags used by targeting filters.
+@export var tags: Array[String] = []
 
 @export_group("Visual")
 ## PNG used for the totem sprite.
@@ -39,7 +41,10 @@ const DEFAULT_FALLBACK_MODIFIER_SCRIPT := preload("res://scripts/modifier_defini
 @export var trigger_event_type := "plant_activated"
 @export var target_rule := "mirror_from_source"
 @export var target_actor_type := "any"
+@export var target_required_tags: Array[String] = []
+@export var target_excluded_tags: Array[String] = []
 @export var modifier_definitions: Array[Resource] = []
+@export var instant_effect_definitions: Array[Resource] = []
 @export var aura_definitions: Array[Resource] = []
 @export var modifier_definition: Resource
 @export var modifier_type := "haste"
@@ -83,6 +88,14 @@ func get_modifier_definitions() -> Array[Resource]:
 	var fallback_definition := get_modifier_definition()
 	if fallback_definition != null:
 		definitions.append(fallback_definition)
+	return definitions
+
+
+func get_instant_effect_definitions() -> Array[Resource]:
+	var definitions: Array[Resource] = []
+	for definition in instant_effect_definitions:
+		if definition != null:
+			definitions.append(definition)
 	return definitions
 
 

@@ -42,7 +42,7 @@ func update_tick(delta: float, context: Dictionary = {}) -> Dictionary:
 
 
 func apply_modifier(modifier_definition: Resource, modifier_source: Dictionary = {}) -> void:
-	if modifier_definition == null:
+	if not can_accept_modifier(modifier_definition):
 		return
 
 	var modifier_type := String(modifier_definition.get("modifier_type"))
@@ -55,6 +55,51 @@ func apply_modifier(modifier_definition: Resource, modifier_source: Dictionary =
 		return
 
 	active_modifiers[existing_index].refresh(modifier_definition, modifier_source)
+
+
+func apply_instant_effect(effect_definition: Resource, effect_source: Dictionary = {}) -> Dictionary:
+	if not can_accept_instant_effect(effect_definition):
+		return {}
+
+	match String(effect_definition.get("effect_type")):
+		"charge":
+			return _apply_charge_effect(effect_definition, effect_source)
+		_:
+			return {}
+
+
+func can_accept_modifier(modifier_definition: Resource) -> bool:
+	if modifier_definition == null:
+		return false
+	return _supports_target_actor_type(modifier_definition, "plant")
+
+
+func can_accept_instant_effect(effect_definition: Resource) -> bool:
+	if effect_definition == null:
+		return false
+	if not _supports_target_actor_type(effect_definition, "plant"):
+		return false
+	match String(effect_definition.get("effect_type")):
+		"charge":
+			return true
+		_:
+			return false
+
+
+func get_tags() -> Array[String]:
+	var tags: Array[String] = ["plant"]
+	if definition == null:
+		return tags
+	for tag in definition.tags:
+		var resolved_tag := String(tag)
+		if resolved_tag.is_empty() or tags.has(resolved_tag):
+			continue
+		tags.append(resolved_tag)
+	return tags
+
+
+func has_tag(tag: String) -> bool:
+	return get_tags().has(tag)
 
 
 func get_growth_ratio() -> float:
@@ -159,3 +204,36 @@ func _find_modifier_index(modifier_type: String) -> int:
 		if active_modifiers[index].get_modifier_type() == modifier_type:
 			return index
 	return -1
+
+
+func _supports_target_actor_type(effect_definition: Resource, actor_type: String) -> bool:
+	if effect_definition == null:
+		return false
+	var supported_actor_types_variant = effect_definition.get("supported_target_actor_types")
+	var supported_actor_types: Array = supported_actor_types_variant if supported_actor_types_variant is Array else []
+	if supported_actor_types.is_empty():
+		return true
+	for supported_actor_type in supported_actor_types:
+		if String(supported_actor_type) == actor_type:
+			return true
+	return false
+
+
+func _apply_charge_effect(effect_definition: Resource, _effect_source: Dictionary = {}) -> Dictionary:
+	var added_seconds_value = effect_definition.get("progress_seconds_delta")
+	var added_seconds := maxf(float(added_seconds_value if added_seconds_value != null else 0.0), 0.0)
+	if added_seconds <= 0.0:
+		return {}
+
+	progress_seconds += added_seconds
+	var cycle_time := get_cycle_time()
+	if cycle_time <= 0.0 or progress_seconds < cycle_time:
+		return {}
+
+	activation_count += 1
+	if bool(effect_definition.get("reset_progress_on_activation")):
+		progress_seconds = 0.0
+	else:
+		progress_seconds = maxf(progress_seconds - cycle_time, 0.0)
+
+	return _build_activation_report({})

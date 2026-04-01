@@ -13,6 +13,7 @@ extends Resource
 @export var duration := 1.0
 
 @export_group("Effects")
+@export var supported_target_actor_types: Array[String] = []
 @export var speed_multiplier := 1.0
 @export var reward_multiplier := 1.0
 @export var flat_reward_bonus := 0.0

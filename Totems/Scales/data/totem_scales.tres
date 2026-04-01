@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="TotemDefinition" format=3 uid="uid://b4w3iuv5csq4g"]
+
+[ext_resource type="Script" uid="uid://bvw3tsgpgpk7a" path="res://scripts/totem_definition.gd" id="1_totem"]
+[ext_resource type="Resource" uid="uid://dhlxyggm3121l" path="res://Game/data/default_slot_layout.tres" id="2_layout"]
+[ext_resource type="Resource" path="res://Effects/Charge/data/effect_charge_1s.tres" id="3_effect"]
+
+[resource]
+script = ExtResource("1_totem")
+id = "scales"
+display_name = "Scales"
+texture_path = "uid://bli8tmowgkuso"
+texture_position = Vector2(23, 70)
+slot_layout = ExtResource("2_layout")
+target_actor_type = "plant"
+instant_effect_definitions = Array[Resource]([ExtResource("3_effect")])

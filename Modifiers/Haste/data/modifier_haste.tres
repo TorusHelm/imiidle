@@ -8,5 +8,6 @@ id = "haste"
 modifier_type = "haste"
 display_name = "Haste"
 description = "Increases target speed while active."
+supported_target_actor_types = Array[String](["plant"])
 speed_multiplier = 2.0
 icon_path = "uid://6qly7vs6ibb8"

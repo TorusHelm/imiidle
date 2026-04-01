@@ -6,6 +6,7 @@ const SHELF_B: ShelfDefinition = preload("res://Shelfs/ShelfB/data/shelf_b.tres"
 const DEFAULT_POT: PotDefinition = preload("res://Pots/DefaultPot/data/pot_default.tres")
 const DEFAULT_ROOM: RoomDefinition = preload("res://Game/data/default_room.tres")
 const METRONOME: TotemDefinition = preload("res://Totems/Metronome/data/totem_metronome.tres")
+const SCALES: TotemDefinition = preload("res://Totems/Scales/data/totem_scales.tres")
 const SNAIL: TotemDefinition = preload("res://Totems/Snail/data/totem_snail.tres")
 
 
@@ -141,3 +142,123 @@ func test_snail_applies_slow_to_the_activating_plant_and_keeps_profit_aura_on_th
 	other_plant.progress_seconds = other_plant.get_cycle_time()
 	shelf.tick(0.1)
 	assert_almost_eq(shelf.drain_generated_coins(), 12.0, 0.001, "Snail aura should increase reward for every plant on the shelf, not only the triggering plant.")
+
+
+func test_scales_applies_charge_to_the_mirrored_plant() -> void:
+	var room := RoomInstance.new(DEFAULT_ROOM)
+	var shelf := ShelfInstance.new(SHELF_A, room)
+	var source_plant_definition := PlantDefinition.new()
+	source_plant_definition.id = "ping_source"
+	source_plant_definition.display_name = "Ping Source"
+	source_plant_definition.growth_duration = 0.1
+	source_plant_definition.coins_per_second = 1.0
+
+	var target_plant_definition := PlantDefinition.new()
+	target_plant_definition.id = "ping_target"
+	target_plant_definition.display_name = "Ping Target"
+	target_plant_definition.growth_duration = 10.0
+	target_plant_definition.coins_per_second = 1.0
+
+	assert_true(room.place_shelf(0, shelf), "Room should hold Shelf A for Scales.")
+	assert_true(shelf.place_pot(0, DEFAULT_POT), "Source plant slot should accept a pot.")
+	assert_true(shelf.place_totem(1, TotemInstance.new(SCALES)), "Middle slot should accept Scales.")
+	assert_true(shelf.place_pot(2, DEFAULT_POT), "Mirrored target slot should accept a pot.")
+	assert_true(shelf.plant_seed(0, source_plant_definition), "Source plant should be planted.")
+	assert_true(shelf.plant_seed(2, target_plant_definition), "Target plant should be planted.")
+
+	var target_plant := shelf.get_pot_in_slot(2).active_plant
+
+	shelf.tick(0.1)
+	shelf.tick(0.1)
+	assert_eq(shelf.get_pending_applications().size(), 1, "Scales should schedule one deferred instant effect for the mirrored plant.")
+	shelf.tick(0.1)
+
+	assert_almost_eq(target_plant.progress_seconds, 1.3, 0.001, "Scales charge should advance the mirrored plant by one second during APPLY and then continue normal tick progress.")
+	assert_eq(target_plant.activation_count, 0, "Charge should not activate a long-cycle plant immediately when it stays below the threshold.")
+
+
+func test_target_required_tags_filter_targets_before_apply() -> void:
+	var room := RoomInstance.new(DEFAULT_ROOM)
+	var shelf := ShelfInstance.new(SHELF_A, room)
+	var flower_plant_definition := PlantDefinition.new()
+	flower_plant_definition.id = "flower_target"
+	flower_plant_definition.display_name = "Flower Target"
+	flower_plant_definition.tags = ["flower"]
+	flower_plant_definition.growth_duration = 0.1
+	flower_plant_definition.coins_per_second = 1.0
+
+	var cactus_plant_definition := PlantDefinition.new()
+	cactus_plant_definition.id = "cactus_target"
+	cactus_plant_definition.display_name = "Cactus Target"
+	cactus_plant_definition.tags = ["cactus"]
+	cactus_plant_definition.growth_duration = 10.0
+	cactus_plant_definition.coins_per_second = 1.0
+
+	var tagged_totem_definition := TotemDefinition.new()
+	tagged_totem_definition.id = "tag_filter_totem"
+	tagged_totem_definition.display_name = "Tag Filter Totem"
+	tagged_totem_definition.trigger_event_type = "plant_activated"
+	tagged_totem_definition.target_rule = "all_plants"
+	tagged_totem_definition.target_actor_type = "plant"
+	tagged_totem_definition.target_required_tags = ["flower"]
+	tagged_totem_definition.modifier_definitions = [preload("res://Modifiers/Slow/data/modifier_slow_long.tres")]
+
+	assert_true(room.place_shelf(0, shelf), "Room should hold Shelf A for tag filtering.")
+	assert_true(shelf.place_pot(0, DEFAULT_POT), "First plant slot should accept a pot.")
+	assert_true(shelf.place_totem(1, TotemInstance.new(tagged_totem_definition)), "Middle slot should accept the custom tag filter totem.")
+	assert_true(shelf.place_pot(2, DEFAULT_POT), "Second plant slot should accept a pot.")
+	assert_true(shelf.plant_seed(0, flower_plant_definition), "Flower-tagged plant should be planted.")
+	assert_true(shelf.plant_seed(2, cactus_plant_definition), "Cactus-tagged plant should be planted.")
+
+	shelf.tick(0.1)
+	shelf.tick(0.1)
+	shelf.tick(0.1)
+
+	assert_not_null(shelf.get_pot_in_slot(0).active_plant.get_active_modifier("slow"), "Required tag filter should allow the flower-tagged plant to receive the modifier.")
+	assert_null(shelf.get_pot_in_slot(2).active_plant.get_active_modifier("slow"), "Required tag filter should exclude plants without the matching tag.")
+
+
+func test_same_row_plants_rule_ignores_other_rows() -> void:
+	var room := RoomInstance.new(DEFAULT_ROOM)
+	var shelf := ShelfInstance.new(SHELF_B, room)
+	var trigger_plant_definition := PlantDefinition.new()
+	trigger_plant_definition.id = "row_trigger"
+	trigger_plant_definition.display_name = "Row Trigger"
+	trigger_plant_definition.growth_duration = 0.1
+	trigger_plant_definition.coins_per_second = 1.0
+
+	var same_row_plant_definition := PlantDefinition.new()
+	same_row_plant_definition.id = "same_row"
+	same_row_plant_definition.display_name = "Same Row"
+	same_row_plant_definition.growth_duration = 10.0
+	same_row_plant_definition.coins_per_second = 1.0
+
+	var other_row_plant_definition := PlantDefinition.new()
+	other_row_plant_definition.id = "other_row"
+	other_row_plant_definition.display_name = "Other Row"
+	other_row_plant_definition.growth_duration = 10.0
+	other_row_plant_definition.coins_per_second = 1.0
+
+	var row_totem_definition := TotemDefinition.new()
+	row_totem_definition.id = "row_totem"
+	row_totem_definition.display_name = "Row Totem"
+	row_totem_definition.trigger_event_type = "plant_activated"
+	row_totem_definition.target_rule = "same_row_plants"
+	row_totem_definition.target_actor_type = "plant"
+	row_totem_definition.modifier_definitions = [preload("res://Modifiers/Slow/data/modifier_slow_long.tres")]
+
+	assert_true(room.place_shelf(0, shelf), "Room should hold Shelf B for same-row targeting.")
+	assert_true(shelf.place_pot(0, DEFAULT_POT), "Trigger plant slot should accept a pot.")
+	assert_true(shelf.place_totem(1, TotemInstance.new(row_totem_definition)), "Row totem slot should accept the custom totem.")
+	assert_true(shelf.place_pot(2, DEFAULT_POT), "Same-row target slot should accept a pot.")
+	assert_true(shelf.place_pot(3, DEFAULT_POT), "Other-row plant slot should accept a pot.")
+	assert_true(shelf.plant_seed(0, trigger_plant_definition), "Trigger plant should be planted.")
+	assert_true(shelf.plant_seed(2, same_row_plant_definition), "Same-row target plant should be planted.")
+	assert_true(shelf.plant_seed(3, other_row_plant_definition), "Other-row target plant should be planted.")
+
+	shelf.tick(0.1)
+	shelf.tick(0.1)
+	shelf.tick(0.1)
+
+	assert_not_null(shelf.get_pot_in_slot(2).active_plant.get_active_modifier("slow"), "same_row_plants should affect targets in the trigger row.")
+	assert_null(shelf.get_pot_in_slot(3).active_plant.get_active_modifier("slow"), "same_row_plants should not affect plants in other rows.")
