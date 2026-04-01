@@ -2,10 +2,6 @@
 class_name SlotStatusIcon
 extends Control
 
-const MODIFIER_ICONS := {
-	"haste": preload("res://assets/haste.png"),
-}
-
 
 @onready var frame: Panel = $Frame
 @onready var icon_texture: TextureRect = $Frame/IconTexture
@@ -16,13 +12,17 @@ func _ready() -> void:
 	clear()
 
 
-func show_modifier(modifier: Dictionary) -> void:
-	var modifier_type := String(modifier.get("modifier_type", ""))
+func show_modifier(modifier: Variant) -> void:
+	var modifier_snapshot := _to_snapshot(modifier)
+	if modifier_snapshot.is_empty():
+		clear()
+		return
 	visible = true
-	tooltip_text = _build_tooltip(modifier)
+	tooltip_text = _build_tooltip(modifier_snapshot)
 	frame.tooltip_text = tooltip_text
 	icon_texture.tooltip_text = tooltip_text
-	icon_texture.texture = MODIFIER_ICONS.get(modifier_type, null)
+	var icon_path := String(modifier_snapshot.get("icon_path", ""))
+	icon_texture.texture = load(icon_path) if not icon_path.is_empty() else null
 
 
 func clear() -> void:
@@ -51,7 +51,16 @@ func _apply_frame_style() -> void:
 
 func _build_tooltip(modifier: Dictionary) -> String:
 	var modifier_type := String(modifier.get("modifier_type", "modifier"))
+	var display_name := String(modifier.get("display_name", modifier_type.capitalize()))
 	var remaining_duration := float(modifier.get("remaining_duration", 0.0))
 	if remaining_duration > 0.0:
-		return "%s\nRemaining: %.1fs" % [modifier_type.capitalize(), remaining_duration]
-	return modifier_type.capitalize()
+		return "%s\nRemaining: %.1fs" % [display_name, remaining_duration]
+	return display_name
+
+
+func _to_snapshot(modifier: Variant) -> Dictionary:
+	if modifier is Object and modifier.has_method("to_snapshot"):
+		return modifier.to_snapshot()
+	if modifier is Dictionary:
+		return (modifier as Dictionary).duplicate(true)
+	return {}

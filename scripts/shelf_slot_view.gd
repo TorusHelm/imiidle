@@ -84,7 +84,7 @@ func show_totem(totem_instance: TotemInstance) -> void:
 	totem_view.position = -totem_view.get_totem_baseline_local_position()
 
 
-func update_status_modifiers(modifiers: Array[Dictionary]) -> void:
+func update_status_modifiers(modifiers: Array) -> void:
 	_ensure_status_icon_views()
 
 	for index in _status_icon_views.size():

@@ -3,6 +3,7 @@ class_name TotemDefinition
 extends Resource
 
 const DEFAULT_SLOT_LAYOUT: SlotLayout = preload("res://Game/data/default_slot_layout.tres")
+const DEFAULT_FALLBACK_MODIFIER_SCRIPT := preload("res://scripts/modifier_definition.gd")
 
 @export_group("Identity")
 ## Stable internal id used by saves, inventory, and lookups.
@@ -37,6 +38,7 @@ const DEFAULT_SLOT_LAYOUT: SlotLayout = preload("res://Game/data/default_slot_la
 @export_group("Reaction")
 @export var trigger_event_type := "plant_activated"
 @export var target_rule := "mirror_from_source"
+@export var modifier_definition: Resource
 @export var modifier_type := "haste"
 @export var modifier_multiplier := 2.0
 @export var modifier_duration := 1.0
@@ -64,3 +66,18 @@ func get_slot_footprint_offset() -> Vector2:
 	if slot_footprint_offset != Vector2(-85.0, -202.0):
 		return slot_footprint_offset
 	return -get_slot_layout().slot_anchor_offset
+
+
+func get_modifier_definition() -> Resource:
+	if modifier_definition != null:
+		return modifier_definition
+	if modifier_type.is_empty():
+		return null
+
+	var fallback_definition = DEFAULT_FALLBACK_MODIFIER_SCRIPT.new()
+	fallback_definition.id = modifier_type
+	fallback_definition.modifier_type = modifier_type
+	fallback_definition.display_name = modifier_type.capitalize()
+	fallback_definition.duration = modifier_duration
+	fallback_definition.multiplier = modifier_multiplier
+	return fallback_definition

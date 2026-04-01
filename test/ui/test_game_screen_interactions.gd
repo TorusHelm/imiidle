@@ -247,6 +247,7 @@ func test_slot_overlays_show_coin_feedback_and_modifier_status() -> void:
 	var first_status_icon: SlotStatusIcon = target_slot_view.get_node("StatusIconsLayer/StatusIcon0")
 	var icon_texture: TextureRect = first_status_icon.get_node("Frame/IconTexture")
 	assert_not_null(icon_texture.texture, "Haste modifier should render its configured status icon texture.")
+	assert_true(first_status_icon.tooltip_text.begins_with("Haste"), "Status overlay tooltip should come from the modifier definition display name.")
 
 
 func _click_control(control: Control) -> void:

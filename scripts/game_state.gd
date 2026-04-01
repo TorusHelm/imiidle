@@ -414,17 +414,17 @@ func drain_visual_feedback_in_room_slot(room_slot_index: int) -> Array[Dictionar
 	return drained
 
 
-func get_active_modifiers_in_room_slot(room_slot_index: int, slot_index: int) -> Array[Dictionary]:
+func get_active_modifiers_in_room_slot(room_slot_index: int, slot_index: int) -> Array:
 	var shelf := get_shelf_in_room_slot(room_slot_index)
 	return _get_active_modifiers_for_shelf_slot(shelf, slot_index)
 
 
-func get_active_modifiers_in_slot(slot_index: int) -> Array[Dictionary]:
+func get_active_modifiers_in_slot(slot_index: int) -> Array:
 	return _get_active_modifiers_for_shelf_slot(get_active_shelf(), slot_index)
 
 
-func _get_active_modifiers_for_shelf_slot(shelf: ShelfInstance, slot_index: int) -> Array[Dictionary]:
-	var modifiers: Array[Dictionary] = []
+func _get_active_modifiers_for_shelf_slot(shelf: ShelfInstance, slot_index: int) -> Array:
+	var modifiers: Array = []
 	if shelf == null or slot_index < 0 or slot_index >= shelf.slots.size():
 		return modifiers
 
@@ -438,7 +438,7 @@ func _get_active_modifiers_for_shelf_slot(shelf: ShelfInstance, slot_index: int)
 
 	var actor_modifiers: Array = actor.get("active_modifiers")
 	for modifier in actor_modifiers:
-		modifiers.append((modifier as Dictionary).duplicate(true))
+		modifiers.append(modifier)
 	return modifiers
 
 

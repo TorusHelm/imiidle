@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bvw3tsgpgpk7a" path="res://scripts/totem_definition.gd" id="1_totem"]
 [ext_resource type="Resource" uid="uid://dhlxyggm3121l" path="res://Game/data/default_slot_layout.tres" id="2_layout"]
+[ext_resource type="Resource" path="res://Modifiers/Haste/data/modifier_haste.tres" id="3_modifier"]
 
 [resource]
 script = ExtResource("1_totem")
@@ -13,3 +14,4 @@ texture_size = Vector2(170, 240)
 totem_baseline = Vector2(85, 240)
 slot_layout = ExtResource("2_layout")
 slot_footprint_offset = Vector2(-89.185, -202)
+modifier_definition = ExtResource("3_modifier")

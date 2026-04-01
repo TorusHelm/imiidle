@@ -142,7 +142,7 @@ func _run_tick(delta: float) -> void:
 			continue
 
 		if actor is TotemInstance:
-			var result: Dictionary = actor.update_tick(_incoming_events, slot.index)
+			var result: Dictionary = actor.update_tick(delta, _incoming_events, slot.index)
 			var report_data: Dictionary = result.get("report", {})
 			if not report_data.is_empty():
 				_enqueue_visual_feedback(slot.index, "totem", report_data)
@@ -164,7 +164,8 @@ func _run_tick(delta: float) -> void:
 					{
 						"type": String(request_data.get("type", "")),
 						"target_slot_index": target_slot.index,
-						"modifier": request_data.get("modifier", {}).duplicate(true),
+						"modifier_definition": request_data.get("modifier_definition", null),
+						"modifier_source": request_data.get("modifier_source", {}).duplicate(true),
 					}
 				)
 
@@ -186,7 +187,7 @@ func _apply_phase() -> void:
 			continue
 
 		if actor.has_method("apply_modifier"):
-			actor.apply_modifier(application.get("modifier", {}))
+			actor.apply_modifier(application.get("modifier_definition", null), application.get("modifier_source", {}))
 
 
 func _resolve_targets(source_slot: SlotInstance, request_data: Dictionary) -> Array[SlotInstance]:

@@ -42,7 +42,10 @@ func test_metronome_reacts_one_tick_later_and_applies_haste_on_next_tick_inside_
 
 	shelf.tick(0.1)
 	assert_eq(target_plant.active_modifiers.size(), 1, "Tick N+2 should apply the queued modifier in APPLY.")
-	assert_eq(target_plant.get_active_modifier("haste").get("multiplier"), 2.0, "Metronome should apply haste through Shelf targeting.")
+	var applied_haste: Variant = target_plant.get_active_modifier("haste")
+	assert_not_null(applied_haste, "Target plant should store haste as a modifier instance.")
+	assert_eq(applied_haste.get_multiplier(), 2.0, "Metronome should apply haste through Shelf targeting.")
+	assert_eq(applied_haste.definition.id, "haste", "Applied haste should come from the shared modifier definition resource.")
 
 
 func test_room_keeps_shelf_event_loops_isolated() -> void:

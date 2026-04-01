@@ -1,15 +1,13 @@
 class_name PlantInstance
 extends RefCounted
 
-
-const MODIFIER_HASTE := "haste"
-
+const MODIFIER_INSTANCE_SCRIPT := preload("res://scripts/modifier_instance.gd")
 
 var definition: PlantDefinition
 var progress_seconds := 0.0
 var age_seconds := 0.0
 var activation_count := 0
-var active_modifiers: Array[Dictionary] = []
+var active_modifiers: Array = []
 
 
 func _init(plant_definition: PlantDefinition) -> void:
@@ -19,7 +17,8 @@ func _init(plant_definition: PlantDefinition) -> void:
 func advance(delta: float) -> void:
 	var resolved_delta := maxf(delta, 0.0)
 	age_seconds += resolved_delta
-	progress_seconds += resolved_delta
+	_advance_modifiers(resolved_delta)
+	progress_seconds += resolved_delta * _get_speed_multiplier({})
 
 
 func update_tick(delta: float, context: Dictionary = {}) -> Dictionary:
@@ -40,18 +39,20 @@ func update_tick(delta: float, context: Dictionary = {}) -> Dictionary:
 	return _build_activation_report()
 
 
-func apply_modifier(modifier: Dictionary) -> void:
-	var modifier_type := String(modifier.get("modifier_type", ""))
+func apply_modifier(modifier_definition: Resource, modifier_source: Dictionary = {}) -> void:
+	if modifier_definition == null:
+		return
+
+	var modifier_type := String(modifier_definition.get("modifier_type"))
 	if modifier_type.is_empty():
 		return
 
-	var resolved_modifier := modifier.duplicate(true)
 	var existing_index := _find_modifier_index(modifier_type)
 	if existing_index == -1:
-		active_modifiers.append(resolved_modifier)
+		active_modifiers.append(MODIFIER_INSTANCE_SCRIPT.new(modifier_definition, modifier_source))
 		return
 
-	active_modifiers[existing_index] = resolved_modifier
+	active_modifiers[existing_index].refresh(modifier_definition, modifier_source)
 
 
 func get_growth_ratio() -> float:
@@ -79,28 +80,25 @@ func get_cycle_time() -> float:
 	return definition.growth_duration
 
 
-func get_active_modifier(modifier_type: String) -> Dictionary:
+func get_active_modifier(modifier_type: String) -> Variant:
 	var modifier_index := _find_modifier_index(modifier_type)
 	if modifier_index == -1:
-		return {}
-	return active_modifiers[modifier_index].duplicate(true)
+		return null
+	return active_modifiers[modifier_index]
 
 
 func _advance_modifiers(delta: float) -> void:
 	if active_modifiers.is_empty():
 		return
 
-	var next_modifiers: Array[Dictionary] = []
+	var next_active_modifiers: Array = []
 	for modifier in active_modifiers:
-		var remaining_duration := maxf(float(modifier.get("remaining_duration", 0.0)) - delta, 0.0)
-		if remaining_duration <= 0.0:
+		modifier.advance(delta)
+		if modifier.is_expired():
 			continue
+		next_active_modifiers.append(modifier)
 
-		var updated_modifier := modifier.duplicate(true)
-		updated_modifier["remaining_duration"] = remaining_duration
-		next_modifiers.append(updated_modifier)
-
-	active_modifiers = next_modifiers
+	active_modifiers = next_active_modifiers
 
 
 func _get_speed_multiplier(context: Dictionary) -> float:
@@ -109,9 +107,9 @@ func _get_speed_multiplier(context: Dictionary) -> float:
 	speed_multiplier *= maxf(float(context.get("room_speed_multiplier", 1.0)), 0.0)
 
 	for modifier in active_modifiers:
-		if String(modifier.get("modifier_type", "")) != MODIFIER_HASTE:
+		if modifier.get_modifier_type() != "haste":
 			continue
-		speed_multiplier *= maxf(float(modifier.get("multiplier", 1.0)), 0.0)
+		speed_multiplier *= maxf(modifier.get_multiplier(), 0.0)
 
 	return speed_multiplier
 
@@ -131,6 +129,6 @@ func get_activation_reward() -> float:
 
 func _find_modifier_index(modifier_type: String) -> int:
 	for index in active_modifiers.size():
-		if String(active_modifiers[index].get("modifier_type", "")) == modifier_type:
+		if active_modifiers[index].get_modifier_type() == modifier_type:
 			return index
 	return -1
