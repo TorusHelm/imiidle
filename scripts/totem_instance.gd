@@ -32,8 +32,9 @@ func update_tick(delta: float, incoming_events: Array[Dictionary], slot_index: i
 			"request": {
 				"type": "apply_modifier",
 				"target_rule": definition.target_rule,
+				"target_actor_type": definition.target_actor_type,
 				"event_source_slot_index": int(event_data.get("source_slot_index", -1)),
-				"modifier_definition": definition.get_modifier_definition(),
+				"modifier_definitions": definition.get_modifier_definitions(),
 				"modifier_source": {
 					"source_actor_type": "totem",
 					"source_slot_index": slot_index,

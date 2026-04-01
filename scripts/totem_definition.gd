@@ -38,6 +38,8 @@ const DEFAULT_FALLBACK_MODIFIER_SCRIPT := preload("res://scripts/modifier_defini
 @export_group("Reaction")
 @export var trigger_event_type := "plant_activated"
 @export var target_rule := "mirror_from_source"
+@export var target_actor_type := "any"
+@export var modifier_definitions: Array[Resource] = []
 @export var modifier_definition: Resource
 @export var modifier_type := "haste"
 @export var modifier_multiplier := 2.0
@@ -66,6 +68,21 @@ func get_slot_footprint_offset() -> Vector2:
 	if slot_footprint_offset != Vector2(-85.0, -202.0):
 		return slot_footprint_offset
 	return -get_slot_layout().slot_anchor_offset
+
+
+func get_modifier_definitions() -> Array[Resource]:
+	var definitions: Array[Resource] = []
+	for definition in modifier_definitions:
+		if definition != null:
+			definitions.append(definition)
+
+	if not definitions.is_empty():
+		return definitions
+
+	var fallback_definition := get_modifier_definition()
+	if fallback_definition != null:
+		definitions.append(fallback_definition)
+	return definitions
 
 
 func get_modifier_definition() -> Resource:

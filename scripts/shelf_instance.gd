@@ -164,7 +164,7 @@ func _run_tick(delta: float) -> void:
 					{
 						"type": String(request_data.get("type", "")),
 						"target_slot_index": target_slot.index,
-						"modifier_definition": request_data.get("modifier_definition", null),
+						"modifier_definitions": request_data.get("modifier_definitions", []).duplicate(),
 						"modifier_source": request_data.get("modifier_source", {}).duplicate(true),
 					}
 				)
@@ -187,18 +187,28 @@ func _apply_phase() -> void:
 			continue
 
 		if actor.has_method("apply_modifier"):
-			actor.apply_modifier(application.get("modifier_definition", null), application.get("modifier_source", {}))
+			var modifier_definitions: Array = application.get("modifier_definitions", [])
+			if modifier_definitions.is_empty():
+				var legacy_definition = application.get("modifier_definition", null)
+				if legacy_definition != null:
+					modifier_definitions = [legacy_definition]
+			for modifier_definition in modifier_definitions:
+				actor.apply_modifier(modifier_definition, application.get("modifier_source", {}))
 
 
 func _resolve_targets(source_slot: SlotInstance, request_data: Dictionary) -> Array[SlotInstance]:
 	var target_rule := String(request_data.get("target_rule", ""))
 	match target_rule:
 		"adjacent":
-			return _get_adjacent_slots_in_row(source_slot)
+			return _filter_target_slots(_get_adjacent_slots_in_row(source_slot), String(request_data.get("target_actor_type", "any")))
+		"event_source":
+			return _filter_target_slots(_get_event_source_target_slots(int(request_data.get("event_source_slot_index", -1))), String(request_data.get("target_actor_type", "any")))
 		"mirror_from_source":
-			return _get_mirrored_target_slots(source_slot, int(request_data.get("event_source_slot_index", -1)))
+			return _filter_target_slots(_get_mirrored_target_slots(source_slot, int(request_data.get("event_source_slot_index", -1))), String(request_data.get("target_actor_type", "any")))
+		"all_plants":
+			return _filter_target_slots(slots, String(request_data.get("target_actor_type", "plant")))
 		"self":
-			return [source_slot]
+			return _filter_target_slots([source_slot], String(request_data.get("target_actor_type", "any")))
 		_:
 			return []
 
@@ -229,11 +239,42 @@ func _get_mirrored_target_slots(source_slot: SlotInstance, event_source_slot_ind
 	return [mirrored_slot]
 
 
+func _get_event_source_target_slots(event_source_slot_index: int) -> Array[SlotInstance]:
+	var event_source_slot := get_slot(event_source_slot_index)
+	if event_source_slot == null:
+		return []
+	return [event_source_slot]
+
+
 func _find_slot(row: int, col: int) -> SlotInstance:
 	for slot in slots:
 		if slot.row == row and slot.col == col:
 			return slot
 	return null
+
+
+func _filter_target_slots(candidate_slots: Array, target_actor_type: String) -> Array[SlotInstance]:
+	var filtered_slots: Array[SlotInstance] = []
+	for candidate in candidate_slots:
+		var slot := candidate as SlotInstance
+		if slot == null:
+			continue
+		if not _slot_matches_target_actor_type(slot, target_actor_type):
+			continue
+		filtered_slots.append(slot)
+	return filtered_slots
+
+
+func _slot_matches_target_actor_type(slot: SlotInstance, target_actor_type: String) -> bool:
+	match target_actor_type:
+		"plant":
+			return slot.pot != null and slot.pot.active_plant != null
+		"totem":
+			return slot.totem != null
+		"any", "":
+			return slot.get_actor() != null
+		_:
+			return false
 
 
 func _enqueue_visual_feedback(slot_index: int, actor_type: String, report_data: Dictionary) -> void:

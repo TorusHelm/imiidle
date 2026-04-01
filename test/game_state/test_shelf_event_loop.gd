@@ -2,9 +2,11 @@ extends GutTest
 
 
 const SHELF_A: ShelfDefinition = preload("res://Shelfs/ShelfA/data/shelf_a.tres")
+const SHELF_B: ShelfDefinition = preload("res://Shelfs/ShelfB/data/shelf_b.tres")
 const DEFAULT_POT: PotDefinition = preload("res://Pots/DefaultPot/data/pot_default.tres")
 const DEFAULT_ROOM: RoomDefinition = preload("res://Game/data/default_room.tres")
 const METRONOME: TotemDefinition = preload("res://Totems/Metronome/data/totem_metronome.tres")
+const SNAIL: TotemDefinition = preload("res://Totems/Snail/data/totem_snail.tres")
 
 
 func test_metronome_reacts_one_tick_later_and_applies_haste_on_next_tick_inside_room() -> void:
@@ -88,3 +90,50 @@ func test_room_keeps_shelf_event_loops_isolated() -> void:
 
 	assert_eq(local_target.active_modifiers.size(), 1, "Metronome should still affect its local shelf target.")
 	assert_eq(remote_target.active_modifiers.size(), 0, "Room must not route source shelf events into another shelf.")
+
+
+func test_snail_applies_slow_and_rich_harvest_only_to_the_activating_plant() -> void:
+	var room := RoomInstance.new(DEFAULT_ROOM)
+	var shelf := ShelfInstance.new(SHELF_B, room)
+	var source_plant_definition := PlantDefinition.new()
+	source_plant_definition.id = "snail_source"
+	source_plant_definition.display_name = "Snail Source"
+	source_plant_definition.growth_duration = 0.1
+	source_plant_definition.coins_per_second = 1.0
+
+	var other_plant_definition := PlantDefinition.new()
+	other_plant_definition.id = "snail_other"
+	other_plant_definition.display_name = "Snail Other"
+	other_plant_definition.growth_duration = 4.0
+	other_plant_definition.coins_per_second = 2.0
+
+	assert_true(room.place_shelf(0, shelf), "Room should hold Shelf B for the Snail targeting test.")
+	assert_true(shelf.place_pot(0, DEFAULT_POT), "Source plant slot should accept a pot.")
+	assert_true(shelf.place_totem(1, TotemInstance.new(SNAIL)), "Snail slot should accept the Snail totem.")
+	assert_true(shelf.place_pot(2, DEFAULT_POT), "Second plant slot should accept a pot.")
+	assert_true(shelf.place_totem(3, TotemInstance.new(METRONOME)), "Control totem slot should accept another totem for filter checks.")
+	assert_true(shelf.plant_seed(0, source_plant_definition), "Source plant should be planted.")
+	assert_true(shelf.plant_seed(2, other_plant_definition), "Other plant should be planted.")
+
+	var source_plant := shelf.get_pot_in_slot(0).active_plant
+	var other_plant := shelf.get_pot_in_slot(2).active_plant
+	var metronome := shelf.get_totem_in_slot(3)
+
+	shelf.tick(0.1)
+	shelf.tick(0.1)
+	assert_eq(shelf.get_pending_applications().size(), 1, "Snail should schedule one deferred application for the plant that triggered the event.")
+	shelf.tick(0.1)
+
+	var source_slow: Variant = source_plant.get_active_modifier("slow")
+	var source_rich: Variant = source_plant.get_active_modifier("rich_harvest_percent")
+	var other_slow: Variant = other_plant.get_active_modifier("slow")
+	var other_rich: Variant = other_plant.get_active_modifier("rich_harvest_percent")
+
+	assert_not_null(source_slow, "Snail should apply Slow to the plant that triggered the event.")
+	assert_not_null(source_rich, "Snail should apply Rich Harvest to the plant that triggered the event.")
+	assert_null(other_slow, "Snail should not apply Slow to other plants on the shelf.")
+	assert_null(other_rich, "Snail should not apply Rich Harvest to other plants on the shelf.")
+	assert_almost_eq(source_slow.remaining_time, 3.0, 0.001, "Snail Slow should use a 3 second duration.")
+	assert_almost_eq(source_rich.remaining_time, 3.0, 0.001, "Snail Rich Harvest should use a 3 second duration.")
+	assert_eq(source_rich.get_reward_multiplier(), 1.5, "Snail Rich Harvest should multiply the triggering plant reward by 1.5.")
+	assert_eq(metronome.active_modifiers.size(), 0, "Snail should not apply plant-only modifiers to other totems on the shelf.")

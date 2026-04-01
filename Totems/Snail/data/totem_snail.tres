@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="TotemDefinition" format=3 uid="uid://co6br7lk64g5g"]
+
+[ext_resource type="Script" uid="uid://bvw3tsgpgpk7a" path="res://scripts/totem_definition.gd" id="1_uw03w"]
+[ext_resource type="Resource" path="res://Modifiers/Slow/data/modifier_slow_long.tres" id="2_slow"]
+[ext_resource type="Resource" path="res://Modifiers/RichHarvest/data/modifier_rich_harvest_percent_long.tres" id="3_rich"]
+
+[resource]
+script = ExtResource("1_uw03w")
+id = "snail"
+display_name = "Snail"
+texture_path = "uid://cvgqd3dtl3pax"
+texture_position = Vector2(23, 66)
+target_rule = "event_source"
+target_actor_type = "plant"
+modifier_definitions = Array[Resource]([ExtResource("2_slow"), ExtResource("3_rich")])
+metadata/_custom_type_script = "uid://bvw3tsgpgpk7a"

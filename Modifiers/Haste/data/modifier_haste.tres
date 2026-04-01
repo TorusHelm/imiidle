@@ -8,6 +8,5 @@ id = "haste"
 modifier_type = "haste"
 display_name = "Haste"
 description = "Increases target speed while active."
-duration = 1.0
 speed_multiplier = 2.0
 icon_path = "res://assets/haste.png"

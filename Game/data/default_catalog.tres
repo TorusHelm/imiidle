@@ -1,22 +1,25 @@
 [gd_resource type="Resource" script_class="GameCatalog" format=3 uid="uid://c5pjs2j6uv2bn"]
 
 [ext_resource type="Script" uid="uid://dp8ptmtcwngpn" path="res://scripts/game_catalog.gd" id="1_catalog"]
-[ext_resource type="Resource" path="res://Game/data/default_room.tres" id="1_room"]
 [ext_resource type="Script" uid="uid://dfjsq0o06h8ye" path="res://scripts/plant_definition.gd" id="1_qyvm0"]
+[ext_resource type="Resource" path="res://Game/data/default_room.tres" id="1_room"]
 [ext_resource type="Resource" uid="uid://b02l4ounb2kyr" path="res://Plants/Sansevieria/data/plant_sansevieria.tres" id="2_plant"]
 [ext_resource type="Resource" uid="uid://8n815svtusxd" path="res://Plants/Gerbera/data/plant_gerbera.tres" id="3_plant"]
 [ext_resource type="Resource" uid="uid://cd6vv47rgnqgq" path="res://Plants/Cactus/data/plant_cactus.tres" id="4_plant"]
 [ext_resource type="Script" uid="uid://d3a0qsl3v5l53" path="res://scripts/pot_definition.gd" id="5_jir86"]
 [ext_resource type="Resource" uid="uid://cygoi83vimm71" path="res://Pots/DefaultPot/data/pot_default.tres" id="5_pot"]
 [ext_resource type="Resource" uid="uid://vfj2f3piwebi" path="res://Pots/OrangePot/data/pot_orange.tres" id="6_pot"]
-[ext_resource type="Resource" uid="uid://0m8tp443pwtk" path="res://Pots/PurplePot/data/pot_purple.tres" id="7_pot"]
-[ext_resource type="Resource" path="res://Modifiers/Haste/data/modifier_haste.tres" id="7_modifier_haste"]
-[ext_resource type="Resource" path="res://Modifiers/Slow/data/modifier_slow.tres" id="7_modifier_slow"]
-[ext_resource type="Resource" path="res://Modifiers/RichHarvest/data/modifier_rich_harvest_percent.tres" id="7_modifier_rich_percent"]
+[ext_resource type="Resource" uid="uid://fu1kipj5av1m" path="res://Modifiers/Haste/data/modifier_haste.tres" id="7_modifier_haste"]
 [ext_resource type="Resource" path="res://Modifiers/RichHarvest/data/modifier_rich_harvest_flat.tres" id="7_modifier_rich_flat"]
-[ext_resource type="Script" path="res://scripts/totem_definition.gd" id="8_totem_script"]
-[ext_resource type="Resource" path="res://Totems/Metronome/data/totem_metronome.tres" id="8_totem"]
+[ext_resource type="Resource" path="res://Modifiers/RichHarvest/data/modifier_rich_harvest_percent.tres" id="7_modifier_rich_percent"]
+[ext_resource type="Resource" path="res://Modifiers/RichHarvest/data/modifier_rich_harvest_percent_long.tres" id="7_modifier_rich_percent_long"]
+[ext_resource type="Resource" path="res://Modifiers/Slow/data/modifier_slow.tres" id="7_modifier_slow"]
+[ext_resource type="Resource" path="res://Modifiers/Slow/data/modifier_slow_long.tres" id="7_modifier_slow_long"]
+[ext_resource type="Resource" uid="uid://0m8tp443pwtk" path="res://Pots/PurplePot/data/pot_purple.tres" id="7_pot"]
 [ext_resource type="Resource" uid="uid://dw7p7gin6ryap" path="res://Shelfs/ShelfA/data/shelf_a.tres" id="8_shelf"]
+[ext_resource type="Resource" uid="uid://brkmk5inkq6uw" path="res://Totems/Metronome/data/totem_metronome.tres" id="8_totem"]
+[ext_resource type="Script" uid="uid://bvw3tsgpgpk7a" path="res://scripts/totem_definition.gd" id="8_totem_script"]
+[ext_resource type="Resource" uid="uid://co6br7lk64g5g" path="res://Totems/Snail/data/totem_snail.tres" id="8_totem_snail"]
 [ext_resource type="Resource" uid="uid://dhc57hueqoa7f" path="res://Shelfs/ShelfB/data/shelf_b.tres" id="9_shelf"]
 [ext_resource type="Script" uid="uid://cucjjk2bjbhk4" path="res://scripts/shelf_definition.gd" id="10_ylmi7"]
 
@@ -25,8 +28,8 @@ script = ExtResource("1_catalog")
 room_definition = ExtResource("1_room")
 plant_definitions = Array[ExtResource("1_qyvm0")]([ExtResource("2_plant"), ExtResource("3_plant"), ExtResource("4_plant")])
 pot_definitions = Array[ExtResource("5_jir86")]([ExtResource("5_pot"), ExtResource("6_pot"), ExtResource("7_pot")])
-modifier_definitions = Array[Resource]([ExtResource("7_modifier_haste"), ExtResource("7_modifier_slow"), ExtResource("7_modifier_rich_percent"), ExtResource("7_modifier_rich_flat")])
-totem_definitions = Array[ExtResource("8_totem_script")]([ExtResource("8_totem")])
+modifier_definitions = Array[Resource]([ExtResource("7_modifier_haste"), ExtResource("7_modifier_slow"), ExtResource("7_modifier_slow_long"), ExtResource("7_modifier_rich_percent"), ExtResource("7_modifier_rich_percent_long"), ExtResource("7_modifier_rich_flat")])
+totem_definitions = Array[ExtResource("8_totem_script")]([ExtResource("8_totem"), ExtResource("8_totem_snail")])
 shelf_definitions = Array[ExtResource("10_ylmi7")]([ExtResource("8_shelf"), ExtResource("9_shelf")])
 background_color_hex = "#8baa95"
 starting_seed_inventory = {
@@ -40,7 +43,8 @@ starting_pot_inventory = {
 "purple_pot": 1
 }
 starting_totem_inventory = {
-"metronome": 1
+"metronome": 1,
+"snail": 1
 }
 starting_shelf_inventory = {
 "shelf_a": 1,
