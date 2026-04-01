@@ -44,16 +44,46 @@ func get_display_name() -> String:
 
 
 func get_multiplier() -> float:
+	return get_speed_multiplier()
+
+
+func get_speed_multiplier() -> float:
 	if definition == null:
 		return 1.0
-	var value = definition.get("multiplier")
+	var value = definition.get("speed_multiplier")
 	return float(value if value != null else 1.0)
+
+
+func get_reward_multiplier() -> float:
+	if definition == null:
+		return 1.0
+	var value = definition.get("reward_multiplier")
+	return float(value if value != null else 1.0)
+
+
+func get_flat_reward_bonus() -> float:
+	if definition == null:
+		return 0.0
+	var value = definition.get("flat_reward_bonus")
+	return float(value if value != null else 0.0)
+
+
+func blocks_activation() -> bool:
+	if definition == null:
+		return false
+	return bool(definition.get("blocks_activation"))
 
 
 func get_icon_path() -> String:
 	if definition == null:
 		return ""
 	return String(definition.get("icon_path"))
+
+
+func get_description() -> String:
+	if definition == null:
+		return ""
+	return String(definition.get("description"))
 
 
 func to_snapshot() -> Dictionary:
@@ -64,9 +94,14 @@ func to_snapshot() -> Dictionary:
 		"id": definition_id,
 		"modifier_type": get_modifier_type(),
 		"display_name": get_display_name(),
-		"multiplier": get_multiplier(),
+		"description": get_description(),
+		"speed_multiplier": get_speed_multiplier(),
+		"reward_multiplier": get_reward_multiplier(),
+		"flat_reward_bonus": get_flat_reward_bonus(),
+		"blocks_activation": blocks_activation(),
 		"remaining_duration": remaining_time,
 		"icon_path": get_icon_path(),
+		"stacks": 1,
 		"source": source.duplicate(true),
 	}
 

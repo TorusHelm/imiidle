@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ModifierDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/modifier_definition.gd" id="1_modifier"]
+
+[resource]
+script = ExtResource("1_modifier")
+id = "rich_harvest_percent"
+modifier_type = "rich_harvest_percent"
+display_name = "Rich Harvest"
+description = "Multiplies the next harvest reward while active."
+duration = 1.0
+reward_multiplier = 1.5

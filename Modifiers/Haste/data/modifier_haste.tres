@@ -1,12 +1,13 @@
-[gd_resource type="Resource" script_class="ModifierDefinition" format=3]
+[gd_resource type="Resource" script_class="ModifierDefinition" format=3 uid="uid://fu1kipj5av1m"]
 
-[ext_resource type="Script" path="res://scripts/modifier_definition.gd" id="1_modifier"]
+[ext_resource type="Script" uid="uid://b3tdhw75s2q8b" path="res://scripts/modifier_definition.gd" id="1_modifier"]
 
 [resource]
 script = ExtResource("1_modifier")
 id = "haste"
 modifier_type = "haste"
 display_name = "Haste"
+description = "Increases target speed while active."
 duration = 1.0
-multiplier = 2.0
+speed_multiplier = 2.0
 icon_path = "res://assets/haste.png"

@@ -25,6 +25,8 @@ func update_tick(delta: float, context: Dictionary = {}) -> Dictionary:
 	var resolved_delta := maxf(delta, 0.0)
 	age_seconds += resolved_delta
 	_advance_modifiers(resolved_delta)
+	if _blocks_activation():
+		return {}
 	progress_seconds += resolved_delta * _get_speed_multiplier(context)
 
 	var cycle_time := get_cycle_time()
@@ -107,11 +109,30 @@ func _get_speed_multiplier(context: Dictionary) -> float:
 	speed_multiplier *= maxf(float(context.get("room_speed_multiplier", 1.0)), 0.0)
 
 	for modifier in active_modifiers:
-		if modifier.get_modifier_type() != "haste":
-			continue
-		speed_multiplier *= maxf(modifier.get_multiplier(), 0.0)
+		speed_multiplier *= maxf(modifier.get_speed_multiplier(), 0.0)
 
 	return speed_multiplier
+
+
+func _get_reward_multiplier() -> float:
+	var reward_multiplier := 1.0
+	for modifier in active_modifiers:
+		reward_multiplier *= maxf(modifier.get_reward_multiplier(), 0.0)
+	return reward_multiplier
+
+
+func _get_flat_reward_bonus() -> float:
+	var flat_reward_bonus := 0.0
+	for modifier in active_modifiers:
+		flat_reward_bonus += modifier.get_flat_reward_bonus()
+	return flat_reward_bonus
+
+
+func _blocks_activation() -> bool:
+	for modifier in active_modifiers:
+		if modifier.blocks_activation():
+			return true
+	return false
 
 
 func _build_activation_report() -> Dictionary:
@@ -124,7 +145,10 @@ func _build_activation_report() -> Dictionary:
 func get_activation_reward() -> float:
 	if definition == null:
 		return 0.0
-	return definition.coins_per_second * maxf(definition.growth_duration, 0.0)
+	var base_reward := definition.coins_per_second * maxf(definition.growth_duration, 0.0)
+	var modified_reward := base_reward * _get_reward_multiplier()
+	modified_reward += _get_flat_reward_bonus()
+	return maxf(modified_reward, 0.0)
 
 
 func _find_modifier_index(modifier_type: String) -> int:

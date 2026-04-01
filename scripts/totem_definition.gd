@@ -79,5 +79,13 @@ func get_modifier_definition() -> Resource:
 	fallback_definition.modifier_type = modifier_type
 	fallback_definition.display_name = modifier_type.capitalize()
 	fallback_definition.duration = modifier_duration
-	fallback_definition.multiplier = modifier_multiplier
+	match modifier_type:
+		"haste", "slow":
+			fallback_definition.speed_multiplier = modifier_multiplier
+		"rich_harvest_percent":
+			fallback_definition.reward_multiplier = modifier_multiplier
+		"rich_harvest_flat":
+			fallback_definition.flat_reward_bonus = modifier_multiplier
+		_:
+			fallback_definition.speed_multiplier = modifier_multiplier
 	return fallback_definition

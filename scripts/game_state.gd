@@ -9,6 +9,7 @@ var seed_inventory: Dictionary = {}
 var plant_definitions: Dictionary = {}
 var pot_inventory: Dictionary = {}
 var pot_definitions: Dictionary = {}
+var modifier_definitions: Dictionary = {}
 var totem_inventory: Dictionary = {}
 var totem_definitions: Dictionary = {}
 var shelf_inventory: Dictionary = {}
@@ -385,6 +386,10 @@ func get_background_color() -> Color:
 	return Color.from_string(background_color_hex, Color(0.890196, 0.937255, 0.878431, 1))
 
 
+func get_modifier_definition(modifier_id: String) -> Resource:
+	return modifier_definitions.get(modifier_id, null)
+
+
 func tick(delta: float) -> void:
 	_pending_visual_feedback_by_room_slot.clear()
 
@@ -458,6 +463,7 @@ func _sync_shelf_slots() -> void:
 func _load_catalog(catalog: GameCatalog) -> void:
 	plant_definitions.clear()
 	pot_definitions.clear()
+	modifier_definitions.clear()
 	totem_definitions.clear()
 	shelf_definitions.clear()
 	seed_inventory.clear()
@@ -486,6 +492,14 @@ func _load_catalog(catalog: GameCatalog) -> void:
 		if definition == null or definition.id.is_empty():
 			continue
 		pot_definitions[definition.id] = definition
+
+	for definition in catalog.modifier_definitions:
+		if definition == null:
+			continue
+		var modifier_id := String(definition.get("id"))
+		if modifier_id.is_empty():
+			continue
+		modifier_definitions[modifier_id] = definition
 
 	for definition in catalog.totem_definitions:
 		if definition == null or definition.id.is_empty():
