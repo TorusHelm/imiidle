@@ -8,5 +8,4 @@ script = ExtResource("1_totem")
 id = "metronome"
 display_name = "Metronome"
 texture_path = "uid://cih0jkptbenoi"
-texture_position = Vector2(0, 0)
 slot_layout = ExtResource("2_layout")

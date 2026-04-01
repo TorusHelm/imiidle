@@ -1,7 +1,16 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://gddp3lpeumpc"]
 
-[ext_resource type="PackedScene" path="res://Totems/_shared/sceens/Totem.tscn" id="1_totem_scene"]
-[ext_resource type="Resource" path="res://Totems/Metronome/data/totem_metronome.tres" id="2_totem"]
+[ext_resource type="PackedScene" uid="uid://fto6d6k4flfw" path="res://Totems/_shared/sceens/Totem.tscn" id="1_totem_scene"]
+[ext_resource type="Resource" uid="uid://brkmk5inkq6uw" path="res://Totems/Metronome/data/totem_metronome.tres" id="2_totem"]
+[ext_resource type="Texture2D" uid="uid://cih0jkptbenoi" path="res://Totems/Metronome/assets/totem-metronome.png" id="3_hgrf5"]
 
-[node name="TotemPreview" instance=ExtResource("1_totem_scene")]
+[node name="TotemPreview" unique_id=228889557 instance=ExtResource("1_totem_scene")]
+tooltip_text = "Metronome
+Trigger: plant_activated
+Rule: mirror_from_source"
 preview_definition = ExtResource("2_totem")
+
+[node name="TotemTexture" parent="." index="0" unique_id=925993581]
+offset_right = 209.0
+offset_bottom = 372.0
+texture = ExtResource("3_hgrf5")
