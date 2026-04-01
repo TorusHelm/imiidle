@@ -43,11 +43,6 @@ const SHELF_MODEL_SCRIPT = preload("res://scripts/shelf_model.gd")
 		preview_slot_index = value
 		_queue_preview_refresh()
 
-@export var use_internal_preview := true:
-	set(value):
-		use_internal_preview = value
-		_queue_preview_refresh()
-
 @export_group("Editor Guides")
 @export var show_slot_guides_in_editor := true:
 	set(value):
@@ -75,7 +70,7 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
-	if Engine.is_editor_hint() and use_internal_preview:
+	if Engine.is_editor_hint() and preview_shelf_definition != null:
 		_refresh_preview()
 
 
@@ -145,15 +140,22 @@ func preview_slots(shelf_definition: ShelfDefinition, slot_previews: Array[Compo
 
 	for index in _slot_views.size():
 		var pot_instance: PotInstance = null
+		var totem_instance: TotemInstance = null
 		var slot_preview: CompositionPreviewSlot = slot_previews[index] if index < slot_previews.size() else null
 
-		if slot_preview != null and slot_preview.enabled and slot_preview.pot_definition != null:
-			pot_instance = PotInstance.new(slot_preview.pot_definition)
-			if slot_preview.plant_definition != null:
-				pot_instance.active_plant = PlantInstance.new(slot_preview.plant_definition)
+		if slot_preview != null and slot_preview.enabled:
+			if slot_preview.totem_definition != null:
+				totem_instance = TotemInstance.new(slot_preview.totem_definition)
+			elif slot_preview.pot_definition != null:
+				pot_instance = PotInstance.new(slot_preview.pot_definition)
+				if slot_preview.plant_definition != null:
+					pot_instance.active_plant = PlantInstance.new(slot_preview.plant_definition)
 
 		var slot_view := _slot_views[index]
 		slot_view.position = _shelf_model.get_slot_position_by_index(index)
+		if totem_instance != null:
+			slot_view.show_totem(totem_instance)
+			continue
 		slot_view.show_pot(pot_instance, true, pot_instance != null and pot_instance.active_plant == null)
 
 
@@ -222,7 +224,6 @@ func _rebuild_slot_views() -> void:
 		slot_view.set_slot_index(index)
 		slot_view.pot_slot_pressed.connect(_on_pot_button_pressed)
 		slot_view.seed_slot_pressed.connect(_on_seed_button_pressed)
-		slot_view.get_pot_view().use_internal_preview = false
 		_slot_views.append(slot_view)
 
 
@@ -262,9 +263,6 @@ func _refresh_preview() -> void:
 		return
 
 	if not Engine.is_editor_hint():
-		return
-
-	if not use_internal_preview:
 		return
 
 	if preview_shelf_definition == null:
@@ -381,7 +379,7 @@ func _connect_totem_resource(definition: TotemDefinition) -> void:
 		return
 	if not definition.changed.is_connected(_on_preview_resource_changed):
 		definition.changed.connect(_on_preview_resource_changed)
-	var slot_layout := definition.get("slot_layout") as SlotLayout
+	var slot_layout := definition.get_slot_layout()
 	if slot_layout != null and not slot_layout.changed.is_connected(_on_preview_resource_changed):
 		slot_layout.changed.connect(_on_preview_resource_changed)
 
@@ -391,7 +389,7 @@ func _disconnect_totem_resource(definition: TotemDefinition) -> void:
 		return
 	if definition.changed.is_connected(_on_preview_resource_changed):
 		definition.changed.disconnect(_on_preview_resource_changed)
-	var slot_layout := definition.get("slot_layout") as SlotLayout
+	var slot_layout := definition.get_slot_layout()
 	if slot_layout != null and slot_layout.changed.is_connected(_on_preview_resource_changed):
 		slot_layout.changed.disconnect(_on_preview_resource_changed)
 

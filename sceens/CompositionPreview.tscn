@@ -4,10 +4,10 @@
 [ext_resource type="Resource" uid="uid://dhc57hueqoa7f" path="res://Shelfs/ShelfB/data/shelf_b.tres" id="2_7rext"]
 [ext_resource type="PackedScene" uid="uid://chrt8p8hrj4v6" path="res://Shelfs/_shared/sceens/Shelf.tscn" id="2_shelf"]
 [ext_resource type="Script" uid="uid://c0yga88sjc8e7" path="res://scripts/composition_preview_slot.gd" id="4_slot_script"]
+[ext_resource type="Resource" uid="uid://brkmk5inkq6uw" path="res://Totems/Metronome/data/totem_metronome.tres" id="4_totem"]
 [ext_resource type="Resource" uid="uid://8n815svtusxd" path="res://Plants/Gerbera/data/plant_gerbera.tres" id="5_plant_data"]
 [ext_resource type="Resource" uid="uid://cd6vv47rgnqgq" path="res://Plants/Cactus/data/plant_cactus.tres" id="6_8xwby"]
 [ext_resource type="Resource" uid="uid://vfj2f3piwebi" path="res://Pots/OrangePot/data/pot_orange.tres" id="7_1lydj"]
-[ext_resource type="Resource" uid="uid://b02l4ounb2kyr" path="res://Plants/Sansevieria/data/plant_sansevieria.tres" id="8_r75k2"]
 
 [sub_resource type="Resource" id="Resource_slot0"]
 script = ExtResource("4_slot_script")
@@ -16,8 +16,7 @@ plant_definition = ExtResource("5_plant_data")
 
 [sub_resource type="Resource" id="Resource_slot1"]
 script = ExtResource("4_slot_script")
-pot_definition = ExtResource("7_1lydj")
-plant_definition = ExtResource("8_r75k2")
+totem_definition = ExtResource("4_totem")
 
 [sub_resource type="Resource" id="Resource_jptxb"]
 script = ExtResource("4_slot_script")
@@ -50,26 +49,26 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -47.0
-offset_top = -18.0
-offset_right = 182.0
-offset_bottom = 184.0
+offset_left = -1237.0
+offset_top = -946.0
+offset_right = 1268.0
+offset_bottom = 1070.0
 grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.54509807, 0.6666667, 0.58431375, 1)
 
 [node name="ShelfView" parent="." unique_id=45979285 instance=ExtResource("2_shelf")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(771, 562)
-layout_mode = 0
+layout_mode = 1
+anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = 226.0
-offset_top = 174.0
-offset_right = 997.0
-offset_bottom = 736.0
-preview_shelf_definition = ExtResource("2_7rext")
+offset_left = -576.0
+offset_top = -324.0
+offset_right = -52.0
+offset_bottom = 360.0
+grow_horizontal = 2
+grow_vertical = 2
 preview_slot_index = 0
-use_internal_preview = false

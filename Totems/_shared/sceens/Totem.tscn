@@ -1,64 +1,22 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://fto6d6k4flfw"]
 
-[ext_resource type="Script" path="res://scripts/totem_view.gd" id="1_totem_view"]
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_frame"]
-bg_color = Color(0.164706, 0.176471, 0.227451, 0.95)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.972549, 0.843137, 0.505882, 1)
-corner_radius_top_left = 18
-corner_radius_top_right = 18
-corner_radius_bottom_right = 18
-corner_radius_bottom_left = 18
+[ext_resource type="Script" uid="uid://b1wfx6f8hcwxe" path="res://scripts/totem_view.gd" id="1_totem_view"]
 
-[node name="Totem" type="Control"]
+[node name="Totem" type="Control" unique_id=1949295965]
 custom_minimum_size = Vector2(170, 280)
 layout_mode = 3
 anchors_preset = 0
 offset_right = 170.0
 offset_bottom = 280.0
 script = ExtResource("1_totem_view")
-use_internal_preview = false
 
-[node name="Frame" type="Panel" parent="."]
+[node name="TotemTexture" type="TextureRect" parent="." unique_id=925993581]
 layout_mode = 0
-offset_left = 19.0
-offset_top = 34.0
-offset_right = 151.0
-offset_bottom = 208.0
-theme_override_styles/panel = SubResource("StyleBoxFlat_frame")
+offset_left = 23.0
+offset_top = 48.0
+offset_right = 147.0
+offset_bottom = 198.0
+stretch_mode = 5
 
-[node name="Icon" type="Label" parent="Frame"]
-layout_mode = 1
-anchors_preset = 10
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -34.0
-offset_top = 18.0
-offset_right = 34.0
-offset_bottom = 88.0
-theme_override_font_sizes/font_size = 42
-text = "M"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Title" type="Label" parent="Frame"]
-layout_mode = 0
-offset_left = 12.0
-offset_top = 104.0
-offset_right = 120.0
-offset_bottom = 132.0
-text = "Metronome"
-horizontal_alignment = 1
-
-[node name="Subtitle" type="Label" parent="Frame"]
-layout_mode = 0
-offset_left = 12.0
-offset_top = 136.0
-offset_right = 120.0
-offset_bottom = 162.0
-text = "reacts via Shelf"
-horizontal_alignment = 1
-autowrap_mode = 3
+[node name="TotemBaseline" type="Marker2D" parent="." unique_id=1281792967]
+position = Vector2(85, 202)

@@ -5,3 +5,4 @@ extends Resource
 @export var enabled := true
 @export var pot_definition: PotDefinition
 @export var plant_definition: PlantDefinition
+@export var totem_definition: TotemDefinition

@@ -21,13 +21,6 @@ signal pot_button_pressed(slot_index: int)
 		_connect_plant_resource(preview_plant_definition)
 		_queue_preview_refresh()
 
-@export var use_internal_preview := true:
-	set(value):
-		use_internal_preview = value
-		if is_node_ready():
-			plant_view.use_internal_preview = value
-		_queue_preview_refresh()
-
 
 var slot_index := -1
 var _current_definition: PotDefinition = null
@@ -44,13 +37,12 @@ func _ready() -> void:
 	slot_button.grab_focus()
 	_connect_pot_resource(preview_definition)
 	_connect_plant_resource(preview_plant_definition)
-	plant_view.use_internal_preview = use_internal_preview
 	set_process(Engine.is_editor_hint())
 	_refresh_preview()
 
 
 func _process(_delta: float) -> void:
-	if Engine.is_editor_hint() and use_internal_preview:
+	if Engine.is_editor_hint() and preview_definition != null:
 		_refresh_preview()
 
 
@@ -172,9 +164,6 @@ func _refresh_preview() -> void:
 		return
 
 	if not Engine.is_editor_hint():
-		return
-
-	if not use_internal_preview:
 		return
 
 	if preview_definition == null:

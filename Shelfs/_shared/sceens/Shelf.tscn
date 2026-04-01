@@ -1,10 +1,8 @@
 [gd_scene format=3 uid="uid://chrt8p8hrj4v6"]
 
 [ext_resource type="Script" uid="uid://4bs1nkthtrjh" path="res://scripts/shelf_view.gd" id="1_5y27c"]
-[ext_resource type="Resource" uid="uid://dhc57hueqoa7f" path="res://Shelfs/ShelfB/data/shelf_b.tres" id="2_qa3d6"]
-[ext_resource type="Resource" uid="uid://cygoi83vimm71" path="res://Pots/DefaultPot/data/pot_default.tres" id="3_yts6t"]
-[ext_resource type="Resource" uid="uid://8n815svtusxd" path="res://Plants/Gerbera/data/plant_gerbera.tres" id="4_plant"]
 [ext_resource type="Texture2D" uid="uid://cfwjx0jv03cqu" path="res://Shelfs/ShelfB/assets/shelf-two-floor.png" id="5_asejt"]
+
 [node name="Shelf" type="Control" unique_id=1424021836]
 custom_minimum_size = Vector2(524, 684)
 layout_mode = 3
@@ -12,9 +10,6 @@ anchors_preset = 0
 offset_right = 524.0
 offset_bottom = 684.0
 script = ExtResource("1_5y27c")
-preview_shelf_definition = ExtResource("2_qa3d6")
-preview_pot_definition = ExtResource("3_yts6t")
-preview_plant_definition = ExtResource("4_plant")
 preview_slot_index = 1
 
 [node name="ShelfTexture" type="TextureRect" parent="." unique_id=822184106]

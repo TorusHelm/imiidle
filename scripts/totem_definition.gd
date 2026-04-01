@@ -5,15 +5,31 @@ extends Resource
 const DEFAULT_SLOT_LAYOUT: SlotLayout = preload("res://Game/data/default_slot_layout.tres")
 
 @export_group("Identity")
+## Stable internal id used by saves, inventory, and lookups.
 @export var id := ""
+## Human-readable name shown in UI.
 @export var display_name := ""
 
 @export_group("Visual")
-@export var accent_color := Color(0.87, 0.66, 0.26, 1.0)
-@export var icon_text := "T"
+## PNG used for the totem sprite.
+@export_file("*.png") var texture_path := ""
+## Overall size of the whole totem widget.
+@export var view_size := Vector2(170.0, 280.0)
+## Top-left position of the totem sprite inside the totem widget.
+@export var texture_position := Vector2(23.0, 48.0)
+## Rendered size of the totem sprite.
+@export var texture_size := Vector2(124.0, 150.0)
+
+@export_group("Anchors")
+## Bottom anchor used to place the totem onto a shelf slot.
+@export var totem_baseline := Vector2(85.0, 202.0)
 
 @export_group("Slot Fit")
 @export var slot_layout: SlotLayout
+## Fixed slot work area this totem is designed to fit against. Uses shared slot layout when assigned.
+@export var slot_footprint_size := Vector2(170.0, 280.0)
+## Top-left slot offset relative to the totem baseline.
+@export var slot_footprint_offset := Vector2(-85.0, -202.0)
 
 @export_group("Reaction")
 @export var trigger_event_type := "plant_activated"
@@ -23,5 +39,25 @@ const DEFAULT_SLOT_LAYOUT: SlotLayout = preload("res://Game/data/default_slot_la
 @export var modifier_duration := 1.0
 
 
+func get_slot_footprint_local_rect() -> Rect2:
+	return Rect2(totem_baseline + get_slot_footprint_offset(), get_slot_footprint_size())
+
+
 func get_slot_layout() -> SlotLayout:
 	return slot_layout if slot_layout != null else DEFAULT_SLOT_LAYOUT
+
+
+func get_slot_footprint_size() -> Vector2:
+	if slot_layout != null:
+		return slot_layout.slot_area_size
+	if slot_footprint_size != Vector2(170.0, 280.0):
+		return slot_footprint_size
+	return get_slot_layout().slot_area_size
+
+
+func get_slot_footprint_offset() -> Vector2:
+	if slot_layout != null:
+		return -get_slot_layout().slot_anchor_offset
+	if slot_footprint_offset != Vector2(-85.0, -202.0):
+		return slot_footprint_offset
+	return -get_slot_layout().slot_anchor_offset

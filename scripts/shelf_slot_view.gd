@@ -37,7 +37,7 @@ func show_pot(pot_instance: PotInstance, can_place_pot: bool, can_plant_seed: bo
 func show_totem(totem_instance: TotemInstance) -> void:
 	pot_view.visible = false
 	totem_view.show_totem(totem_instance)
-	totem_view.position = -_get_totem_anchor_offset(totem_instance)
+	totem_view.position = -totem_view.get_totem_baseline_local_position()
 
 
 func get_pot_view() -> PotView:
@@ -46,14 +46,6 @@ func get_pot_view() -> PotView:
 
 func get_totem_view() -> TotemView:
 	return totem_view
-
-
-func _get_totem_anchor_offset(totem_instance: TotemInstance) -> Vector2:
-	if totem_instance == null or totem_instance.definition == null:
-		return Vector2.ZERO
-	var slot_layout := totem_instance.definition.get("slot_layout") as SlotLayout
-	return slot_layout.slot_anchor_offset if slot_layout != null else Vector2(85.0, 202.0)
-
 
 func _on_pot_button_pressed(_pressed_slot_index: int) -> void:
 	pot_slot_pressed.emit(slot_index)

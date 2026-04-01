@@ -54,6 +54,39 @@ func test_clicking_empty_pot_slot_opens_pot_modal() -> void:
 	assert_true(pot_modal.visible, "Clicking an empty pot slot should open the pot modal.")
 
 
+func test_empty_slot_modal_lists_totem_and_places_it() -> void:
+	var game: Control = add_child_autofree(GAME_SCENE.instantiate())
+	await wait_process_frames(3)
+
+	game._on_choose_shelf_button_pressed(0)
+	game._on_shelf_selected("shelf_a")
+	await wait_process_frames(3)
+
+	var shelf_view: ShelfView = _get_room_slot_view(game).shelf_view
+	var first_pot_view: PotView = shelf_view.get_pot_view(0)
+	var pot_modal: PotModal = game.get_node("PotModal")
+
+	first_pot_view.slot_button.pressed.emit()
+	await wait_process_frames(3)
+
+	assert_true(pot_modal.visible, "Shared item modal should open from the empty slot button signal.")
+
+	var pot_list: VBoxContainer = pot_modal.get_node("CenterContainer/ModalPanel/Content/PotList")
+	var metronome_button: Button = null
+	for child in pot_list.get_children():
+		if child is Button and child.text.begins_with("Metronome (1)"):
+			metronome_button = child
+			break
+
+	assert_not_null(metronome_button, "Empty slot modal should include the starter Metronome alongside pot options.")
+
+	metronome_button.pressed.emit()
+	await wait_process_frames(3)
+
+	assert_not_null(game.game_state.get_totem_in_room_slot(0, 0), "Selecting the Metronome from the shared item modal should place it into the slot.")
+	assert_eq(game.game_state.get_totem_count("metronome"), 0, "Placed totem should be consumed from inventory.")
+
+
 func test_mouse_wheel_zooms_world_without_changing_pan_offset() -> void:
 	var game: Control = add_child_autofree(GAME_SCENE.instantiate())
 	await wait_process_frames(3)

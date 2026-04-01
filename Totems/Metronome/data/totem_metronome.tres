@@ -1,13 +1,12 @@
-[gd_resource type="Resource" script_class="TotemDefinition" format=3]
+[gd_resource type="Resource" script_class="TotemDefinition" format=3 uid="uid://brkmk5inkq6uw"]
 
-[ext_resource type="Script" path="res://scripts/totem_definition.gd" id="1_totem"]
+[ext_resource type="Script" uid="uid://bvw3tsgpgpk7a" path="res://scripts/totem_definition.gd" id="1_totem"]
+[ext_resource type="Resource" uid="uid://dhlxyggm3121l" path="res://Game/data/default_slot_layout.tres" id="2_layout"]
 
 [resource]
 script = ExtResource("1_totem")
 id = "metronome"
 display_name = "Metronome"
-trigger_event_type = "plant_activated"
-target_rule = "mirror_from_source"
-modifier_type = "haste"
-modifier_multiplier = 2.0
-modifier_duration = 1.0
+texture_path = "uid://cih0jkptbenoi"
+texture_position = Vector2(0, 0)
+slot_layout = ExtResource("2_layout")

@@ -42,6 +42,32 @@ func test_enabled_preview_slot_shows_assigned_pot_and_plant() -> void:
 	assert_false(pot_view.slot_button.visible, "Enabled slot should not show empty-slot button.")
 
 
+func test_preview_slot_with_totem_definition_shows_totem_instead_of_pot() -> void:
+	var preview: Control = add_child_autofree(COMPOSITION_PREVIEW_SCENE.instantiate())
+	await wait_process_frames(2)
+
+	var shelf_view: ShelfView = preview.get_node("ShelfView")
+	var target_index := 3
+	var target_slot: CompositionPreviewSlot = preview.preview_slots[target_index]
+
+	target_slot.enabled = true
+	preview._refresh_preview()
+	await wait_process_frames(2)
+
+	var pot_view: PotView = shelf_view.get_pot_view(target_index)
+	var totem_view: TotemView = shelf_view.get_totem_view(target_index)
+
+	assert_not_null(totem_view, "Preview slot should expose a totem view instance.")
+	assert_true(totem_view.visible, "Preview slot with totem definition should show the totem view.")
+	assert_false(pot_view.visible, "Preview slot with totem definition should hide the pot view.")
+
+	for index in shelf_view.get_slot_count():
+		if index == target_index:
+			continue
+		var other_totem_view: TotemView = shelf_view.get_totem_view(index)
+		assert_false(other_totem_view.visible, "Totem preview should stay isolated to the configured slot and not leak into other slots.")
+
+
 func test_changing_shelf_definition_rebuilds_preview_with_target_shelf() -> void:
 	var preview: Control = add_child_autofree(COMPOSITION_PREVIEW_SCENE.instantiate())
 	await wait_process_frames(2)

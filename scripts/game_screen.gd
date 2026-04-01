@@ -80,12 +80,18 @@ func _input(event: InputEvent) -> void:
 
 func _on_pot_slot_pressed(room_slot_index: int, slot_index: int) -> void:
 	game_state.set_active_room_slot_index(room_slot_index)
-	pot_modal.open_modal(slot_index, game_state.get_pot_options())
+	pot_modal.open_modal(slot_index, game_state.get_pot_options(), game_state.get_totem_options())
 	_refresh_ui()
 
 
 func _on_pot_selected(slot_index: int, pot_id: String) -> void:
 	game_state.place_pot(slot_index, pot_id)
+	pot_modal.close_modal()
+	_refresh_ui()
+
+
+func _on_totem_selected(slot_index: int, totem_id: String) -> void:
+	game_state.place_totem(slot_index, totem_id)
 	pot_modal.close_modal()
 	_refresh_ui()
 

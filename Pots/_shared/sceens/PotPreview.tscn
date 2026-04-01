@@ -1,0 +1,9 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://Pots/_shared/sceens/Pot.tscn" id="1_pot_scene"]
+[ext_resource type="Resource" path="res://Pots/DefaultPot/data/pot_default.tres" id="2_pot"]
+[ext_resource type="Resource" path="res://Plants/Gerbera/data/plant_gerbera.tres" id="3_plant"]
+
+[node name="PotPreview" instance=ExtResource("1_pot_scene")]
+preview_definition = ExtResource("2_pot")
+preview_plant_definition = ExtResource("3_plant")

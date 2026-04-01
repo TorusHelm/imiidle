@@ -10,11 +10,6 @@ extends Control
 		_connect_preview_resource(preview_definition)
 		_queue_preview_refresh()
 
-@export var use_internal_preview := true:
-	set(value):
-		use_internal_preview = value
-		_queue_preview_refresh()
-
 
 @onready var plant_texture: TextureRect = $PlantTexture
 
@@ -26,7 +21,7 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
-	if Engine.is_editor_hint() and use_internal_preview:
+	if Engine.is_editor_hint() and preview_definition != null:
 		_refresh_preview()
 
 
@@ -87,9 +82,6 @@ func _refresh_preview() -> void:
 		return
 
 	if not Engine.is_editor_hint():
-		return
-
-	if not use_internal_preview:
 		return
 
 	if preview_definition == null:

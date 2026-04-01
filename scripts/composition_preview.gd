@@ -54,7 +54,6 @@ extends Control
 func _ready() -> void:
 	_connect_shelf_resource(shelf_definition)
 	_connect_slot_resources(preview_slots)
-	shelf_view.use_internal_preview = false
 	set_process(Engine.is_editor_hint())
 	_refresh_preview()
 
@@ -121,7 +120,7 @@ func _draw() -> void:
 		_draw_slot_markers()
 
 	if show_pot_guides:
-		_draw_pot_guides()
+		_draw_selected_slot_guides()
 
 
 func _ensure_preview_slot_capacity() -> void:
@@ -162,6 +161,9 @@ func _connect_slot_resource(slot_config: CompositionPreviewSlot) -> void:
 	if slot_config.plant_definition != null and not slot_config.plant_definition.changed.is_connected(_on_preview_resource_changed):
 		slot_config.plant_definition.changed.connect(_on_preview_resource_changed)
 
+	if slot_config.totem_definition != null and not slot_config.totem_definition.changed.is_connected(_on_preview_resource_changed):
+		slot_config.totem_definition.changed.connect(_on_preview_resource_changed)
+
 
 func _disconnect_slot_resource(slot_config: CompositionPreviewSlot) -> void:
 	if slot_config == null:
@@ -175,6 +177,9 @@ func _disconnect_slot_resource(slot_config: CompositionPreviewSlot) -> void:
 
 	if slot_config.plant_definition != null and slot_config.plant_definition.changed.is_connected(_on_preview_resource_changed):
 		slot_config.plant_definition.changed.disconnect(_on_preview_resource_changed)
+
+	if slot_config.totem_definition != null and slot_config.totem_definition.changed.is_connected(_on_preview_resource_changed):
+		slot_config.totem_definition.changed.disconnect(_on_preview_resource_changed)
 
 
 func _draw_grid() -> void:
@@ -211,9 +216,14 @@ func _draw_slot_markers() -> void:
 			draw_string(label_font, slot_global + Vector2(10, -10), "slot %d" % index, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(1, 1, 1, 0.9))
 
 
-func _draw_pot_guides() -> void:
+func _draw_selected_slot_guides() -> void:
 	var slot_view: ShelfSlotView = shelf_view.get_slot_view(preview_slot_index)
 	if slot_view == null:
+		return
+
+	var totem_view: TotemView = slot_view.get_totem_view()
+	if totem_view != null and totem_view.visible:
+		_draw_totem_guides(slot_view, totem_view)
 		return
 
 	var pot_view: PotView = slot_view.get_pot_view()
@@ -250,4 +260,41 @@ func _draw_pot_guides() -> void:
 		draw_string(label_font, slot_rect.position + Vector2(0, -10), "slot footprint", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(1.0, 0.85, 0.45, 1.0))
 		draw_string(label_font, pot_rect.position + Vector2(0, -10), "pot bounds", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(0.7, 0.9, 1.0, 1.0))
 		draw_string(label_font, plant_rect.position + Vector2(0, -10), "plant view", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(0.6, 1.0, 0.7, 1.0))
+		draw_string(label_font, Vector2(baseline_center_x + 10.0, baseline_y - 8.0), "baseline", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(1.0, 0.55, 0.55, 1.0))
+
+
+func _draw_totem_guides(slot_view: ShelfSlotView, totem_view: TotemView) -> void:
+	var slot_origin := shelf_view.position + slot_view.position
+	var totem_rect := Rect2(slot_origin + totem_view.position, totem_view.size)
+	var slot_rect := Rect2(slot_origin + totem_view.position + totem_view.get_slot_footprint_local_rect().position, totem_view.get_slot_footprint_local_rect().size)
+	var baseline_local := totem_view.get_totem_baseline_local_position()
+	var baseline_y := totem_rect.position.y + baseline_local.y
+	var baseline_center_x := totem_rect.position.x + baseline_local.x
+	var texture_rect_node: TextureRect = totem_view.get_node("TotemTexture")
+	var texture_rect := Rect2(totem_rect.position + texture_rect_node.position, texture_rect_node.size)
+	var label_font: Font = ThemeDB.fallback_font
+
+	draw_rect(slot_rect, Color(1.0, 0.8, 0.2, 0.12), true)
+	draw_rect(slot_rect, Color(1.0, 0.8, 0.2, 0.75), false, 2.0)
+
+	draw_rect(totem_rect, Color(0.4, 0.75, 1.0, 0.12), true)
+	draw_rect(totem_rect, Color(0.4, 0.75, 1.0, 0.75), false, 2.0)
+
+	if texture_rect_node.texture != null:
+		draw_rect(texture_rect, Color(0.85, 0.45, 1.0, 0.12), true)
+		draw_rect(texture_rect, Color(0.85, 0.45, 1.0, 0.75), false, 2.0)
+
+	draw_line(
+		Vector2(totem_rect.position.x - 16.0, baseline_y),
+		Vector2(totem_rect.end.x + 16.0, baseline_y),
+		Color(1.0, 0.4, 0.4, 0.95),
+		2.0
+	)
+	draw_circle(Vector2(baseline_center_x, baseline_y), 5.0, Color(1.0, 0.4, 0.4, 1.0))
+
+	if label_font != null:
+		draw_string(label_font, slot_rect.position + Vector2(0, -10), "slot footprint", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(1.0, 0.85, 0.45, 1.0))
+		draw_string(label_font, totem_rect.position + Vector2(0, -10), "totem bounds", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(0.7, 0.9, 1.0, 1.0))
+		if texture_rect_node.texture != null:
+			draw_string(label_font, texture_rect.position + Vector2(0, -10), "totem texture", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(0.95, 0.6, 1.0, 1.0))
 		draw_string(label_font, Vector2(baseline_center_x + 10.0, baseline_y - 8.0), "baseline", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(1.0, 0.55, 0.55, 1.0))
