@@ -40,6 +40,7 @@ const DEFAULT_FALLBACK_MODIFIER_SCRIPT := preload("res://scripts/modifier_defini
 @export var target_rule := "mirror_from_source"
 @export var target_actor_type := "any"
 @export var modifier_definitions: Array[Resource] = []
+@export var aura_definitions: Array[Resource] = []
 @export var modifier_definition: Resource
 @export var modifier_type := "haste"
 @export var modifier_multiplier := 2.0

@@ -5,6 +5,7 @@ extends Resource
 @export var room_definition: RoomDefinition
 @export var plant_definitions: Array[PlantDefinition] = []
 @export var pot_definitions: Array[PotDefinition] = []
+@export var aura_definitions: Array[Resource] = []
 @export var modifier_definitions: Array[Resource] = []
 @export var totem_definitions: Array[TotemDefinition] = []
 @export var shelf_definitions: Array[ShelfDefinition] = []

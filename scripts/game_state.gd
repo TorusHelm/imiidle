@@ -9,6 +9,7 @@ var seed_inventory: Dictionary = {}
 var plant_definitions: Dictionary = {}
 var pot_inventory: Dictionary = {}
 var pot_definitions: Dictionary = {}
+var aura_definitions: Dictionary = {}
 var modifier_definitions: Dictionary = {}
 var totem_inventory: Dictionary = {}
 var totem_definitions: Dictionary = {}
@@ -386,6 +387,10 @@ func get_background_color() -> Color:
 	return Color.from_string(background_color_hex, Color(0.890196, 0.937255, 0.878431, 1))
 
 
+func get_aura_definition(aura_id: String) -> Resource:
+	return aura_definitions.get(aura_id, null)
+
+
 func get_modifier_definition(modifier_id: String) -> Resource:
 	return modifier_definitions.get(modifier_id, null)
 
@@ -419,32 +424,43 @@ func drain_visual_feedback_in_room_slot(room_slot_index: int) -> Array[Dictionar
 	return drained
 
 
-func get_active_modifiers_in_room_slot(room_slot_index: int, slot_index: int) -> Array:
+func get_active_status_effects_in_room_slot(room_slot_index: int, slot_index: int) -> Array:
 	var shelf := get_shelf_in_room_slot(room_slot_index)
-	return _get_active_modifiers_for_shelf_slot(shelf, slot_index)
+	return _get_active_status_effects_for_shelf_slot(shelf, slot_index)
+
+
+func get_active_status_effects_in_slot(slot_index: int) -> Array:
+	return _get_active_status_effects_for_shelf_slot(get_active_shelf(), slot_index)
+
+
+func get_active_modifiers_in_room_slot(room_slot_index: int, slot_index: int) -> Array:
+	return get_active_status_effects_in_room_slot(room_slot_index, slot_index)
 
 
 func get_active_modifiers_in_slot(slot_index: int) -> Array:
-	return _get_active_modifiers_for_shelf_slot(get_active_shelf(), slot_index)
+	return get_active_status_effects_in_slot(slot_index)
 
 
-func _get_active_modifiers_for_shelf_slot(shelf: ShelfInstance, slot_index: int) -> Array:
-	var modifiers: Array = []
+func _get_active_status_effects_for_shelf_slot(shelf: ShelfInstance, slot_index: int) -> Array:
+	var status_effects: Array = []
 	if shelf == null or slot_index < 0 or slot_index >= shelf.slots.size():
-		return modifiers
+		return status_effects
 
 	var slot := shelf.get_slot(slot_index)
 	if slot == null:
-		return modifiers
+		return status_effects
 
 	var actor: RefCounted = slot.get_actor()
 	if actor == null:
-		return modifiers
+		return status_effects
+
+	for aura_snapshot in shelf.get_active_aura_snapshots_for_slot(slot_index):
+		status_effects.append(aura_snapshot)
 
 	var actor_modifiers: Array = actor.get("active_modifiers")
 	for modifier in actor_modifiers:
-		modifiers.append(modifier)
-	return modifiers
+		status_effects.append(modifier)
+	return status_effects
 
 
 func _is_valid_slot_index(slot_index: int) -> bool:
@@ -463,6 +479,7 @@ func _sync_shelf_slots() -> void:
 func _load_catalog(catalog: GameCatalog) -> void:
 	plant_definitions.clear()
 	pot_definitions.clear()
+	aura_definitions.clear()
 	modifier_definitions.clear()
 	totem_definitions.clear()
 	shelf_definitions.clear()
@@ -492,6 +509,14 @@ func _load_catalog(catalog: GameCatalog) -> void:
 		if definition == null or definition.id.is_empty():
 			continue
 		pot_definitions[definition.id] = definition
+
+	for definition in catalog.aura_definitions:
+		if definition == null:
+			continue
+		var aura_id := String(definition.get("id"))
+		if aura_id.is_empty():
+			continue
+		aura_definitions[aura_id] = definition
 
 	for definition in catalog.modifier_definitions:
 		if definition == null:

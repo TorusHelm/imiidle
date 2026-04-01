@@ -106,8 +106,8 @@ func update_view(game_state: GameState, room_slot_index := -1) -> void:
 				game_state.can_plant_seed_in_room_slot(room_slot_index, index) if room_slot_index >= 0 else game_state.can_plant_seed_in_slot(index)
 			)
 
-		var active_modifiers := game_state.get_active_modifiers_in_room_slot(room_slot_index, index) if room_slot_index >= 0 else game_state.get_active_modifiers_in_slot(index)
-		slot_view.update_status_modifiers(active_modifiers)
+		var active_status_effects := game_state.get_active_status_effects_in_room_slot(room_slot_index, index) if room_slot_index >= 0 else game_state.get_active_status_effects_in_slot(index)
+		slot_view.update_status_modifiers(active_status_effects)
 
 
 func play_visual_feedback(feedback_events: Array[Dictionary]) -> void:

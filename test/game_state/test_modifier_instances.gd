@@ -95,3 +95,4 @@ func test_game_state_loads_modifier_definition_library_from_catalog() -> void:
 	assert_not_null(game_state.get_modifier_definition("slow"), "Default catalog should register Slow in the modifier library.")
 	assert_not_null(game_state.get_modifier_definition("rich_harvest_percent"), "Default catalog should register percent Rich Harvest in the modifier library.")
 	assert_not_null(game_state.get_modifier_definition("rich_harvest_flat"), "Default catalog should register flat Rich Harvest in the modifier library.")
+	assert_not_null(game_state.get_aura_definition("rich_harvest_percent_aura"), "Default catalog should register Rich Harvest aura in the aura library.")

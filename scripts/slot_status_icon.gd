@@ -13,15 +13,15 @@ func _ready() -> void:
 
 
 func show_modifier(modifier: Variant) -> void:
-	var modifier_snapshot := _to_snapshot(modifier)
-	if modifier_snapshot.is_empty():
+	var effect_snapshot := _to_snapshot(modifier)
+	if effect_snapshot.is_empty():
 		clear()
 		return
 	visible = true
-	tooltip_text = _build_tooltip(modifier_snapshot)
+	tooltip_text = _build_tooltip(effect_snapshot)
 	frame.tooltip_text = tooltip_text
 	icon_texture.tooltip_text = tooltip_text
-	var icon_path := String(modifier_snapshot.get("icon_path", ""))
+	var icon_path := String(effect_snapshot.get("icon_path", ""))
 	icon_texture.texture = load(icon_path) if not icon_path.is_empty() else null
 
 
@@ -50,8 +50,8 @@ func _apply_frame_style() -> void:
 
 
 func _build_tooltip(modifier: Dictionary) -> String:
-	var modifier_type := String(modifier.get("modifier_type", "modifier"))
-	var display_name := String(modifier.get("display_name", modifier_type.capitalize()))
+	var effect_type := String(modifier.get("modifier_type", modifier.get("aura_type", "effect")))
+	var display_name := String(modifier.get("display_name", effect_type.capitalize()))
 	var remaining_duration := float(modifier.get("remaining_duration", 0.0))
 	if remaining_duration > 0.0:
 		return "%s\nRemaining: %.1fs" % [display_name, remaining_duration]

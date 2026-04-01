@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://6qly7vs6ibb8"
-path="res://.godot/imported/haste.png-0c161fa9bdac92081b5ad1320eaa7e5a.ctex"
+uid="uid://bjykc8afibxv6"
+path="res://.godot/imported/modifier-slow.png-387bf8efac5d1d780feaaea70a79570b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/haste.png"
-dest_files=["res://.godot/imported/haste.png-0c161fa9bdac92081b5ad1320eaa7e5a.ctex"]
+source_file="res://Modifiers/Slow/assets/modifier-slow.png"
+dest_files=["res://.godot/imported/modifier-slow.png-387bf8efac5d1d780feaaea70a79570b.ctex"]
 
 [params]
 

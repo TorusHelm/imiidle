@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="ModifierDefinition" format=3]
+[gd_resource type="Resource" script_class="ModifierDefinition" format=3 uid="uid://ch1t00w4h7baq"]
 
-[ext_resource type="Script" path="res://scripts/modifier_definition.gd" id="1_modifier"]
+[ext_resource type="Script" uid="uid://b3tdhw75s2q8b" path="res://scripts/modifier_definition.gd" id="1_modifier"]
 
 [resource]
 script = ExtResource("1_modifier")
@@ -8,5 +8,5 @@ id = "rich_harvest_flat"
 modifier_type = "rich_harvest_flat"
 display_name = "Rich Harvest+"
 description = "Adds a flat bonus coin to each harvest while active."
-duration = 1.0
 flat_reward_bonus = 1.0
+icon_path = "uid://ull6spmwokkq"

@@ -2,20 +2,19 @@
 
 [ext_resource type="Script" uid="uid://byt1yqimswke6" path="res://scripts/slot_status_icon.gd" id="1_slot_status_icon"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8prgt"]
-bg_color = Color(0.98, 0.95, 0.84, 0.92)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_asbfa"]
+bg_color = Color(1, 1, 1, 1)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.45, 0.33, 0.18, 1)
+border_color = Color(0.53522015, 0.69093406, 0.6418183, 1)
 corner_radius_top_left = 4
 corner_radius_top_right = 4
 corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
 [node name="SlotStatusIcon" type="Control" unique_id=163683210]
-visible = false
 custom_minimum_size = Vector2(20, 20)
 layout_mode = 3
 anchors_preset = 0
@@ -29,7 +28,7 @@ layout_mode = 0
 offset_right = 20.0
 offset_bottom = 20.0
 mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_8prgt")
+theme_override_styles/panel = SubResource("StyleBoxFlat_asbfa")
 
 [node name="IconTexture" type="TextureRect" parent="Frame" unique_id=1890528562]
 layout_mode = 0

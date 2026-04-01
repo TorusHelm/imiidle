@@ -2,6 +2,7 @@ extends GutTest
 
 
 const GAME_SCENE := preload("res://sceens/Game.tscn")
+const SNAIL: TotemDefinition = preload("res://Totems/Snail/data/totem_snail.tres")
 
 
 func test_clicking_choose_shelf_button_opens_shelf_modal() -> void:
@@ -248,6 +249,44 @@ func test_slot_overlays_show_coin_feedback_and_modifier_status() -> void:
 	var icon_texture: TextureRect = first_status_icon.get_node("Frame/IconTexture")
 	assert_not_null(icon_texture.texture, "Haste modifier should render its configured status icon texture.")
 	assert_true(first_status_icon.tooltip_text.begins_with("Haste"), "Status overlay tooltip should come from the modifier definition display name.")
+
+
+func test_status_bar_orders_auras_before_timed_modifiers() -> void:
+	var game: Control = add_child_autofree(GAME_SCENE.instantiate())
+	await wait_process_frames(3)
+
+	assert_true(game.game_state.place_shelf(0, "shelf_b"), "Test setup should place Shelf B into room slot 0.")
+	game.game_state.set_active_room_slot_index(0)
+	assert_true(game.game_state.place_pot(0, "default_pot"), "Test setup should place a source pot into slot 0.")
+	assert_true(game.game_state.place_totem(1, "snail"), "Test setup should place Snail into slot 1.")
+	assert_true(game.game_state.place_pot(2, "orange_pot"), "Test setup should place another plant pot into slot 2.")
+	assert_true(game.game_state.place_totem(3, "metronome"), "Test setup should place a control totem into slot 3.")
+	assert_true(game.game_state.plant_seed(0, "gerbera"), "Test setup should plant a source seed into slot 0.")
+	assert_true(game.game_state.plant_seed(2, "cactus"), "Test setup should plant another seed into slot 2.")
+
+	var source_plant: PlantInstance = game.game_state.get_pot_in_room_slot(0, 0).active_plant
+	source_plant.progress_seconds = source_plant.get_cycle_time()
+
+	game.game_state.tick(0.1)
+	game.game_state.tick(0.1)
+	game.game_state.tick(0.1)
+	game._refresh_ui()
+	await wait_process_frames(2)
+
+	var shelf_view: ShelfView = _get_room_slot_view(game).shelf_view
+	var source_slot_view := shelf_view.get_slot_view(0)
+	var other_slot_view := shelf_view.get_slot_view(2)
+	var source_first_icon: SlotStatusIcon = source_slot_view.get_node("StatusIconsLayer/StatusIcon0")
+	var source_second_icon: SlotStatusIcon = source_slot_view.get_node("StatusIconsLayer/StatusIcon1")
+	var other_first_icon: SlotStatusIcon = other_slot_view.get_node("StatusIconsLayer/StatusIcon0")
+	var other_second_icon: SlotStatusIcon = other_slot_view.get_node("StatusIconsLayer/StatusIcon1")
+	var source_first_texture: TextureRect = source_first_icon.get_node("Frame/IconTexture")
+
+	assert_true(source_first_icon.tooltip_text.begins_with("Rich Harvest Aura"), "Aura should occupy the first status slot on the triggering plant.")
+	assert_not_null(source_first_texture.texture, "Aura status slot should render its configured icon.")
+	assert_true(source_second_icon.tooltip_text.begins_with("Slow"), "Timed modifier should come after auras in the status bar.")
+	assert_true(other_first_icon.tooltip_text.begins_with("Rich Harvest Aura"), "Aura should occupy the first status slot on other plants on the shelf.")
+	assert_false(other_second_icon.visible, "Other plants should not show the timed Slow modifier if they were not the event source.")
 
 
 func _click_control(control: Control) -> void:

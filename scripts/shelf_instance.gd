@@ -110,6 +110,25 @@ func get_pending_applications() -> Array[Dictionary]:
 	return _pending_applications.duplicate(true)
 
 
+func get_active_aura_snapshots_for_slot(slot_index: int) -> Array[Dictionary]:
+	var target_slot := get_slot(slot_index)
+	var aura_snapshots: Array[Dictionary] = []
+	if target_slot == null:
+		return aura_snapshots
+
+	for source_slot in slots:
+		if source_slot == null or source_slot.totem == null or source_slot.totem.definition == null:
+			continue
+		for aura_definition in source_slot.totem.definition.aura_definitions:
+			if aura_definition == null:
+				continue
+			if not _aura_applies_to_slot(aura_definition, source_slot, target_slot):
+				continue
+			aura_snapshots.append(_build_aura_snapshot(aura_definition, source_slot))
+
+	return aura_snapshots
+
+
 func _run_tick(delta: float) -> void:
 	_apply_phase()
 
@@ -126,6 +145,7 @@ func _run_tick(delta: float) -> void:
 				"pot_speed_multiplier": 1.0,
 				"room_speed_multiplier": room.room_speed_multiplier if room != null else 1.0,
 			}
+			plant_context.merge(_build_aura_context_for_slot(slot), true)
 			var report: Dictionary = actor.update_tick(delta, plant_context)
 			if report.is_empty():
 				continue
@@ -251,6 +271,71 @@ func _find_slot(row: int, col: int) -> SlotInstance:
 		if slot.row == row and slot.col == col:
 			return slot
 	return null
+
+
+func _build_aura_context_for_slot(target_slot: SlotInstance) -> Dictionary:
+	var context := {
+		"aura_speed_multiplier": 1.0,
+		"aura_reward_multiplier": 1.0,
+		"aura_flat_reward_bonus": 0.0,
+		"aura_blocks_activation": false,
+	}
+
+	for source_slot in slots:
+		if source_slot == null or source_slot.totem == null or source_slot.totem.definition == null:
+			continue
+		for aura_definition in source_slot.totem.definition.aura_definitions:
+			if aura_definition == null:
+				continue
+			if not _aura_applies_to_slot(aura_definition, source_slot, target_slot):
+				continue
+			context["aura_speed_multiplier"] = float(context.get("aura_speed_multiplier", 1.0)) * maxf(float(aura_definition.get("speed_multiplier")), 0.0)
+			context["aura_reward_multiplier"] = float(context.get("aura_reward_multiplier", 1.0)) * maxf(float(aura_definition.get("reward_multiplier")), 0.0)
+			context["aura_flat_reward_bonus"] = float(context.get("aura_flat_reward_bonus", 0.0)) + float(aura_definition.get("flat_reward_bonus"))
+			if bool(aura_definition.get("blocks_activation")):
+				context["aura_blocks_activation"] = true
+
+	return context
+
+
+func _aura_applies_to_slot(aura_definition: Resource, source_slot: SlotInstance, target_slot: SlotInstance) -> bool:
+	if target_slot == null:
+		return false
+	var target_actor_type := String(aura_definition.get("target_actor_type"))
+	if not _slot_matches_target_actor_type(target_slot, target_actor_type):
+		return false
+
+	match String(aura_definition.get("target_rule")):
+		"all_plants":
+			return true
+		"self":
+			return source_slot != null and source_slot.index == target_slot.index
+		"adjacent":
+			if source_slot == null:
+				return false
+			return source_slot.row == target_slot.row and absi(source_slot.col - target_slot.col) == 1
+		_:
+			return false
+
+
+func _build_aura_snapshot(aura_definition: Resource, source_slot: SlotInstance) -> Dictionary:
+	return {
+		"id": String(aura_definition.get("id")),
+		"aura_type": String(aura_definition.get("aura_type")),
+		"display_name": String(aura_definition.get("display_name")),
+		"description": String(aura_definition.get("description")),
+		"speed_multiplier": float(aura_definition.get("speed_multiplier")),
+		"reward_multiplier": float(aura_definition.get("reward_multiplier")),
+		"flat_reward_bonus": float(aura_definition.get("flat_reward_bonus")),
+		"blocks_activation": bool(aura_definition.get("blocks_activation")),
+		"icon_path": String(aura_definition.get("icon_path")),
+		"is_aura": true,
+		"stacks": 1,
+		"source": {
+			"source_actor_type": "totem",
+			"source_slot_index": source_slot.index,
+		},
+	}
 
 
 func _filter_target_slots(candidate_slots: Array, target_actor_type: String) -> Array[SlotInstance]:

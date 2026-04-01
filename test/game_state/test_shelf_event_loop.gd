@@ -92,7 +92,7 @@ func test_room_keeps_shelf_event_loops_isolated() -> void:
 	assert_eq(remote_target.active_modifiers.size(), 0, "Room must not route source shelf events into another shelf.")
 
 
-func test_snail_applies_slow_and_rich_harvest_only_to_the_activating_plant() -> void:
+func test_snail_applies_slow_to_the_activating_plant_and_keeps_profit_aura_on_the_shelf() -> void:
 	var room := RoomInstance.new(DEFAULT_ROOM)
 	var shelf := ShelfInstance.new(SHELF_B, room)
 	var source_plant_definition := PlantDefinition.new()
@@ -118,22 +118,26 @@ func test_snail_applies_slow_and_rich_harvest_only_to_the_activating_plant() -> 
 	var source_plant := shelf.get_pot_in_slot(0).active_plant
 	var other_plant := shelf.get_pot_in_slot(2).active_plant
 	var metronome := shelf.get_totem_in_slot(3)
+	var source_aura_snapshots := shelf.get_active_aura_snapshots_for_slot(0)
+	var other_aura_snapshots := shelf.get_active_aura_snapshots_for_slot(2)
 
 	shelf.tick(0.1)
+	assert_almost_eq(shelf.drain_generated_coins(), 0.15, 0.001, "Snail aura should immediately increase the triggering plant reward by 1.5x.")
 	shelf.tick(0.1)
 	assert_eq(shelf.get_pending_applications().size(), 1, "Snail should schedule one deferred application for the plant that triggered the event.")
 	shelf.tick(0.1)
 
 	var source_slow: Variant = source_plant.get_active_modifier("slow")
-	var source_rich: Variant = source_plant.get_active_modifier("rich_harvest_percent")
 	var other_slow: Variant = other_plant.get_active_modifier("slow")
-	var other_rich: Variant = other_plant.get_active_modifier("rich_harvest_percent")
 
 	assert_not_null(source_slow, "Snail should apply Slow to the plant that triggered the event.")
-	assert_not_null(source_rich, "Snail should apply Rich Harvest to the plant that triggered the event.")
 	assert_null(other_slow, "Snail should not apply Slow to other plants on the shelf.")
-	assert_null(other_rich, "Snail should not apply Rich Harvest to other plants on the shelf.")
 	assert_almost_eq(source_slow.remaining_time, 3.0, 0.001, "Snail Slow should use a 3 second duration.")
-	assert_almost_eq(source_rich.remaining_time, 3.0, 0.001, "Snail Rich Harvest should use a 3 second duration.")
-	assert_eq(source_rich.get_reward_multiplier(), 1.5, "Snail Rich Harvest should multiply the triggering plant reward by 1.5.")
 	assert_eq(metronome.active_modifiers.size(), 0, "Snail should not apply plant-only modifiers to other totems on the shelf.")
+	assert_eq(source_aura_snapshots.size(), 1, "Snail should expose one aura snapshot on the triggering plant slot.")
+	assert_eq(other_aura_snapshots.size(), 1, "Snail should expose one aura snapshot on other plant slots too.")
+	assert_eq(String(source_aura_snapshots[0].get("aura_type", "")), "rich_harvest_percent", "Snail should expose Rich Harvest as a shelf aura.")
+
+	other_plant.progress_seconds = other_plant.get_cycle_time()
+	shelf.tick(0.1)
+	assert_almost_eq(shelf.drain_generated_coins(), 12.0, 0.001, "Snail aura should increase reward for every plant on the shelf, not only the triggering plant.")

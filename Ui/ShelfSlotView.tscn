@@ -17,7 +17,6 @@ Status: empty"
 preview_definition = ExtResource("3_rrjwf")
 
 [node name="TotemView" parent="." unique_id=1128146596 instance=ExtResource("3_totem")]
-visible = false
 
 [node name="StatusIconsLayer" type="Control" parent="." unique_id=1551601727]
 layout_mode = 3

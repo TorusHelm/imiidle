@@ -25,20 +25,20 @@ func update_tick(delta: float, context: Dictionary = {}) -> Dictionary:
 	var resolved_delta := maxf(delta, 0.0)
 	age_seconds += resolved_delta
 	_advance_modifiers(resolved_delta)
-	if _blocks_activation():
+	if _blocks_activation(context):
 		return {}
 	progress_seconds += resolved_delta * _get_speed_multiplier(context)
 
 	var cycle_time := get_cycle_time()
 	if cycle_time <= 0.0:
-		return _build_activation_report()
+		return _build_activation_report(context)
 
 	if progress_seconds < cycle_time:
 		return {}
 
 	progress_seconds -= cycle_time
 	activation_count += 1
-	return _build_activation_report()
+	return _build_activation_report(context)
 
 
 func apply_modifier(modifier_definition: Resource, modifier_source: Dictionary = {}) -> void:
@@ -107,6 +107,7 @@ func _get_speed_multiplier(context: Dictionary) -> float:
 	var speed_multiplier := 1.0
 	speed_multiplier *= maxf(float(context.get("pot_speed_multiplier", 1.0)), 0.0)
 	speed_multiplier *= maxf(float(context.get("room_speed_multiplier", 1.0)), 0.0)
+	speed_multiplier *= maxf(float(context.get("aura_speed_multiplier", 1.0)), 0.0)
 
 	for modifier in active_modifiers:
 		speed_multiplier *= maxf(modifier.get_speed_multiplier(), 0.0)
@@ -114,40 +115,42 @@ func _get_speed_multiplier(context: Dictionary) -> float:
 	return speed_multiplier
 
 
-func _get_reward_multiplier() -> float:
-	var reward_multiplier := 1.0
+func _get_reward_multiplier(context: Dictionary = {}) -> float:
+	var reward_multiplier := maxf(float(context.get("aura_reward_multiplier", 1.0)), 0.0)
 	for modifier in active_modifiers:
 		reward_multiplier *= maxf(modifier.get_reward_multiplier(), 0.0)
 	return reward_multiplier
 
 
-func _get_flat_reward_bonus() -> float:
-	var flat_reward_bonus := 0.0
+func _get_flat_reward_bonus(context: Dictionary = {}) -> float:
+	var flat_reward_bonus := float(context.get("aura_flat_reward_bonus", 0.0))
 	for modifier in active_modifiers:
 		flat_reward_bonus += modifier.get_flat_reward_bonus()
 	return flat_reward_bonus
 
 
-func _blocks_activation() -> bool:
+func _blocks_activation(context: Dictionary = {}) -> bool:
+	if bool(context.get("aura_blocks_activation", false)):
+		return true
 	for modifier in active_modifiers:
 		if modifier.blocks_activation():
 			return true
 	return false
 
 
-func _build_activation_report() -> Dictionary:
+func _build_activation_report(context: Dictionary = {}) -> Dictionary:
 	return {
 		"type": "plant_activated",
-		"reward": get_activation_reward(),
+		"reward": get_activation_reward(context),
 	}
 
 
-func get_activation_reward() -> float:
+func get_activation_reward(context: Dictionary = {}) -> float:
 	if definition == null:
 		return 0.0
 	var base_reward := definition.coins_per_second * maxf(definition.growth_duration, 0.0)
-	var modified_reward := base_reward * _get_reward_multiplier()
-	modified_reward += _get_flat_reward_bonus()
+	var modified_reward := base_reward * _get_reward_multiplier(context)
+	modified_reward += _get_flat_reward_bonus(context)
 	return maxf(modified_reward, 0.0)
 
 
