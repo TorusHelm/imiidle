@@ -11,6 +11,4 @@ Rule: mirror_from_source"
 preview_definition = ExtResource("2_totem")
 
 [node name="TotemTexture" parent="." index="0" unique_id=925993581]
-offset_right = 209.0
-offset_bottom = 372.0
 texture = ExtResource("3_hgrf5")

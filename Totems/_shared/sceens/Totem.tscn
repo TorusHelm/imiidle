@@ -16,6 +16,7 @@ offset_left = 23.0
 offset_top = 48.0
 offset_right = 147.0
 offset_bottom = 198.0
+expand_mode = 1
 stretch_mode = 5
 
 [node name="TotemBaseline" type="Marker2D" parent="." unique_id=1281792967]

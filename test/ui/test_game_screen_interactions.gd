@@ -181,7 +181,32 @@ func test_room_slot_renders_totem_view_when_totem_is_placed() -> void:
 	assert_not_null(totem_view, "Totem view should be created inside the slot container.")
 	assert_false(pot_view.visible, "Pot view should be hidden when the slot is occupied by a totem.")
 	assert_true(totem_view.visible, "Totem view should be visible when a totem occupies the slot.")
+	assert_eq(
+		totem_view.get_node("TotemTexture").size,
+		game.game_state.get_totem_in_room_slot(0, 0).definition.texture_size,
+		"Placed totem should use the texture size from its definition resource."
+	)
 	assert_eq(totem_view.get_parent(), slot_view, "Totem view should live under the slot container, not directly under ShelfView.")
+
+
+func test_room_slot_renders_pot_texture_size_from_definition() -> void:
+	var game: Control = add_child_autofree(GAME_SCENE.instantiate())
+	await wait_process_frames(3)
+
+	assert_true(game.game_state.place_shelf(0, "shelf_a"), "Test setup should place a shelf into room slot 0.")
+	assert_true(game.game_state.place_pot(0, "orange_pot"), "Test setup should place the starter Orange Pot into shelf slot 0.")
+	game._refresh_ui()
+	await wait_process_frames(3)
+
+	var pot_view: PotView = _get_room_slot_view(game).shelf_view.get_pot_view(0)
+
+	assert_not_null(pot_view, "Pot view should exist for the placed pot.")
+	assert_true(pot_view.visible, "Pot view should stay visible when a pot occupies the slot.")
+	assert_eq(
+		pot_view.pot_texture.size,
+		game.game_state.get_pot_in_room_slot(0, 0).definition.pot_texture_size,
+		"Placed pot should use the texture size from its definition resource."
+	)
 
 
 func _click_control(control: Control) -> void:
