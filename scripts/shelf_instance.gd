@@ -10,6 +10,7 @@ var _tick_accumulator := 0.0
 var _incoming_events: Array[Dictionary] = []
 var _pending_applications: Array[Dictionary] = []
 var _coins_generated := 0.0
+var _visual_feedback_queue: Array[Dictionary] = []
 
 
 func _init(shelf_definition: ShelfDefinition, room_instance: RoomInstance = null) -> void:
@@ -95,6 +96,12 @@ func drain_generated_coins() -> float:
 	return generated
 
 
+func drain_visual_feedback() -> Array[Dictionary]:
+	var feedback := _visual_feedback_queue.duplicate(true)
+	_visual_feedback_queue.clear()
+	return feedback
+
+
 func get_incoming_events() -> Array[Dictionary]:
 	return _incoming_events.duplicate(true)
 
@@ -124,6 +131,7 @@ func _run_tick(delta: float) -> void:
 				continue
 
 			_coins_generated += float(report.get("reward", 0.0))
+			_enqueue_visual_feedback(slot.index, "plant", report)
 			next_events.append(
 				{
 					"type": String(report.get("type", "")),
@@ -137,6 +145,7 @@ func _run_tick(delta: float) -> void:
 			var result: Dictionary = actor.update_tick(_incoming_events, slot.index)
 			var report_data: Dictionary = result.get("report", {})
 			if not report_data.is_empty():
+				_enqueue_visual_feedback(slot.index, "totem", report_data)
 				next_events.append(
 					{
 						"type": String(report_data.get("type", "")),
@@ -224,3 +233,18 @@ func _find_slot(row: int, col: int) -> SlotInstance:
 		if slot.row == row and slot.col == col:
 			return slot
 	return null
+
+
+func _enqueue_visual_feedback(slot_index: int, actor_type: String, report_data: Dictionary) -> void:
+	var reward := float(report_data.get("reward", 0.0))
+	if reward <= 0.0:
+		return
+
+	_visual_feedback_queue.append(
+		{
+			"type": "coin_gain",
+			"slot_index": slot_index,
+			"source_actor_type": actor_type,
+			"amount": reward,
+		}
+	)

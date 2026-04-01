@@ -18,6 +18,7 @@ var background_color_hex := "#e3efdf"
 var shelf_slots: Array = []
 var room := RoomInstance.new()
 var active_room_slot_index := -1
+var _pending_visual_feedback_by_room_slot: Dictionary = {}
 
 
 func _init() -> void:
@@ -385,13 +386,60 @@ func get_background_color() -> Color:
 
 
 func tick(delta: float) -> void:
-	for shelf in room.shelf_slots:
+	_pending_visual_feedback_by_room_slot.clear()
+
+	for room_slot_index in range(room.shelf_slots.size()):
+		var shelf: ShelfInstance = room.shelf_slots[room_slot_index]
 		if shelf == null:
 			continue
 		shelf.tick(delta)
 		coins += shelf.drain_generated_coins()
 
+		var visual_feedback := shelf.drain_visual_feedback()
+		if not visual_feedback.is_empty():
+			_pending_visual_feedback_by_room_slot[room_slot_index] = visual_feedback
+
 	_sync_shelf_slots()
+
+
+func drain_visual_feedback_in_room_slot(room_slot_index: int) -> Array[Dictionary]:
+	var drained: Array[Dictionary] = []
+	if not _pending_visual_feedback_by_room_slot.has(room_slot_index):
+		return drained
+
+	var feedback_variant = _pending_visual_feedback_by_room_slot.get(room_slot_index, [])
+	for feedback_event in feedback_variant:
+		drained.append((feedback_event as Dictionary).duplicate(true))
+	_pending_visual_feedback_by_room_slot.erase(room_slot_index)
+	return drained
+
+
+func get_active_modifiers_in_room_slot(room_slot_index: int, slot_index: int) -> Array[Dictionary]:
+	var shelf := get_shelf_in_room_slot(room_slot_index)
+	return _get_active_modifiers_for_shelf_slot(shelf, slot_index)
+
+
+func get_active_modifiers_in_slot(slot_index: int) -> Array[Dictionary]:
+	return _get_active_modifiers_for_shelf_slot(get_active_shelf(), slot_index)
+
+
+func _get_active_modifiers_for_shelf_slot(shelf: ShelfInstance, slot_index: int) -> Array[Dictionary]:
+	var modifiers: Array[Dictionary] = []
+	if shelf == null or slot_index < 0 or slot_index >= shelf.slots.size():
+		return modifiers
+
+	var slot := shelf.get_slot(slot_index)
+	if slot == null:
+		return modifiers
+
+	var actor: RefCounted = slot.get_actor()
+	if actor == null:
+		return modifiers
+
+	var actor_modifiers: Array = actor.get("active_modifiers")
+	for modifier in actor_modifiers:
+		modifiers.append((modifier as Dictionary).duplicate(true))
+	return modifiers
 
 
 func _is_valid_slot_index(slot_index: int) -> bool:

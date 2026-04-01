@@ -47,6 +47,7 @@ func show_shelf(slot_size: Vector2, shelf_definition: ShelfDefinition, game_stat
 	shelf_view.visible = true
 	shelf_view.configure(shelf_definition)
 	shelf_view.update_view(game_state, room_slot_index_value)
+	shelf_view.play_visual_feedback(game_state.drain_visual_feedback_in_room_slot(room_slot_index_value))
 	shelf_view.position = (slot_size - shelf_view.size) * 0.5
 
 

@@ -60,6 +60,17 @@ func get_plant_attach_local_position() -> Vector2:
 	return marker.position
 
 
+func get_coin_anchor_local_position() -> Vector2:
+	if plant_view != null and plant_view.visible:
+		return plant_view.position + plant_view.get_coin_anchor_local_position()
+
+	var footprint_rect := get_slot_footprint_local_rect()
+	return footprint_rect.position + Vector2(
+		maxf(footprint_rect.size.x - 14.0, 0.0),
+		clampf(footprint_rect.size.y * 0.33, 0.0, footprint_rect.size.y)
+	)
+
+
 func get_slot_footprint_local_rect() -> Rect2:
 	if _current_definition != null:
 		return _current_definition.get_slot_footprint_local_rect()

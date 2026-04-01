@@ -209,6 +209,43 @@ func test_room_slot_renders_pot_texture_size_from_definition() -> void:
 	)
 
 
+func test_slot_overlays_show_coin_feedback_and_modifier_status() -> void:
+	var game: Control = add_child_autofree(GAME_SCENE.instantiate())
+	await wait_process_frames(3)
+
+	assert_true(game.game_state.place_shelf(0, "shelf_a"), "Test setup should place a shelf into room slot 0.")
+	game.game_state.set_active_room_slot_index(0)
+	assert_true(game.game_state.place_pot(0, "default_pot"), "Test setup should place a pot into slot 0.")
+	assert_true(game.game_state.place_totem(1, "metronome"), "Test setup should place a Metronome into slot 1.")
+	assert_true(game.game_state.place_pot(2, "orange_pot"), "Test setup should place a second pot into slot 2.")
+	assert_true(game.game_state.plant_seed(0, "gerbera"), "Test setup should plant a seed into slot 0.")
+	assert_true(game.game_state.plant_seed(2, "cactus"), "Test setup should plant a seed into slot 2.")
+
+	var source_plant: PlantInstance = game.game_state.get_pot_in_room_slot(0, 0).active_plant
+	source_plant.progress_seconds = source_plant.get_cycle_time()
+
+	game.game_state.tick(0.1)
+	game._refresh_ui()
+	await wait_process_frames(2)
+
+	var shelf_view: ShelfView = _get_room_slot_view(game).shelf_view
+	var source_slot_view := shelf_view.get_slot_view(0)
+	var target_slot_view := shelf_view.get_slot_view(2)
+	var floating_feedback_layer: Node2D = source_slot_view.get_node("FloatingFeedbackLayer")
+
+	assert_gt(floating_feedback_layer.get_child_count(), 0, "Source slot should spawn floating coin feedback after plant activation.")
+
+	game.game_state.tick(0.1)
+	game._refresh_ui()
+	await wait_process_frames(2)
+
+	game.game_state.tick(0.1)
+	game._refresh_ui()
+	await wait_process_frames(2)
+
+	assert_eq(target_slot_view.get_status_icon_visible_count(), 1, "Target slot should show one visible status frame after haste is applied.")
+
+
 func _click_control(control: Control) -> void:
 	var sender: GutInputSender = autofree(GutInputSender.new(Input))
 	sender.set_auto_flush_input(true)

@@ -24,3 +24,8 @@ extends Resource
 @export var texture_offset := Vector2.ZERO
 ## Rendered size of the plant sprite inside the plant area.
 @export var texture_size := Vector2(160.0, 190.0)
+
+@export_group("Anchors")
+## Optional local anchor inside the PlantView used for floating coin feedback.
+## Negative values fall back to the auto-derived top-right anchor of the rendered plant.
+@export var coin_anchor := Vector2(-1.0, -1.0)

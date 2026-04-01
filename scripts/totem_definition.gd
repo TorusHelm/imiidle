@@ -23,6 +23,9 @@ const DEFAULT_SLOT_LAYOUT: SlotLayout = preload("res://Game/data/default_slot_la
 @export_group("Anchors")
 ## Bottom anchor used to place the totem onto a shelf slot.
 @export var totem_baseline := Vector2(85.0, 202.0)
+## Optional local anchor inside the TotemView used for floating coin feedback.
+## Negative values fall back to the auto-derived top-right anchor of the rendered totem.
+@export var coin_anchor := Vector2(-1.0, -1.0)
 
 @export_group("Slot Fit")
 @export var slot_layout: SlotLayout

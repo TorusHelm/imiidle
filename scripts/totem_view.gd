@@ -59,6 +59,16 @@ func get_totem_baseline_local_position() -> Vector2:
 	return marker.position
 
 
+func get_coin_anchor_local_position() -> Vector2:
+	if _current_definition != null and _current_definition.coin_anchor.x >= 0.0 and _current_definition.coin_anchor.y >= 0.0:
+		return _current_definition.coin_anchor
+
+	return totem_texture.position + Vector2(
+		maxf(totem_texture.size.x - 12.0, 0.0),
+		clampf(totem_texture.size.y * 0.33, 0.0, totem_texture.size.y)
+	)
+
+
 func _apply_definition_layout(definition: TotemDefinition) -> void:
 	if definition == null:
 		return

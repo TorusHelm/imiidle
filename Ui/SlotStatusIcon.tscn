@@ -1,0 +1,29 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/slot_status_icon.gd" id="1_slot_status_icon"]
+
+[node name="SlotStatusIcon" type="Control"]
+visible = false
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 20.0
+offset_bottom = 20.0
+mouse_filter = 2
+script = ExtResource("1_slot_status_icon")
+
+[node name="Frame" type="Panel" parent="."]
+layout_mode = 0
+offset_right = 20.0
+offset_bottom = 20.0
+mouse_filter = 2
+
+[node name="IconTexture" type="TextureRect" parent="Frame"]
+layout_mode = 0
+offset_left = 2.0
+offset_top = 2.0
+offset_right = 18.0
+offset_bottom = 18.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5

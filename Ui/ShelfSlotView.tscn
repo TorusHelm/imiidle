@@ -1,13 +1,27 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://bltsyrjdei0g6"]
 
-[ext_resource type="Script" path="res://scripts/shelf_slot_view.gd" id="1_shelf_slot"]
+[ext_resource type="Script" uid="uid://b5fmodmf00ng2" path="res://scripts/shelf_slot_view.gd" id="1_shelf_slot"]
 [ext_resource type="PackedScene" uid="uid://cyxm86es2rekc" path="res://Pots/_shared/sceens/Pot.tscn" id="2_pot"]
-[ext_resource type="PackedScene" path="res://Totems/_shared/sceens/Totem.tscn" id="3_totem"]
+[ext_resource type="Resource" uid="uid://0m8tp443pwtk" path="res://Pots/PurplePot/data/pot_purple.tres" id="3_rrjwf"]
+[ext_resource type="PackedScene" uid="uid://fto6d6k4flfw" path="res://Totems/_shared/sceens/Totem.tscn" id="3_totem"]
 
-[node name="ShelfSlotView" type="Node2D"]
+[node name="ShelfSlotView" type="Node2D" unique_id=2009789422]
 script = ExtResource("1_shelf_slot")
 
-[node name="PotView" parent="." instance=ExtResource("2_pot")]
+[node name="PotView" parent="." unique_id=596613280 instance=ExtResource("2_pot")]
+custom_minimum_size = Vector2(232, 312)
+offset_right = 232.0
+offset_bottom = 312.0
+tooltip_text = "Purple Pot
+Status: empty"
+preview_definition = ExtResource("3_rrjwf")
 
-[node name="TotemView" parent="." instance=ExtResource("3_totem")]
+[node name="TotemView" parent="." unique_id=1128146596 instance=ExtResource("3_totem")]
 visible = false
+
+[node name="StatusIconsLayer" type="Control" parent="." unique_id=1551601727]
+layout_mode = 3
+anchors_preset = 0
+mouse_filter = 2
+
+[node name="FloatingFeedbackLayer" type="Node2D" parent="." unique_id=235355059]

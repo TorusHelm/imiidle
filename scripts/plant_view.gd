@@ -11,6 +11,9 @@ extends Control
 		_queue_preview_refresh()
 
 
+var _current_definition: PlantDefinition = null
+
+
 @onready var plant_texture: TextureRect = $PlantTexture
 
 
@@ -26,6 +29,7 @@ func _process(_delta: float) -> void:
 
 
 func show_empty() -> void:
+	_current_definition = null
 	plant_texture.visible = false
 	plant_texture.texture = null
 	tooltip_text = "No plant\nPlant a seed to start growing."
@@ -55,8 +59,10 @@ func show_plant(plant: PlantInstance) -> void:
 
 func _apply_definition_layout(definition: PlantDefinition) -> void:
 	if definition == null:
+		_current_definition = null
 		return
 
+	_current_definition = definition
 	if size.x <= 0.0 or size.y <= 0.0:
 		custom_minimum_size = definition.texture_size
 		size = definition.texture_size
@@ -69,6 +75,16 @@ func _apply_definition_layout(definition: PlantDefinition) -> void:
 
 	plant_texture.position = base_position + definition.texture_offset
 	plant_texture.size = definition.texture_size
+
+
+func get_coin_anchor_local_position() -> Vector2:
+	if _current_definition != null and _current_definition.coin_anchor.x >= 0.0 and _current_definition.coin_anchor.y >= 0.0:
+		return _current_definition.coin_anchor
+
+	return plant_texture.position + Vector2(
+		maxf(plant_texture.size.x - 12.0, 0.0),
+		clampf(plant_texture.size.y * 0.33, 0.0, plant_texture.size.y)
+	)
 
 
 func _queue_preview_refresh() -> void:
