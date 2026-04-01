@@ -8,6 +8,7 @@
 [ext_resource type="Resource" uid="uid://8n815svtusxd" path="res://Plants/Gerbera/data/plant_gerbera.tres" id="5_plant_data"]
 [ext_resource type="Resource" uid="uid://cd6vv47rgnqgq" path="res://Plants/Cactus/data/plant_cactus.tres" id="6_8xwby"]
 [ext_resource type="Resource" uid="uid://vfj2f3piwebi" path="res://Pots/OrangePot/data/pot_orange.tres" id="7_1lydj"]
+[ext_resource type="Resource" uid="uid://co6br7lk64g5g" path="res://Totems/Snail/data/totem_snail.tres" id="8_7rext"]
 
 [sub_resource type="Resource" id="Resource_slot0"]
 script = ExtResource("4_slot_script")
@@ -25,6 +26,7 @@ plant_definition = ExtResource("6_8xwby")
 
 [sub_resource type="Resource" id="Resource_112nc"]
 script = ExtResource("4_slot_script")
+totem_definition = ExtResource("8_7rext")
 
 [sub_resource type="Resource" id="Resource_7rext"]
 script = ExtResource("4_slot_script")

@@ -1,14 +1,16 @@
 [gd_scene format=3 uid="uid://gddp3lpeumpc"]
 
 [ext_resource type="PackedScene" uid="uid://fto6d6k4flfw" path="res://Totems/_shared/sceens/Totem.tscn" id="1_totem_scene"]
-[ext_resource type="Resource" uid="uid://brkmk5inkq6uw" path="res://Totems/Metronome/data/totem_metronome.tres" id="2_totem"]
-[ext_resource type="Texture2D" uid="uid://cih0jkptbenoi" path="res://Totems/Metronome/assets/totem-metronome.png" id="3_hgrf5"]
+[ext_resource type="Resource" uid="uid://co6br7lk64g5g" path="res://Totems/Snail/data/totem_snail.tres" id="2_hgrf5"]
+[ext_resource type="Texture2D" uid="uid://cvgqd3dtl3pax" path="res://Totems/Snail/assets/totem-snail.png" id="3_el6o7"]
 
 [node name="TotemPreview" unique_id=228889557 instance=ExtResource("1_totem_scene")]
-tooltip_text = "Metronome
+tooltip_text = "Snail
 Trigger: plant_activated
 Rule: mirror_from_source"
-preview_definition = ExtResource("2_totem")
+preview_definition = ExtResource("2_hgrf5")
 
 [node name="TotemTexture" parent="." index="0" unique_id=925993581]
-texture = ExtResource("3_hgrf5")
+offset_top = 62.0
+offset_bottom = 212.0
+texture = ExtResource("3_el6o7")
