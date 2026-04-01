@@ -2,6 +2,10 @@
 class_name SlotStatusIcon
 extends Control
 
+const MODIFIER_ICONS := {
+	"haste": preload("res://assets/haste.png"),
+}
+
 
 @onready var frame: Panel = $Frame
 @onready var icon_texture: TextureRect = $Frame/IconTexture
@@ -13,10 +17,12 @@ func _ready() -> void:
 
 
 func show_modifier(modifier: Dictionary) -> void:
+	var modifier_type := String(modifier.get("modifier_type", ""))
 	visible = true
 	tooltip_text = _build_tooltip(modifier)
 	frame.tooltip_text = tooltip_text
 	icon_texture.tooltip_text = tooltip_text
+	icon_texture.texture = MODIFIER_ICONS.get(modifier_type, null)
 
 
 func clear() -> void:
