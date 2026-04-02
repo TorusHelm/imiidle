@@ -18,6 +18,7 @@ func show_modifier(modifier: Variant) -> void:
 		clear()
 		return
 	visible = true
+	modulate = Color.WHITE
 	tooltip_text = _build_tooltip(effect_snapshot)
 	frame.tooltip_text = tooltip_text
 	icon_texture.tooltip_text = tooltip_text
@@ -27,10 +28,21 @@ func show_modifier(modifier: Variant) -> void:
 
 func clear() -> void:
 	visible = false
+	modulate = Color.WHITE
 	tooltip_text = ""
 	if is_node_ready():
 		frame.tooltip_text = ""
 		icon_texture.tooltip_text = ""
+		icon_texture.texture = null
+
+
+func show_placeholder() -> void:
+	visible = true
+	modulate = Color(1.0, 1.0, 1.0, 0.45)
+	tooltip_text = "Status slot preview"
+	if is_node_ready():
+		frame.tooltip_text = tooltip_text
+		icon_texture.tooltip_text = tooltip_text
 		icon_texture.texture = null
 
 

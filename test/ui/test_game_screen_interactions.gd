@@ -210,6 +210,28 @@ func test_room_slot_renders_pot_texture_size_from_definition() -> void:
 	)
 
 
+func test_slot_progress_bar_reflects_active_plant_progress() -> void:
+	var game: Control = add_child_autofree(GAME_SCENE.instantiate())
+	await wait_process_frames(3)
+
+	assert_true(game.game_state.place_shelf(0, "shelf_a"), "Test setup should place a shelf into room slot 0.")
+	assert_true(game.game_state.place_pot(0, "default_pot"), "Test setup should place a pot into slot 0.")
+	assert_true(game.game_state.plant_seed(0, "gerbera"), "Test setup should plant a seed into slot 0.")
+
+	var plant: PlantInstance = game.game_state.get_pot_in_room_slot(0, 0).active_plant
+	plant.progress_seconds = plant.get_cycle_time() * 0.5
+
+	game._refresh_ui()
+	await wait_process_frames(2)
+
+	var slot_view := _get_room_slot_view(game).shelf_view.get_slot_view(0)
+	var progress_bar: Control = slot_view.get_progress_bar()
+	var progress_fill: ColorRect = progress_bar.get_node("BarFill")
+
+	assert_true(progress_bar.visible, "Slot progress bar should be visible for a planted pot.")
+	assert_almost_eq(progress_fill.size.x, progress_bar.size.x * 0.5, 0.001, "Slot progress bar should reflect the plant runtime progress ratio.")
+
+
 func test_slot_overlays_show_coin_feedback_and_modifier_status() -> void:
 	var game: Control = add_child_autofree(GAME_SCENE.instantiate())
 	await wait_process_frames(3)
@@ -245,7 +267,7 @@ func test_slot_overlays_show_coin_feedback_and_modifier_status() -> void:
 	await wait_process_frames(2)
 
 	assert_eq(target_slot_view.get_status_icon_visible_count(), 1, "Target slot should show one visible status frame after haste is applied.")
-	var first_status_icon: SlotStatusIcon = target_slot_view.get_node("StatusIconsLayer/StatusIcon0")
+	var first_status_icon: SlotStatusIcon = target_slot_view.get_node("ContentSlot/StatusBar/StatusIconsLayer/StatusIcon0")
 	var icon_texture: TextureRect = first_status_icon.get_node("Frame/IconTexture")
 	assert_not_null(icon_texture.texture, "Haste modifier should render its configured status icon texture.")
 	assert_true(first_status_icon.tooltip_text.begins_with("Haste"), "Status overlay tooltip should come from the modifier definition display name.")
@@ -276,10 +298,10 @@ func test_status_bar_orders_auras_before_timed_modifiers() -> void:
 	var shelf_view: ShelfView = _get_room_slot_view(game).shelf_view
 	var source_slot_view := shelf_view.get_slot_view(0)
 	var other_slot_view := shelf_view.get_slot_view(2)
-	var source_first_icon: SlotStatusIcon = source_slot_view.get_node("StatusIconsLayer/StatusIcon0")
-	var source_second_icon: SlotStatusIcon = source_slot_view.get_node("StatusIconsLayer/StatusIcon1")
-	var other_first_icon: SlotStatusIcon = other_slot_view.get_node("StatusIconsLayer/StatusIcon0")
-	var other_second_icon: SlotStatusIcon = other_slot_view.get_node("StatusIconsLayer/StatusIcon1")
+	var source_first_icon: SlotStatusIcon = source_slot_view.get_node("ContentSlot/StatusBar/StatusIconsLayer/StatusIcon0")
+	var source_second_icon: SlotStatusIcon = source_slot_view.get_node("ContentSlot/StatusBar/StatusIconsLayer/StatusIcon1")
+	var other_first_icon: SlotStatusIcon = other_slot_view.get_node("ContentSlot/StatusBar/StatusIconsLayer/StatusIcon0")
+	var other_second_icon: SlotStatusIcon = other_slot_view.get_node("ContentSlot/StatusBar/StatusIconsLayer/StatusIcon1")
 	var source_first_texture: TextureRect = source_first_icon.get_node("Frame/IconTexture")
 
 	assert_true(source_first_icon.tooltip_text.begins_with("Rich Harvest Aura"), "Aura should occupy the first status slot on the triggering plant.")

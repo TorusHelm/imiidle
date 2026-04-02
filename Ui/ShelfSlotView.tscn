@@ -4,23 +4,125 @@
 [ext_resource type="PackedScene" uid="uid://cyxm86es2rekc" path="res://Pots/_shared/sceens/Pot.tscn" id="2_pot"]
 [ext_resource type="Resource" uid="uid://0m8tp443pwtk" path="res://Pots/PurplePot/data/pot_purple.tres" id="3_rrjwf"]
 [ext_resource type="PackedScene" uid="uid://fto6d6k4flfw" path="res://Totems/_shared/sceens/Totem.tscn" id="3_totem"]
+[ext_resource type="Script" uid="uid://c8sqmwpmn73lx" path="res://scripts/editor_overlay_guide_rect.gd" id="4_guide_rect"]
 
 [node name="ShelfSlotView" type="Node2D" unique_id=2009789422]
 script = ExtResource("1_shelf_slot")
 
 [node name="PotView" parent="." unique_id=596613280 instance=ExtResource("2_pot")]
-custom_minimum_size = Vector2(232, 312)
-offset_right = 232.0
-offset_bottom = 312.0
+custom_minimum_size = Vector2(170, 280)
+offset_right = 170.0
+offset_bottom = 280.0
 tooltip_text = "Purple Pot
 Status: empty"
 preview_definition = ExtResource("3_rrjwf")
 
 [node name="TotemView" parent="." unique_id=1128146596 instance=ExtResource("3_totem")]
+visible = false
 
-[node name="StatusIconsLayer" type="Control" parent="." unique_id=1551601727]
+[node name="ContentSlot" type="Control" parent="." unique_id=482413330]
+custom_minimum_size = Vector2(170, 270.555)
 layout_mode = 3
 anchors_preset = 0
+offset_right = 170.0
+offset_bottom = 280.0
 mouse_filter = 2
+
+[node name="ContentSlotPreview" type="ColorRect" parent="ContentSlot" unique_id=1699024240]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 0)
+script = ExtResource("4_guide_rect")
+guide_color = Color(1, 0.25, 0.25, 0.95)
+
+[node name="StatusBar" type="Control" parent="ContentSlot" unique_id=987152061]
+custom_minimum_size = Vector2(102, 44)
+anchors_preset = 0
+offset_right = 102.0
+offset_bottom = 44.0
+mouse_filter = 2
+
+[node name="StatusBarPreview" type="ColorRect" parent="ContentSlot/StatusBar" unique_id=180450962]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 0)
+script = ExtResource("4_guide_rect")
+guide_color = Color(0.3, 0.95, 0.35, 0.95)
+
+[node name="StatusIconsLayer" type="Control" parent="ContentSlot/StatusBar" unique_id=1551601727]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ProgressBar" type="Control" parent="ContentSlot" unique_id=208643901]
+z_index = 1
+custom_minimum_size = Vector2(170, 14)
+anchors_preset = 0
+offset_top = 266.0
+offset_right = 170.0
+offset_bottom = 280.0
+mouse_filter = 2
+
+[node name="ProgressBarPreview" type="ColorRect" parent="ContentSlot/ProgressBar" unique_id=1861001221]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 0)
+script = ExtResource("4_guide_rect")
+guide_color = Color(0.2, 0.55, 1, 0.95)
+
+[node name="BarUnder" type="ColorRect" parent="ContentSlot/ProgressBar" unique_id=17094581]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.109804, 0.0941176, 0.0784314, 0.85)
+
+[node name="BarFill" type="ColorRect" parent="ContentSlot/ProgressBar" unique_id=1563885028]
+layout_mode = 0
+offset_bottom = 14.0
+mouse_filter = 2
+color = Color(0.454902, 0.768627, 0.345098, 1)
+
+[node name="CoinSlot" type="Control" parent="ContentSlot" unique_id=742009270]
+custom_minimum_size = Vector2(12, 12)
+anchors_preset = 0
+offset_left = 158.0
+offset_right = 170.0
+offset_bottom = 12.0
+mouse_filter = 2
+
+[node name="CoinPreview" type="ColorRect" parent="ContentSlot/CoinSlot" unique_id=192730144]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 0)
+script = ExtResource("4_guide_rect")
+guide_color = Color(1, 0.85, 0.2, 0.95)
 
 [node name="FloatingFeedbackLayer" type="Node2D" parent="." unique_id=235355059]
