@@ -84,6 +84,8 @@ func _refresh_preview() -> void:
 		return
 
 	_ensure_preview_slot_capacity()
+	if shelf_view == null or not shelf_view.has_method("preview_slots"):
+		return
 	shelf_view.preview_slots(shelf_definition, preview_slots)
 	queue_redraw()
 
@@ -114,6 +116,9 @@ func _draw() -> void:
 		_draw_grid()
 
 	if shelf_definition == null:
+		return
+
+	if not _has_runtime_shelf_view():
 		return
 
 	if show_slot_markers:
@@ -202,6 +207,9 @@ func _draw_grid() -> void:
 
 
 func _draw_slot_markers() -> void:
+	if not _has_runtime_shelf_view():
+		return
+
 	var slot_positions: Array[Vector2] = shelf_view.get_slot_positions()
 	var shelf_origin: Vector2 = shelf_view.position
 	var marker_radius := 6.0
@@ -217,6 +225,9 @@ func _draw_slot_markers() -> void:
 
 
 func _draw_selected_slot_guides() -> void:
+	if not _has_runtime_shelf_view():
+		return
+
 	var slot_view: ShelfSlotView = shelf_view.get_slot_view(preview_slot_index)
 	if slot_view == null:
 		return
@@ -298,3 +309,7 @@ func _draw_totem_guides(slot_view: ShelfSlotView, totem_view: TotemView) -> void
 		if texture_rect_node.texture != null:
 			draw_string(label_font, texture_rect.position + Vector2(0, -10), "totem texture", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(0.95, 0.6, 1.0, 1.0))
 		draw_string(label_font, Vector2(baseline_center_x + 10.0, baseline_y - 8.0), "baseline", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(1.0, 0.55, 0.55, 1.0))
+
+
+func _has_runtime_shelf_view() -> bool:
+	return shelf_view != null and shelf_view.has_method("preview_slots") and shelf_view.has_method("get_slot_positions") and shelf_view.has_method("get_slot_view")

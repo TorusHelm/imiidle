@@ -1,14 +1,14 @@
 [gd_resource type="Resource" script_class="PotDefinition" format=3 uid="uid://cygoi83vimm71"]
 
 [ext_resource type="Script" uid="uid://d3a0qsl3v5l53" path="res://scripts/pot_definition.gd" id="1_pot"]
-[ext_resource type="Resource" path="res://Game/data/default_slot_layout.tres" id="2_layout"]
+[ext_resource type="Resource" uid="uid://dhlxyggm3121l" path="res://Game/data/default_slot_layout.tres" id="2_layout"]
 
 [resource]
 script = ExtResource("1_pot")
 id = "default_pot"
 display_name = "Clay Pot"
 texture_path = "res://Pots/DefaultPot/assets/pot-default.png"
-slot_layout = ExtResource("2_layout")
 pot_texture_position = Vector2(50, 198)
 plant_view_position = Vector2(0, 0)
 plant_attach_point = Vector2(110, 205)
+slot_layout = ExtResource("2_layout")

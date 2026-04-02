@@ -1,31 +1,34 @@
 [gd_scene format=3 uid="uid://chrt8p8hrj4v6"]
 
 [ext_resource type="Script" uid="uid://4bs1nkthtrjh" path="res://scripts/shelf_view.gd" id="1_5y27c"]
-[ext_resource type="Texture2D" uid="uid://cfwjx0jv03cqu" path="res://Shelfs/ShelfB/assets/shelf-two-floor.png" id="5_asejt"]
+[ext_resource type="Resource" uid="uid://dw7p7gin6ryap" path="res://Shelfs/ShelfA/data/shelf_a.tres" id="2_luqdx"]
+[ext_resource type="Texture2D" uid="uid://cd5im7630llp2" path="res://Shelfs/ShelfA/assets/shelf-default.png" id="3_yts6t"]
 
 [node name="Shelf" type="Control" unique_id=1424021836]
-custom_minimum_size = Vector2(524, 684)
+custom_minimum_size = Vector2(524, 300)
 layout_mode = 3
 anchors_preset = 0
 offset_right = 524.0
-offset_bottom = 684.0
+offset_bottom = 300.0
 script = ExtResource("1_5y27c")
+preview_shelf_definition = ExtResource("2_luqdx")
 preview_slot_index = 1
 
 [node name="ShelfTexture" type="TextureRect" parent="." unique_id=822184106]
 layout_mode = 0
+offset_top = 196.0
 offset_right = 524.0
-offset_bottom = 650.0
-texture = ExtResource("5_asejt")
+offset_bottom = 268.0
+texture = ExtResource("3_yts6t")
 expand_mode = 1
 stretch_mode = 5
 
 [node name="ShelfTitle" type="Label" parent="." unique_id=2135451817]
 layout_mode = 0
-offset_top = 648.0
+offset_top = 260.0
 offset_right = 524.0
-offset_bottom = 672.0
-text = "Shelf B"
+offset_bottom = 284.0
+text = "Shelf A"
 horizontal_alignment = 1
 
 [node name="SlotsRoot" type="Node2D" parent="." unique_id=1517078579]

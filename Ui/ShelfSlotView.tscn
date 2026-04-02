@@ -21,7 +21,7 @@ preview_definition = ExtResource("3_rrjwf")
 visible = false
 
 [node name="ContentSlot" type="Control" parent="." unique_id=482413330]
-custom_minimum_size = Vector2(170, 270.555)
+custom_minimum_size = Vector2(170, 280)
 layout_mode = 3
 anchors_preset = 0
 offset_right = 170.0

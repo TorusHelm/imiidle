@@ -1,24 +1,23 @@
 [gd_resource type="Resource" script_class="PotDefinition" format=3 uid="uid://0m8tp443pwtk"]
 
 [ext_resource type="Script" uid="uid://d3a0qsl3v5l53" path="res://scripts/pot_definition.gd" id="1_pot"]
-[ext_resource type="Resource" path="res://Game/data/default_slot_layout.tres" id="2_layout"]
+[ext_resource type="Resource" uid="uid://dhlxyggm3121l" path="res://Game/data/default_slot_layout.tres" id="2_layout"]
 
 [resource]
 script = ExtResource("1_pot")
 id = "purple_pot"
 display_name = "Purple Pot"
 texture_path = "res://Pots/PurplePot/assets/pot-purp.png"
-slot_layout = ExtResource("2_layout")
-view_size = Vector2(232, 312)
-pot_texture_position = Vector2(46, 193)
+view_size = Vector2(170, 280)
+pot_texture_position = Vector2(14, 183)
 pot_texture_size = Vector2(140, 102)
 plant_view_position = Vector2(0, 0)
-plant_view_size = Vector2(192, 176)
-plant_attach_point = Vector2(116, 198)
-seed_button_position = Vector2(72, 222)
+plant_attach_point = Vector2(85, 198)
+seed_button_position = Vector2(39, 214)
 seed_button_size = Vector2(88, 34)
 slot_button_position = Vector2(36, 176)
 slot_button_size = Vector2(160, 108)
 slot_label_position = Vector2(24, 208)
 slot_label_size = Vector2(184, 46)
-pot_baseline = Vector2(116, 290)
+pot_baseline = Vector2(85, 280)
+slot_layout = ExtResource("2_layout")

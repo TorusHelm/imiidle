@@ -16,4 +16,3 @@ slot_layout = ExtResource("2_layout")
 use_slot_grid = true
 slot_grid_columns = 3
 slot_area_origin = Vector2(7, 2)
-slot_area_size = Vector2(170, 280)
