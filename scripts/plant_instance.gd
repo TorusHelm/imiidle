@@ -2,12 +2,16 @@ class_name PlantInstance
 extends RefCounted
 
 const MODIFIER_INSTANCE_SCRIPT := preload("res://scripts/modifier_instance.gd")
+const MINIMUM_AGE_BEFORE_ACTIVATION := 1.0
+const CHARGE_ACTIVATION_COOLDOWN := 0.25
 
 var definition: PlantDefinition
 var progress_seconds := 0.0
 var age_seconds := 0.0
 var activation_count := 0
 var active_modifiers: Array = []
+var _last_charge_activation_age_seconds := -1000000.0
+var _has_pending_charge_activation := false
 
 
 func _init(plant_definition: PlantDefinition) -> void:
@@ -31,13 +35,24 @@ func update_tick(delta: float, context: Dictionary = {}) -> Dictionary:
 
 	var cycle_time := get_cycle_time()
 	if cycle_time <= 0.0:
+		if not _has_reached_minimum_activation_age():
+			return {}
+		activation_count += 1
 		return _build_activation_report(context)
 
 	if progress_seconds < cycle_time:
 		return {}
+	if not _has_reached_minimum_activation_age():
+		return {}
+	if _has_pending_charge_activation and not _can_activate_from_charge():
+		_cap_pending_charge_progress(cycle_time)
+		return {}
 
 	progress_seconds -= cycle_time
 	activation_count += 1
+	if _has_pending_charge_activation:
+		_last_charge_activation_age_seconds = age_seconds
+		_has_pending_charge_activation = false
 	return _build_activation_report(context)
 
 
@@ -190,6 +205,20 @@ func _build_activation_report(context: Dictionary = {}) -> Dictionary:
 	}
 
 
+func _has_reached_minimum_activation_age() -> bool:
+	return age_seconds >= MINIMUM_AGE_BEFORE_ACTIVATION
+
+
+func _can_activate_from_charge() -> bool:
+	return age_seconds - _last_charge_activation_age_seconds >= CHARGE_ACTIVATION_COOLDOWN
+
+
+func _cap_pending_charge_progress(cycle_time: float) -> void:
+	if cycle_time <= 0.0:
+		return
+	progress_seconds = minf(progress_seconds, cycle_time)
+
+
 func get_activation_reward(context: Dictionary = {}) -> float:
 	if definition == null:
 		return 0.0
@@ -230,8 +259,18 @@ func _apply_charge_effect(effect_definition: Resource, _effect_source: Dictionar
 	var cycle_time := get_cycle_time()
 	if cycle_time <= 0.0 or progress_seconds < cycle_time:
 		return {}
+	if not _has_reached_minimum_activation_age():
+		_has_pending_charge_activation = true
+		_cap_pending_charge_progress(cycle_time)
+		return {}
+	if not _can_activate_from_charge():
+		_has_pending_charge_activation = true
+		_cap_pending_charge_progress(cycle_time)
+		return {}
 
 	activation_count += 1
+	_last_charge_activation_age_seconds = age_seconds
+	_has_pending_charge_activation = false
 	if bool(effect_definition.get("reset_progress_on_activation")):
 		progress_seconds = 0.0
 	else:
