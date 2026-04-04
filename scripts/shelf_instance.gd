@@ -5,7 +5,7 @@ extends RefCounted
 var definition: ShelfDefinition
 var room: RoomInstance = null
 var slots: Array[SlotInstance] = []
-var tick_interval := 0.15
+var tick_interval := 0.1
 var _tick_accumulator := 0.0
 var _incoming_events: Array[Dictionary] = []
 var _pending_applications: Array[Dictionary] = []
