@@ -8,6 +8,7 @@ const DEFAULT_ROOM: RoomDefinition = preload("res://Game/data/default_room.tres"
 const METRONOME: TotemDefinition = preload("res://Totems/Metronome/data/totem_metronome.tres")
 const SCALES: TotemDefinition = preload("res://Totems/Scales/data/totem_scales.tres")
 const SNAIL: TotemDefinition = preload("res://Totems/Snail/data/totem_snail.tres")
+const GAME_STATE_SCRIPT = preload("res://scripts/game_state.gd")
 
 
 func test_metronome_reacts_one_tick_later_and_applies_haste_on_next_tick_inside_room() -> void:
@@ -111,16 +112,16 @@ func test_snail_applies_slow_to_the_activating_plant_and_keeps_profit_aura_on_th
 	assert_true(room.place_shelf(0, shelf), "Room should hold Shelf B for the Snail targeting test.")
 	assert_true(shelf.place_pot(0, DEFAULT_POT), "Source plant slot should accept a pot.")
 	assert_true(shelf.place_totem(1, TotemInstance.new(SNAIL)), "Snail slot should accept the Snail totem.")
-	assert_true(shelf.place_pot(2, DEFAULT_POT), "Second plant slot should accept a pot.")
-	assert_true(shelf.place_totem(3, TotemInstance.new(METRONOME)), "Control totem slot should accept another totem for filter checks.")
+	assert_true(shelf.place_totem(2, TotemInstance.new(METRONOME)), "Control totem slot should accept another totem for filter checks.")
+	assert_true(shelf.place_pot(4, DEFAULT_POT), "Second plant slot on another row should accept a pot.")
 	assert_true(shelf.plant_seed(0, source_plant_definition), "Source plant should be planted.")
-	assert_true(shelf.plant_seed(2, other_plant_definition), "Other plant should be planted.")
+	assert_true(shelf.plant_seed(4, other_plant_definition), "Other plant on another row should be planted.")
 
 	var source_plant := shelf.get_pot_in_slot(0).active_plant
-	var other_plant := shelf.get_pot_in_slot(2).active_plant
-	var metronome := shelf.get_totem_in_slot(3)
+	var other_plant := shelf.get_pot_in_slot(4).active_plant
+	var metronome := shelf.get_totem_in_slot(2)
 	var source_aura_snapshots := shelf.get_active_aura_snapshots_for_slot(0)
-	var other_aura_snapshots := shelf.get_active_aura_snapshots_for_slot(2)
+	var other_aura_snapshots := shelf.get_active_aura_snapshots_for_slot(4)
 
 	shelf.tick(0.1)
 	assert_almost_eq(shelf.drain_generated_coins(), 0.15, 0.001, "Snail aura should immediately increase the triggering plant reward by 1.5x.")
@@ -136,12 +137,118 @@ func test_snail_applies_slow_to_the_activating_plant_and_keeps_profit_aura_on_th
 	assert_almost_eq(source_slow.remaining_time, 3.0, 0.001, "Snail Slow should use a 3 second duration.")
 	assert_eq(metronome.active_modifiers.size(), 0, "Snail should not apply plant-only modifiers to other totems on the shelf.")
 	assert_eq(source_aura_snapshots.size(), 1, "Snail should expose one aura snapshot on the triggering plant slot.")
-	assert_eq(other_aura_snapshots.size(), 1, "Snail should expose one aura snapshot on other plant slots too.")
+	assert_eq(other_aura_snapshots.size(), 1, "Snail should expose one aura snapshot on plant slots in other rows too.")
 	assert_eq(String(source_aura_snapshots[0].get("aura_type", "")), "rich_harvest_percent", "Snail should expose Rich Harvest as a shelf aura.")
 
 	other_plant.progress_seconds = other_plant.get_cycle_time()
 	shelf.tick(0.1)
-	assert_almost_eq(shelf.drain_generated_coins(), 12.0, 0.001, "Snail aura should increase reward for every plant on the shelf, not only the triggering plant.")
+	assert_almost_eq(shelf.drain_generated_coins(), 12.0, 0.001, "Snail aura should increase reward for every plant on the shelf, including other rows.")
+
+
+func test_snail_aura_affects_top_row_plants_when_snail_is_on_bottom_row() -> void:
+	var room := RoomInstance.new(DEFAULT_ROOM)
+	var shelf := ShelfInstance.new(SHELF_B, room)
+	var left_plant_definition := PlantDefinition.new()
+	left_plant_definition.id = "snail_top_left"
+	left_plant_definition.display_name = "Snail Top Left"
+	left_plant_definition.growth_duration = 4.0
+	left_plant_definition.coins_per_second = 2.0
+
+	var right_plant_definition := PlantDefinition.new()
+	right_plant_definition.id = "snail_top_right"
+	right_plant_definition.display_name = "Snail Top Right"
+	right_plant_definition.growth_duration = 4.0
+	right_plant_definition.coins_per_second = 2.0
+
+	assert_true(room.place_shelf(0, shelf), "Room should hold Shelf B for the bottom-row Snail aura test.")
+	assert_true(shelf.place_pot(0, DEFAULT_POT), "Top-left slot should accept a pot.")
+	assert_true(shelf.place_pot(2, DEFAULT_POT), "Top-right slot should accept a pot.")
+	assert_true(shelf.place_totem(3, TotemInstance.new(SNAIL)), "Bottom-left slot should accept the Snail totem.")
+	assert_true(shelf.plant_seed(0, left_plant_definition), "Top-left plant should be planted.")
+	assert_true(shelf.plant_seed(2, right_plant_definition), "Top-right plant should be planted.")
+
+	var left_plant := shelf.get_pot_in_slot(0).active_plant
+	var right_plant := shelf.get_pot_in_slot(2).active_plant
+
+	assert_eq(shelf.get_active_aura_snapshots_for_slot(0).size(), 1, "Bottom-row Snail should expose its aura on top-left plants too.")
+	assert_eq(shelf.get_active_aura_snapshots_for_slot(2).size(), 1, "Bottom-row Snail should expose its aura on top-right plants too.")
+
+	right_plant.progress_seconds = right_plant.get_cycle_time()
+	shelf.tick(0.1)
+	shelf.tick(0.1)
+
+	assert_almost_eq(shelf.drain_generated_coins(), 12.0, 0.001, "Bottom-row Snail should increase reward for plants on the upper row too.")
+	assert_eq(left_plant.get_active_modifier("slow"), null, "Snail aura should not add Slow without a trigger event from that plant.")
+
+
+func test_snail_aura_applies_to_scales_charge_targets_on_other_rows() -> void:
+	var room := RoomInstance.new(DEFAULT_ROOM)
+	var shelf := ShelfInstance.new(SHELF_B, room)
+
+	assert_true(room.place_shelf(0, shelf), "Room should hold Shelf B for the Snail + Scales regression test.")
+	assert_true(shelf.place_pot(0, DEFAULT_POT), "Top-left slot should accept a pot for Sansevieria.")
+	assert_true(shelf.place_totem(1, TotemInstance.new(SCALES)), "Top-middle slot should accept Scales.")
+	assert_true(shelf.place_pot(2, DEFAULT_POT), "Top-right slot should accept a pot for mirrored Sansevieria.")
+	assert_true(shelf.place_totem(3, TotemInstance.new(SNAIL)), "Bottom-left slot should accept Snail.")
+	assert_true(shelf.place_pot(4, DEFAULT_POT), "Bottom-middle slot should accept a pot for Cactus.")
+	assert_true(shelf.plant_seed(0, preload("res://Plants/Sansevieria/data/plant_sansevieria.tres")), "Top-left Sansevieria should be planted.")
+	assert_true(shelf.plant_seed(2, preload("res://Plants/Sansevieria/data/plant_sansevieria.tres")), "Top-right Sansevieria should be planted.")
+	assert_true(shelf.plant_seed(4, preload("res://Plants/Cactus/data/plant_cactus.tres")), "Bottom-middle Cactus should be planted.")
+
+	var left_sansevieria := shelf.get_pot_in_slot(0).active_plant
+	var mirrored_sansevieria := shelf.get_pot_in_slot(2).active_plant
+
+	left_sansevieria.progress_seconds = left_sansevieria.get_cycle_time()
+
+	shelf.tick(0.15)
+	assert_almost_eq(shelf.drain_generated_coins(), 1.5, 0.001, "Snail aura should boost the direct Sansevieria activation on the top row.")
+
+	shelf.tick(0.15)
+	assert_eq(shelf.get_pending_applications().size(), 1, "Scales should schedule one charge application for the mirrored Sansevieria.")
+
+	shelf.tick(0.15)
+	assert_eq(mirrored_sansevieria.activation_count, 1, "Scales charge should activate the mirrored Sansevieria on the top row.")
+	assert_almost_eq(shelf.drain_generated_coins(), 1.5, 0.001, "Snail aura should also boost the activation created by Scales charge on the top row.")
+	var charged_feedback := shelf.drain_visual_feedback()
+	assert_eq(charged_feedback.size(), 1, "Charged Sansevieria activation should enqueue one visual feedback event.")
+	assert_eq(int(charged_feedback[0].get("slot_index", -1)), 2, "Visual feedback should point to the mirrored top-row Sansevieria slot.")
+	assert_almost_eq(float(charged_feedback[0].get("amount", 0.0)), 1.5, 0.001, "Shelf should forward the boosted reward amount from the charged plant report into visual feedback.")
+
+
+func test_game_state_tracks_boosted_reward_and_feedback_for_scales_charge_under_snail() -> void:
+	var game_state = GAME_STATE_SCRIPT.new()
+
+	assert_true(game_state.place_shelf(0, "shelf_b"), "GameState should place Shelf B into room slot 0.")
+	game_state.set_active_room_slot_index(0)
+	assert_true(game_state.place_pot(0, "default_pot"), "GameState should place the left Sansevieria pot.")
+	assert_true(game_state.place_totem(1, "scales"), "GameState should place Scales in the top-middle slot.")
+	assert_true(game_state.place_pot(2, "default_pot"), "GameState should place the mirrored Sansevieria pot.")
+	assert_true(game_state.place_totem(3, "snail"), "GameState should place Snail in the bottom-left slot.")
+	assert_true(game_state.place_pot(4, "orange_pot"), "GameState should place the Cactus pot on the second row.")
+	assert_true(game_state.plant_seed(0, "sansevieria"), "GameState should plant the left Sansevieria.")
+	assert_true(game_state.plant_seed(2, "sansevieria"), "GameState should plant the mirrored Sansevieria.")
+	assert_true(game_state.plant_seed(4, "cactus"), "GameState should plant the Cactus.")
+
+	var left_sansevieria: PlantInstance = game_state.get_pot_in_room_slot(0, 0).active_plant
+	left_sansevieria.progress_seconds = left_sansevieria.get_cycle_time()
+
+	game_state.tick(0.15)
+	assert_almost_eq(game_state.coins, 1.5, 0.001, "GameState should accumulate the Snail-boosted reward from the direct Sansevieria activation.")
+	var first_feedback := game_state.drain_visual_feedback_in_room_slot(0)
+	assert_eq(first_feedback.size(), 1, "Direct activation should enqueue one room-slot visual feedback event.")
+	assert_eq(int(first_feedback[0].get("slot_index", -1)), 0, "Direct activation feedback should point to the triggering left Sansevieria.")
+	assert_almost_eq(float(first_feedback[0].get("amount", 0.0)), 1.5, 0.001, "Direct activation feedback should carry the Snail-boosted reward.")
+
+	game_state.tick(0.15)
+	assert_almost_eq(game_state.coins, 1.5, 0.001, "Scales should only schedule charge on the reaction tick without changing coins yet.")
+	assert_true(game_state.drain_visual_feedback_in_room_slot(0).is_empty(), "Reaction tick should not enqueue new visual feedback before APPLY.")
+
+	game_state.tick(0.15)
+	assert_almost_eq(game_state.coins, 3.0, 0.001, "GameState should accumulate the Snail-boosted reward from the Scales-charged mirrored Sansevieria too.")
+	var charged_feedback := game_state.drain_visual_feedback_in_room_slot(0)
+	assert_eq(charged_feedback.size(), 1, "Charged activation should enqueue one room-slot visual feedback event.")
+	assert_eq(int(charged_feedback[0].get("slot_index", -1)), 2, "Charged activation feedback should point to the mirrored Sansevieria slot.")
+	assert_almost_eq(float(charged_feedback[0].get("amount", 0.0)), 1.5, 0.001, "Charged activation feedback should carry the same Snail-boosted reward that was added to coins.")
 
 
 func test_scales_applies_charge_to_the_mirrored_plant() -> void:

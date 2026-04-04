@@ -325,6 +325,91 @@ func test_status_bar_orders_auras_before_timed_modifiers() -> void:
 	assert_false(other_second_icon.visible, "Other plants should not show the timed Slow modifier if they were not the event source.")
 
 
+func test_snail_on_bottom_row_buffs_top_row_plants_in_game_screen() -> void:
+	var game: Control = add_child_autofree(GAME_SCENE.instantiate())
+	await wait_process_frames(3)
+
+	assert_true(game.game_state.place_shelf(0, "shelf_b"), "Test setup should place Shelf B into room slot 0.")
+	game.game_state.set_active_room_slot_index(0)
+	assert_true(game.game_state.place_pot(0, "default_pot"), "Test setup should place a top-left pot.")
+	assert_true(game.game_state.place_pot(2, "orange_pot"), "Test setup should place a top-right pot.")
+	assert_true(game.game_state.place_totem(3, "snail"), "Test setup should place Snail into the bottom-left slot.")
+	assert_true(game.game_state.plant_seed(0, "gerbera"), "Test setup should plant the top-left seed.")
+	assert_true(game.game_state.plant_seed(2, "cactus"), "Test setup should plant the top-right seed.")
+
+	game._refresh_ui()
+	await wait_process_frames(2)
+
+	var shelf_view: ShelfView = _get_room_slot_view(game).shelf_view
+	var top_left_slot_view := shelf_view.get_slot_view(0)
+	var top_right_slot_view := shelf_view.get_slot_view(2)
+	var top_left_aura_icon: SlotStatusIcon = top_left_slot_view.get_node("ContentSlot/StatusBar/StatusIconsLayer/StatusIcon0")
+	var top_right_aura_icon: SlotStatusIcon = top_right_slot_view.get_node("ContentSlot/StatusBar/StatusIconsLayer/StatusIcon0")
+
+	assert_true(top_left_aura_icon.tooltip_text.begins_with("Rich Harvest Aura"), "Bottom-row Snail should expose its aura on the top-left plant.")
+	assert_true(top_right_aura_icon.tooltip_text.begins_with("Rich Harvest Aura"), "Bottom-row Snail should expose its aura on the top-right plant.")
+
+	var top_right_plant: PlantInstance = game.game_state.get_pot_in_room_slot(0, 2).active_plant
+	top_right_plant.progress_seconds = top_right_plant.get_cycle_time()
+
+	game.game_state.tick(0.1)
+	game.game_state.tick(0.1)
+	game._refresh_ui()
+	await wait_process_frames(2)
+
+	var floating_feedback_layer: Node2D = top_right_slot_view.get_node("FloatingFeedbackLayer")
+	var floating_amount_label: Label = null
+	for child in floating_feedback_layer.get_children():
+		if child is Label and floating_amount_label == null:
+			floating_amount_label = child
+
+	assert_not_null(floating_amount_label, "Top-right plant should spawn floating amount feedback after activation.")
+	if floating_amount_label != null:
+		assert_eq(floating_amount_label.text, "+150.0", "Bottom-row Snail should increase the top-row plant reward by its shelf-wide aura.")
+
+
+func test_snail_buffs_scales_charge_feedback_on_top_row_in_game_screen() -> void:
+	var game: Control = add_child_autofree(GAME_SCENE.instantiate())
+	await wait_process_frames(3)
+
+	assert_true(game.game_state.place_shelf(0, "shelf_b"), "Test setup should place Shelf B into room slot 0.")
+	game.game_state.set_active_room_slot_index(0)
+	assert_true(game.game_state.place_pot(0, "default_pot"), "Test setup should place the left Sansevieria pot.")
+	assert_true(game.game_state.place_totem(1, "scales"), "Test setup should place Scales in the top-middle slot.")
+	assert_true(game.game_state.place_pot(2, "default_pot"), "Test setup should place the mirrored Sansevieria pot.")
+	assert_true(game.game_state.place_totem(3, "snail"), "Test setup should place Snail in the bottom-left slot.")
+	assert_true(game.game_state.place_pot(4, "orange_pot"), "Test setup should place the Cactus pot on the second row.")
+	assert_true(game.game_state.plant_seed(0, "sansevieria"), "Test setup should plant the left Sansevieria.")
+	assert_true(game.game_state.plant_seed(2, "sansevieria"), "Test setup should plant the mirrored Sansevieria.")
+	assert_true(game.game_state.plant_seed(4, "cactus"), "Test setup should plant the second-row Cactus.")
+
+	var left_sansevieria: PlantInstance = game.game_state.get_pot_in_room_slot(0, 0).active_plant
+	left_sansevieria.progress_seconds = left_sansevieria.get_cycle_time()
+
+	game.game_state.tick(0.15)
+	game._refresh_ui()
+	await wait_process_frames(2)
+
+	game.game_state.tick(0.15)
+	game._refresh_ui()
+	await wait_process_frames(2)
+
+	game.game_state.tick(0.15)
+	game._refresh_ui()
+	await wait_process_frames(2)
+
+	var mirrored_slot_view := _get_room_slot_view(game).shelf_view.get_slot_view(2)
+	var mirrored_feedback_layer: Node2D = mirrored_slot_view.get_node("FloatingFeedbackLayer")
+	var mirrored_amount_label: Label = null
+	for child in mirrored_feedback_layer.get_children():
+		if child is Label and mirrored_amount_label == null:
+			mirrored_amount_label = child
+
+	assert_not_null(mirrored_amount_label, "Mirrored top-row Sansevieria should spawn floating amount feedback after Scales charge.")
+	if mirrored_amount_label != null:
+		assert_eq(mirrored_amount_label.text, "+1.5", "Snail aura should boost the Scales-charged top-row Sansevieria feedback too.")
+
+
 func _click_control(control: Control) -> void:
 	var sender: GutInputSender = autofree(GutInputSender.new(Input))
 	sender.set_auto_flush_input(true)

@@ -212,7 +212,10 @@ func _apply_phase() -> Array[Dictionary]:
 			for effect_definition in instant_effect_definitions:
 				if actor.has_method("can_accept_instant_effect") and not actor.can_accept_instant_effect(effect_definition):
 					continue
-				var report: Dictionary = actor.apply_instant_effect(effect_definition, modifier_source)
+				var effect_source := modifier_source.duplicate(true)
+				if actor is PlantInstance:
+					effect_source["effect_context"] = _build_aura_context_for_slot(target_slot)
+				var report: Dictionary = actor.apply_instant_effect(effect_definition, effect_source)
 				if report.is_empty():
 					continue
 				apply_reports.append(

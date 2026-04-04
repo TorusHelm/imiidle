@@ -222,6 +222,7 @@ func _supports_target_actor_type(effect_definition: Resource, actor_type: String
 func _apply_charge_effect(effect_definition: Resource, _effect_source: Dictionary = {}) -> Dictionary:
 	var added_seconds_value = effect_definition.get("progress_seconds_delta")
 	var added_seconds := maxf(float(added_seconds_value if added_seconds_value != null else 0.0), 0.0)
+	var effect_context: Dictionary = _effect_source.get("effect_context", {})
 	if added_seconds <= 0.0:
 		return {}
 
@@ -236,4 +237,4 @@ func _apply_charge_effect(effect_definition: Resource, _effect_source: Dictionar
 	else:
 		progress_seconds = maxf(progress_seconds - cycle_time, 0.0)
 
-	return _build_activation_report({})
+	return _build_activation_report(effect_context)
