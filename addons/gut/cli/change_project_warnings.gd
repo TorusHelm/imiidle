@@ -158,7 +158,7 @@ func _diff(name_1, name_2):
 
 func _set_settings(nvps):
 	var pre_settings = warning_settings["current"]
-	for i in range(nvps.size()/2):
+	for i in range(int(nvps.size() / 2.0)):
 		var s_name = nvps[i * 2]
 		var s_value = nvps[i * 2 + 1]
 		if(godot_default_warnings.has(s_name)):

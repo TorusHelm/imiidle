@@ -127,7 +127,6 @@ func _on_back_button_pressed() -> void:
 
 
 func _refresh_ui() -> void:
-	var active_shelf := game_state.get_active_shelf_definition()
 	background.color = game_state.get_background_color()
 	coins_value_label.text = "%.1f" % game_state.coins
 	experience_value_label.text = "%.1f" % game_state.experience

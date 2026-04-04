@@ -119,7 +119,7 @@ func play_visual_feedback(feedback_events: Array[Dictionary]) -> void:
 		slot_view.play_feedback([feedback_event])
 
 
-func preview(shelf_definition: ShelfDefinition, pot_definition: PotDefinition, plant_definition: PlantDefinition, preview_slot_index := 0) -> void:
+func preview(shelf_definition: ShelfDefinition, pot_definition: PotDefinition, plant_definition: PlantDefinition, preview_slot_index_value := 0) -> void:
 	configure(shelf_definition)
 	if not _are_slot_views_ready():
 		_queue_preview_refresh()
@@ -129,9 +129,9 @@ func preview(shelf_definition: ShelfDefinition, pot_definition: PotDefinition, p
 		var pot_instance: PotInstance = null
 		var totem_instance: TotemInstance = null
 
-		if preview_totem_definition != null and index == preview_slot_index:
+		if preview_totem_definition != null and index == preview_slot_index_value:
 			totem_instance = TotemInstance.new(preview_totem_definition)
-		elif pot_definition != null and index == preview_slot_index:
+		elif pot_definition != null and index == preview_slot_index_value:
 			pot_instance = PotInstance.new(pot_definition)
 			if plant_definition != null:
 				pot_instance.active_plant = PlantInstance.new(plant_definition)

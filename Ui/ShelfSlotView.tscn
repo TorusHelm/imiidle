@@ -7,8 +7,8 @@
 [ext_resource type="Script" uid="uid://c8sqmwpmn73lx" path="res://scripts/editor_overlay_guide_rect.gd" id="4_guide_rect"]
 
 [node name="ShelfSlotView" type="Node2D" unique_id=2009789422]
-position = Vector2(0, -78)
 script = ExtResource("1_shelf_slot")
+coin_amount_spacing = 4.0
 
 [node name="PotView" parent="." unique_id=596613280 instance=ExtResource("2_pot")]
 custom_minimum_size = Vector2(170, 280)
@@ -33,12 +33,9 @@ mouse_filter = 2
 metadata/_edit_use_anchors_ = true
 
 [node name="ContentSlotPreview" type="ColorRect" parent="ContentSlot" unique_id=1699024240]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 0
+offset_right = 170.0
+offset_bottom = 280.0
 mouse_filter = 2
 color = Color(1, 1, 1, 0)
 script = ExtResource("4_guide_rect")
@@ -54,12 +51,9 @@ mouse_filter = 2
 metadata/_edit_use_anchors_ = true
 
 [node name="StatusBarPreview" type="ColorRect" parent="ContentSlot/StatusBar" unique_id=180450962]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 0
+offset_right = 102.0
+offset_bottom = 44.0
 mouse_filter = 2
 color = Color(1, 1, 1, 0)
 script = ExtResource("4_guide_rect")
@@ -87,12 +81,9 @@ mouse_filter = 2
 metadata/_edit_use_anchors_ = true
 
 [node name="ProgressBarPreview" type="ColorRect" parent="ContentSlot/ProgressBar" unique_id=1861001221]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 0
+offset_right = 170.0
+offset_bottom = 8.0
 mouse_filter = 2
 color = Color(1, 1, 1, 0)
 script = ExtResource("4_guide_rect")
@@ -127,12 +118,9 @@ mouse_filter = 2
 metadata/_edit_use_anchors_ = true
 
 [node name="CoinPreview" type="ColorRect" parent="ContentSlot/CoinSlot" unique_id=192730144]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 0
+offset_right = 12.0
+offset_bottom = 12.0
 mouse_filter = 2
 color = Color(1, 1, 1, 0)
 script = ExtResource("4_guide_rect")

@@ -26,7 +26,7 @@ func _init(slot_positions: Array[Vector2] = [], row_count := 0, column_count := 
 
 	for index in resolved_slot_positions.size():
 		var column := index % cols
-		var row := int(index / cols)
+		var row := int(index / float(cols))
 		slots.append(
 			{
 				"index": index,

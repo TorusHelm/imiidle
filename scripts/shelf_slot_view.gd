@@ -36,6 +36,7 @@ const DEFAULT_SLOT_RECT := Rect2(Vector2(-85.0, -202.0), Vector2(170.0, 280.0))
 @export_range(4.0, 120.0, 1.0) var coin_float_distance := 40.0
 @export_range(0.1, 2.0, 0.05) var coin_start_scale := 0.9
 @export_range(0.1, 2.0, 0.05) var coin_end_scale := 1.0
+@export_range(0.0, 64.0, 1.0) var coin_amount_spacing := 8.0
 
 @export_group("Editor Preview")
 @export var show_overlay_preview_in_editor := true:
@@ -127,7 +128,7 @@ func play_feedback(feedback_events: Array[Dictionary]) -> void:
 	for feedback_event in feedback_events:
 		if String(feedback_event.get("type", "")) != "coin_gain":
 			continue
-		_spawn_coin_feedback()
+		_spawn_coin_feedback(float(feedback_event.get("amount", 0.0)))
 
 
 func get_pot_view() -> PotView:
@@ -202,7 +203,7 @@ func _update_status_icon_layout() -> void:
 
 func _get_status_icon_position(index: int, resolved_columns: int) -> Vector2:
 	var column := index % resolved_columns
-	var row := int(index / resolved_columns)
+	var row := int(index / float(resolved_columns))
 	return Vector2(
 		column * (status_icon_size.x + status_icon_gap.x),
 		row * (status_icon_size.y + status_icon_gap.y)
@@ -217,24 +218,35 @@ func _get_status_icon_columns_for_width(max_width: float) -> int:
 	return maxi(mini(columns_that_fit, status_icon_columns), 1)
 
 
-func _spawn_coin_feedback() -> void:
+func _spawn_coin_feedback(amount: float) -> void:
 	if COIN_TEXTURE == null:
 		return
 
+	var start_position := _get_coin_start_position()
 	var coin_sprite := Sprite2D.new()
 	coin_sprite.texture = COIN_TEXTURE
 	coin_sprite.centered = true
-	coin_sprite.position = _get_coin_start_position()
+	coin_sprite.position = start_position
 	coin_sprite.scale = Vector2.ONE * coin_start_scale
 	floating_feedback_layer.add_child(coin_sprite)
 
-	var end_position := _get_coin_end_position(coin_sprite.position)
+	var coin_amount_label := Label.new()
+	coin_amount_label.text = _format_coin_feedback_amount(amount)
+	coin_amount_label.position = _get_coin_amount_label_position(start_position, coin_amount_label.get_minimum_size())
+	coin_amount_label.modulate = Color(1.0, 1.0, 1.0, 1.0)
+	floating_feedback_layer.add_child(coin_amount_label)
+
+	var end_position := _get_coin_end_position(start_position)
+	var label_end_position := Vector2(coin_amount_label.position.x, end_position.y - coin_amount_label.get_minimum_size().y * 0.5)
 	var tween := create_tween()
 	tween.set_parallel(true)
 	tween.tween_property(coin_sprite, "position", end_position, coin_animation_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	tween.tween_property(coin_sprite, "scale", Vector2.ONE * coin_end_scale, coin_animation_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	tween.tween_property(coin_sprite, "modulate:a", 0.0, coin_animation_duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tween.tween_property(coin_amount_label, "position", label_end_position, coin_animation_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tween.tween_property(coin_amount_label, "modulate:a", 0.0, coin_animation_duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	tween.finished.connect(coin_sprite.queue_free)
+	tween.finished.connect(coin_amount_label.queue_free)
 
 
 func _get_coin_start_position() -> Vector2:
@@ -243,6 +255,18 @@ func _get_coin_start_position() -> Vector2:
 
 func _get_coin_end_position(start_position: Vector2) -> Vector2:
 	return Vector2(start_position.x, start_position.y - coin_float_distance)
+
+
+func _get_coin_amount_label_position(coin_position: Vector2, label_size: Vector2) -> Vector2:
+	var coin_half_width := COIN_TEXTURE.get_size().x * coin_start_scale * 0.5
+	return Vector2(
+		coin_position.x - coin_half_width - coin_amount_spacing - label_size.x,
+		coin_position.y - label_size.y * 0.5
+	)
+
+
+func _format_coin_feedback_amount(amount: float) -> String:
+	return "+%.1f" % amount
 
 
 func _get_slot_reference_rect() -> Rect2:
