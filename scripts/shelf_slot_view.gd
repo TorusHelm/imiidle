@@ -38,6 +38,19 @@ const DEFAULT_SLOT_RECT := Rect2(Vector2(-85.0, -202.0), Vector2(170.0, 280.0))
 @export_range(0.1, 2.0, 0.05) var coin_end_scale := 1.0
 @export_range(0.0, 64.0, 1.0) var coin_amount_spacing := 8.0
 
+@export_group("Empty Pot Slot")
+@export_multiline var empty_pot_slot_label_text := "Empty Slot\nChoose Pot":
+	set(value):
+		empty_pot_slot_label_text = value
+		if is_node_ready():
+			pot_view.empty_slot_label_text = value
+
+@export_multiline var empty_pot_slot_tooltip_text := "Empty slot\nChoose a pot for this shelf slot.":
+	set(value):
+		empty_pot_slot_tooltip_text = value
+		if is_node_ready():
+			pot_view.empty_slot_tooltip_text = value
+
 @export_group("Editor Preview")
 @export var show_overlay_preview_in_editor := true:
 	set(value):
@@ -80,10 +93,13 @@ func _enter_tree() -> void:
 
 func _ready() -> void:
 	pot_view.set_slot_index(slot_index)
+	pot_view.empty_slot_label_text = empty_pot_slot_label_text
+	pot_view.empty_slot_tooltip_text = empty_pot_slot_tooltip_text
 	if not pot_view.pot_button_pressed.is_connected(_on_pot_button_pressed):
 		pot_view.pot_button_pressed.connect(_on_pot_button_pressed)
 	if not pot_view.seed_button_pressed.is_connected(_on_seed_button_pressed):
 		pot_view.seed_button_pressed.connect(_on_seed_button_pressed)
+	_sync_content_view_positions()
 	_apply_overlay_layout()
 	_rebuild_status_icon_views()
 	_update_editor_preview()
@@ -99,7 +115,7 @@ func show_pot(pot_instance: PotInstance, can_place_pot: bool, can_plant_seed: bo
 	pot_view.visible = true
 	totem_view.show_empty()
 	pot_view.update_view(pot_instance, can_place_pot, can_plant_seed)
-	pot_view.position = -pot_view.get_pot_baseline_local_position()
+	_sync_content_view_positions()
 	_apply_overlay_layout()
 	_update_progress_bar_for_slot(pot_instance, null)
 
@@ -107,7 +123,7 @@ func show_pot(pot_instance: PotInstance, can_place_pot: bool, can_plant_seed: bo
 func show_totem(totem_instance: TotemInstance) -> void:
 	pot_view.visible = false
 	totem_view.show_totem(totem_instance)
-	totem_view.position = -totem_view.get_totem_baseline_local_position()
+	_sync_content_view_positions()
 	_apply_overlay_layout()
 	_update_progress_bar_for_slot(null, totem_instance)
 
@@ -275,6 +291,14 @@ func _get_slot_reference_rect() -> Rect2:
 	if pot_view.visible:
 		return Rect2(pot_view.position + pot_view.get_slot_footprint_local_rect().position, pot_view.get_slot_footprint_local_rect().size)
 	return DEFAULT_SLOT_RECT
+
+
+func _sync_content_view_positions() -> void:
+	if not is_node_ready():
+		return
+
+	pot_view.position = -pot_view.get_pot_baseline_local_position()
+	totem_view.position = -totem_view.get_totem_baseline_local_position()
 
 
 func _update_progress_bar_for_slot(pot_instance: PotInstance, totem_instance: TotemInstance) -> void:

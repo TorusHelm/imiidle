@@ -3,7 +3,6 @@ class_name TotemDefinition
 extends Resource
 
 const DEFAULT_SLOT_LAYOUT: SlotLayout = preload("res://Game/data/default_slot_layout.tres")
-const DEFAULT_FALLBACK_MODIFIER_SCRIPT := preload("res://scripts/modifier_definition.gd")
 
 @export_group("Identity")
 ## Stable internal id used by saves, inventory, and lookups.
@@ -46,10 +45,6 @@ const DEFAULT_FALLBACK_MODIFIER_SCRIPT := preload("res://scripts/modifier_defini
 @export var modifier_definitions: Array[Resource] = []
 @export var instant_effect_definitions: Array[Resource] = []
 @export var aura_definitions: Array[Resource] = []
-@export var modifier_definition: Resource
-@export var modifier_type := "haste"
-@export var modifier_multiplier := 2.0
-@export var modifier_duration := 1.0
 
 
 func get_slot_footprint_local_rect() -> Rect2:
@@ -81,13 +76,6 @@ func get_modifier_definitions() -> Array[Resource]:
 	for definition in modifier_definitions:
 		if definition != null:
 			definitions.append(definition)
-
-	if not definitions.is_empty():
-		return definitions
-
-	var fallback_definition := get_modifier_definition()
-	if fallback_definition != null:
-		definitions.append(fallback_definition)
 	return definitions
 
 
@@ -97,26 +85,3 @@ func get_instant_effect_definitions() -> Array[Resource]:
 		if definition != null:
 			definitions.append(definition)
 	return definitions
-
-
-func get_modifier_definition() -> Resource:
-	if modifier_definition != null:
-		return modifier_definition
-	if modifier_type.is_empty():
-		return null
-
-	var fallback_definition = DEFAULT_FALLBACK_MODIFIER_SCRIPT.new()
-	fallback_definition.id = modifier_type
-	fallback_definition.modifier_type = modifier_type
-	fallback_definition.display_name = modifier_type.capitalize()
-	fallback_definition.duration = modifier_duration
-	match modifier_type:
-		"haste", "slow":
-			fallback_definition.speed_multiplier = modifier_multiplier
-		"rich_harvest_percent":
-			fallback_definition.reward_multiplier = modifier_multiplier
-		"rich_harvest_flat":
-			fallback_definition.flat_reward_bonus = modifier_multiplier
-		_:
-			fallback_definition.speed_multiplier = modifier_multiplier
-	return fallback_definition

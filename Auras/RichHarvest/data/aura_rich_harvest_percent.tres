@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="AuraDefinition" format=3]
+[gd_resource type="Resource" script_class="AuraDefinition" format=3 uid="uid://v6wupry0p6jy"]
 
-[ext_resource type="Script" path="res://scripts/aura_definition.gd" id="1_aura"]
+[ext_resource type="Script" uid="uid://cs7ds1oj5j65w" path="res://scripts/aura_definition.gd" id="1_aura"]
 
 [resource]
 script = ExtResource("1_aura")
@@ -8,7 +8,5 @@ id = "rich_harvest_percent_aura"
 aura_type = "rich_harvest_percent"
 display_name = "Rich Harvest Aura"
 description = "Increases harvest rewards for all plants on the shelf while active."
-target_rule = "all_plants"
-target_actor_type = "plant"
 reward_multiplier = 1.5
 icon_path = "res://assets/coin.png"

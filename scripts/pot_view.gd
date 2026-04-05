@@ -21,6 +21,16 @@ signal pot_button_pressed(slot_index: int)
 		_connect_plant_resource(preview_plant_definition)
 		_queue_preview_refresh()
 
+@export_multiline var empty_slot_label_text := "Empty Slot\nChoose Pot":
+	set(value):
+		empty_slot_label_text = value
+		_apply_empty_slot_copy()
+
+@export_multiline var empty_slot_tooltip_text := "Empty slot\nChoose a pot for this shelf slot.":
+	set(value):
+		empty_slot_tooltip_text = value
+		_apply_empty_slot_copy()
+
 
 var slot_index := -1
 var _current_definition: PotDefinition = null
@@ -38,6 +48,7 @@ func _ready() -> void:
 	_connect_pot_resource(preview_definition)
 	_connect_plant_resource(preview_plant_definition)
 	set_process(Engine.is_editor_hint())
+	_apply_empty_slot_copy()
 	_refresh_preview()
 
 
@@ -90,9 +101,7 @@ func update_view(pot_instance: PotInstance, can_place_pot: bool, can_plant_seed:
 		pot_texture.visible = false
 		seed_button.visible = false
 		plant_view.visible = false
-		slot_button.tooltip_text = "Empty slot\nChoose a pot for this shelf slot."
-		slot_label.tooltip_text = slot_button.tooltip_text
-		tooltip_text = slot_button.tooltip_text
+		_apply_empty_slot_copy()
 		return
 
 	slot_button.visible = false
@@ -168,6 +177,15 @@ func _queue_preview_refresh() -> void:
 	if not is_node_ready():
 		return
 	call_deferred("_refresh_preview")
+
+
+func _apply_empty_slot_copy() -> void:
+	if not is_node_ready():
+		return
+	slot_label.text = empty_slot_label_text
+	slot_button.tooltip_text = empty_slot_tooltip_text
+	slot_label.tooltip_text = empty_slot_tooltip_text
+	tooltip_text = empty_slot_tooltip_text
 
 
 func _refresh_preview() -> void:

@@ -172,7 +172,7 @@ func test_charge_activation_cooldown_blocks_immediate_repeat_from_any_source() -
 	assert_eq(plant.activation_count, 1, "Blocked charge should not increment activation count.")
 	assert_eq(plant.progress_seconds, 1.0, "Blocked charge should keep its progress instead of being discarded.")
 
-	plant.advance(0.25)
+	plant.advance(0.1)
 	var resumed_report := plant.apply_instant_effect(CHARGE_EFFECT, {"source_slot_index": 3})
 	assert_eq(float(resumed_report.get("reward", 0.0)), 1.0, "Charge should activate again after the shared cooldown expires.")
 	assert_eq(plant.activation_count, 2, "Plant should activate again once the charge cooldown window has passed.")
@@ -193,11 +193,11 @@ func test_blocked_charge_does_not_activate_again_during_the_same_tick_update() -
 	var blocked_report := plant.apply_instant_effect(CHARGE_EFFECT, {"source_slot_index": 2})
 	assert_true(blocked_report.is_empty(), "Immediate second charge should be blocked by the shared charge activation cooldown.")
 
-	var same_tick_report := plant.update_tick(0.15)
+	var same_tick_report := plant.update_tick(0.05)
 	assert_true(same_tick_report.is_empty(), "Blocked charge should not leak into a normal activation later in the same shelf tick.")
 	assert_eq(plant.activation_count, 1, "Same-tick update should not create an extra activation after a blocked charge.")
 
-	var resumed_report := plant.update_tick(0.10)
+	var resumed_report := plant.update_tick(0.05)
 	assert_eq(float(resumed_report.get("reward", 0.0)), 1.0, "Stored charged progress should activate once the cooldown window expires.")
 	assert_eq(plant.activation_count, 2, "Plant should activate once after the blocked charge cooldown window has passed.")
 
@@ -220,6 +220,6 @@ func test_blocked_charges_do_not_accumulate_more_than_one_pending_cycle() -> voi
 	assert_true(third_report.is_empty(), "Third charge inside cooldown should also be deferred.")
 	assert_eq(plant.progress_seconds, 1.0, "Deferred charges should cap stored progress at one full cycle instead of accumulating unlimited overflow.")
 
-	var resumed_report := plant.update_tick(0.25)
+	var resumed_report := plant.update_tick(0.1)
 	assert_eq(float(resumed_report.get("reward", 0.0)), 1.0, "Only one delayed activation should be released after the cooldown window.")
 	assert_eq(plant.activation_count, 2, "Multiple blocked charges should still result in just one queued activation.")

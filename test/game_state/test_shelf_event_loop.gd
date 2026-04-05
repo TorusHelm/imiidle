@@ -282,6 +282,15 @@ func test_scales_applies_charge_to_the_mirrored_plant() -> void:
 
 	assert_almost_eq(target_plant.progress_seconds, 1.3, 0.001, "Scales charge should advance the mirrored plant by one second during APPLY and then continue normal tick progress.")
 	assert_eq(target_plant.activation_count, 0, "Charge should not activate a long-cycle plant immediately when it stays below the threshold.")
+	assert_null(target_plant.get_active_modifier("haste"), "Scales should not apply an implicit fallback haste modifier when no explicit modifier definitions are configured.")
+
+
+func test_totem_definition_without_explicit_modifiers_does_not_generate_hidden_fallbacks() -> void:
+	var definition := TotemDefinition.new()
+	definition.id = "explicit_only_totem"
+	definition.display_name = "Explicit Only Totem"
+
+	assert_true(definition.get_modifier_definitions().is_empty(), "TotemDefinition should not synthesize fallback modifiers when modifier_definitions is empty.")
 
 
 func test_target_required_tags_filter_targets_before_apply() -> void:

@@ -3,6 +3,7 @@ extends GutTest
 
 const POT_SCENE := preload("res://Pots/_shared/sceens/Pot.tscn")
 const SHELF_SCENE := preload("res://Shelfs/_shared/sceens/Shelf.tscn")
+const SHELF_SLOT_SCENE := preload("res://Ui/ShelfSlotView.tscn")
 const ORANGE_POT: PotDefinition = preload("res://Pots/OrangePot/data/pot_orange.tres")
 const SHELF_A: ShelfDefinition = preload("res://Shelfs/ShelfA/data/shelf_a.tres")
 
@@ -53,3 +54,42 @@ func test_runtime_shelf_pot_uses_definition_texture_size() -> void:
 
 	assert_true(pot_view.visible, "Shelf preview should render the pot in the selected slot.")
 	assert_eq(pot_view.pot_texture.size, Vector2(14.0, 18.0), "Runtime shelf path should respect PotDefinition.pot_texture_size.")
+
+
+func test_pot_view_exposes_empty_slot_copy_as_properties() -> void:
+	var pot_view: PotView = add_child_autofree(POT_SCENE.instantiate())
+	await wait_process_frames(2)
+
+	pot_view.empty_slot_label_text = "Vacant\nPick Pot"
+	pot_view.empty_slot_tooltip_text = "Vacant slot\nPick a pot for this shelf slot."
+	pot_view.update_view(null, true, false)
+	await wait_process_frames(2)
+
+	assert_eq(pot_view.slot_label.text, "Vacant\nPick Pot", "Empty slot label text should come from the exported PotView property.")
+	assert_eq(pot_view.slot_button.tooltip_text, "Vacant slot\nPick a pot for this shelf slot.", "Empty slot tooltip should come from the exported PotView property.")
+	assert_eq(pot_view.slot_label.tooltip_text, pot_view.slot_button.tooltip_text, "Slot label tooltip should stay in sync with the empty slot tooltip property.")
+
+
+func test_shelf_slot_view_proxies_empty_pot_slot_copy_to_pot_view() -> void:
+	var shelf_slot_view: ShelfSlotView = add_child_autofree(SHELF_SLOT_SCENE.instantiate())
+	await wait_process_frames(2)
+
+	shelf_slot_view.empty_pot_slot_label_text = "Free Slot\nSelect Pot"
+	shelf_slot_view.empty_pot_slot_tooltip_text = "Free slot\nSelect a pot for this slot."
+	shelf_slot_view.show_pot(null, true, false)
+	await wait_process_frames(2)
+
+	assert_eq(shelf_slot_view.get_pot_view().slot_label.text, "Free Slot\nSelect Pot", "ShelfSlotView should expose the empty pot slot label on the root inspector and forward it to PotView.")
+	assert_eq(shelf_slot_view.get_pot_view().slot_button.tooltip_text, "Free slot\nSelect a pot for this slot.", "ShelfSlotView should forward the empty pot slot tooltip to PotView.")
+
+
+func test_shelf_slot_view_keeps_empty_slot_geometry_aligned_to_slot_origin() -> void:
+	var shelf_slot_view: ShelfSlotView = add_child_autofree(SHELF_SLOT_SCENE.instantiate())
+	await wait_process_frames(2)
+
+	var pot_view := shelf_slot_view.get_pot_view()
+	var expected_slot_rect := Rect2(Vector2(-85.0, -202.0), Vector2(170.0, 280.0))
+
+	assert_eq(pot_view.position, -pot_view.get_pot_baseline_local_position(), "ShelfSlotView should align PotView baseline to the slot origin even before a runtime pot instance is assigned.")
+	assert_eq(shelf_slot_view.get_node("ContentSlot").position, expected_slot_rect.position, "Overlay slot guides should stay aligned with the shared slot origin in the editor and at runtime.")
+	assert_eq(shelf_slot_view.get_node("ContentSlot").size, expected_slot_rect.size, "Overlay slot guides should keep the shared slot footprint size.")
