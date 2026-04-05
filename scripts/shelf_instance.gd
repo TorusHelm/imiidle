@@ -83,6 +83,37 @@ func get_totem_in_slot(slot_index: int) -> TotemInstance:
 	return slot.totem if slot != null else null
 
 
+func can_move_slot_item(from_slot_index: int, to_slot_index: int) -> bool:
+	if from_slot_index == to_slot_index:
+		return false
+	var source_slot := get_slot(from_slot_index)
+	var target_slot := get_slot(to_slot_index)
+	if source_slot == null or target_slot == null:
+		return false
+	return not source_slot.is_empty()
+
+
+func move_slot_item(from_slot_index: int, to_slot_index: int) -> bool:
+	if not can_move_slot_item(from_slot_index, to_slot_index):
+		return false
+
+	var source_slot := get_slot(from_slot_index)
+	var target_slot := get_slot(to_slot_index)
+	var source_pot := source_slot.pot
+	var source_totem := source_slot.totem
+	var target_pot := target_slot.pot
+	var target_totem := target_slot.totem
+
+	source_slot.pot = target_pot
+	source_slot.totem = target_totem
+	target_slot.pot = source_pot
+	target_slot.totem = source_totem
+
+	_reset_slot_runtime_state(source_slot)
+	_reset_slot_runtime_state(target_slot)
+	return true
+
+
 func tick(delta: float) -> void:
 	_tick_accumulator += maxf(delta, 0.0)
 	while _tick_accumulator >= tick_interval:
@@ -479,3 +510,12 @@ func _enqueue_visual_feedback(slot_index: int, actor_type: String, report_data: 
 			"amount": reward,
 		}
 	)
+
+
+func _reset_slot_runtime_state(slot: SlotInstance) -> void:
+	if slot == null:
+		return
+	if slot.pot != null and slot.pot.has_method("reset_runtime_state"):
+		slot.pot.reset_runtime_state()
+	if slot.totem != null and slot.totem.has_method("reset_runtime_state"):
+		slot.totem.reset_runtime_state()

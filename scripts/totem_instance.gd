@@ -93,6 +93,11 @@ func has_tag(tag: String) -> bool:
 	return get_tags().has(tag)
 
 
+func reset_runtime_state() -> void:
+	active_modifiers.clear()
+	activation_count = 0
+
+
 func _advance_modifiers(delta: float) -> void:
 	if active_modifiers.is_empty():
 		return

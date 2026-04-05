@@ -18,6 +18,14 @@ texture = ExtResource("4_room_slot_texture")
 expand_mode = 1
 stretch_mode = 5
 
+[node name="PreviewOverlay" type="ColorRect" parent="."]
+visible = false
+layout_mode = 0
+offset_right = 170.0
+offset_bottom = 280.0
+mouse_filter = 2
+color = Color(0.321569, 0.839216, 0.45098, 0.25)
+
 [node name="ShelfView" parent="." instance=ExtResource("2_shelf")]
 layout_mode = 0
 

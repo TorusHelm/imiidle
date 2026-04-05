@@ -2,6 +2,10 @@ class_name GameState
 extends RefCounted
 
 const DEFAULT_CATALOG: GameCatalog = preload("res://Game/data/default_catalog.tres")
+const GRID_OCCUPANCY_MODEL_SCRIPT = preload("res://scripts/grid_occupancy_model.gd")
+const SHELF_ITEM_INSTANCE_SCRIPT = preload("res://scripts/shelf_item_instance.gd")
+const SHELF_BACKPACK_COLUMNS := 30
+const SHELF_BACKPACK_ROWS := 20
 
 var coins := 0.0
 var experience := 0.0
@@ -20,8 +24,11 @@ var room_definition: RoomDefinition
 var background_color_hex := "#e3efdf"
 var shelf_slots: Array = []
 var room := RoomInstance.new()
+var shelf_backpack = GRID_OCCUPANCY_MODEL_SCRIPT.new(SHELF_BACKPACK_COLUMNS, SHELF_BACKPACK_ROWS)
+var shelf_items: Dictionary = {}
 var active_room_slot_index := -1
 var _pending_visual_feedback_by_room_slot: Dictionary = {}
+var _next_shelf_runtime_id := 1
 
 
 func _init() -> void:
@@ -299,39 +306,155 @@ func get_totem_in_room_slot(room_slot_index: int, slot_index: int) -> TotemInsta
 	return shelf.get_totem_in_slot(slot_index)
 
 
+func can_move_item_in_room_shelf_slot(room_slot_index: int, from_slot_index: int, to_slot_index: int) -> bool:
+	var shelf := get_shelf_in_room_slot(room_slot_index)
+	if shelf == null:
+		return false
+	return shelf.can_move_slot_item(from_slot_index, to_slot_index)
+
+
+func move_item_in_room_shelf_slot(room_slot_index: int, from_slot_index: int, to_slot_index: int) -> bool:
+	var shelf := get_shelf_in_room_slot(room_slot_index)
+	if shelf == null or not shelf.move_slot_item(from_slot_index, to_slot_index):
+		return false
+	if active_room_slot_index == room_slot_index:
+		_sync_shelf_slots()
+	return true
+
+
 func has_any_shelf() -> bool:
-	for shelf_count in shelf_inventory.values():
-		if int(shelf_count) > 0:
-			return true
-	return false
+	return get_shelf_backpack_item_count() > 0
 
 
 func can_place_shelf(room_slot_index: int, shelf_id := "") -> bool:
-	if not room.can_place_shelf(room_slot_index):
+	var shelf_item: RefCounted = _find_backpack_shelf_item_by_definition_id(shelf_id) if not shelf_id.is_empty() else _get_first_backpack_shelf_item()
+	if shelf_item == null:
 		return false
 
-	if shelf_id.is_empty():
-		return has_any_shelf()
-
-	return get_shelf_count(shelf_id) > 0
+	return room.can_place_shelf(room_slot_index, shelf_item.shelf)
 
 
 func place_shelf(room_slot_index: int, shelf_id: String) -> bool:
-	if not can_place_shelf(room_slot_index, shelf_id):
+	var shelf_item: RefCounted = _find_backpack_shelf_item_by_definition_id(shelf_id)
+	if shelf_item == null:
+		return false
+	return place_shelf_item_in_room(shelf_item.runtime_id, room_slot_index)
+
+
+func place_shelf_item_in_room(runtime_id: String, room_slot_index: int) -> bool:
+	var shelf_item: RefCounted = get_shelf_item(runtime_id)
+	if shelf_item == null or shelf_item.shelf == null or not shelf_item.is_in_backpack():
 		return false
 
-	var definition: ShelfDefinition = shelf_definitions.get(shelf_id)
-	if definition == null:
+	if not room.can_place_shelf(room_slot_index, shelf_item.shelf):
+		return false
+	if not room.place_shelf(room_slot_index, shelf_item.shelf):
 		return false
 
-	var shelf := ShelfInstance.new(definition, room)
-	if not room.place_shelf(room_slot_index, shelf):
-		return false
-
-	shelf_inventory[shelf_id] = get_shelf_count(shelf_id) - 1
+	shelf_backpack.remove(runtime_id)
+	shelf_item.backpack_origin = Vector2i(-1, -1)
+	shelf_item.room_anchor_slot_index = room_slot_index
 	active_room_slot_index = room_slot_index
+	_rebuild_shelf_inventory_counts()
 	_sync_shelf_slots()
 	return true
+
+
+func can_place_shelf_item_in_room(runtime_id: String, room_slot_index: int) -> bool:
+	var shelf_item: RefCounted = get_shelf_item(runtime_id)
+	if shelf_item == null or shelf_item.shelf == null:
+		return false
+	if shelf_item.is_in_backpack():
+		return room.can_place_shelf(room_slot_index, shelf_item.shelf)
+	if shelf_item.is_in_room():
+		return room.can_move_shelf(shelf_item.room_anchor_slot_index, room_slot_index)
+	return false
+
+
+func move_shelf_in_room(from_room_slot_index: int, to_room_slot_index: int) -> bool:
+	var shelf_item: RefCounted = _find_room_shelf_item_by_anchor_slot(from_room_slot_index)
+	if shelf_item == null:
+		return false
+	if not room.move_shelf(from_room_slot_index, to_room_slot_index):
+		return false
+
+	shelf_item.room_anchor_slot_index = to_room_slot_index
+	if active_room_slot_index == from_room_slot_index:
+		active_room_slot_index = to_room_slot_index
+	_sync_shelf_slots()
+	return true
+
+
+func move_shelf_to_backpack(from_room_slot_index: int, backpack_origin: Vector2i) -> bool:
+	var shelf_item: RefCounted = _find_room_shelf_item_by_anchor_slot(from_room_slot_index)
+	if shelf_item == null:
+		return false
+	if not shelf_backpack.place(shelf_item.runtime_id, backpack_origin, shelf_item.get_footprint()):
+		return false
+
+	var removed_shelf := room.remove_shelf(from_room_slot_index)
+	if removed_shelf == null:
+		shelf_backpack.remove(shelf_item.runtime_id)
+		return false
+
+	shelf_item.room_anchor_slot_index = -1
+	shelf_item.backpack_origin = backpack_origin
+	if active_room_slot_index == from_room_slot_index:
+		active_room_slot_index = -1
+	_rebuild_shelf_inventory_counts()
+	_sync_shelf_slots()
+	return true
+
+
+func move_shelf_item_to_room(runtime_id: String, room_slot_index: int) -> bool:
+	var shelf_item: RefCounted = get_shelf_item(runtime_id)
+	if shelf_item == null:
+		return false
+	if shelf_item.is_in_backpack():
+		return place_shelf_item_in_room(runtime_id, room_slot_index)
+	if shelf_item.is_in_room():
+		return move_shelf_in_room(shelf_item.room_anchor_slot_index, room_slot_index)
+	return false
+
+
+func can_place_shelf_item_in_backpack(runtime_id: String, backpack_origin: Vector2i) -> bool:
+	var shelf_item: RefCounted = get_shelf_item(runtime_id)
+	if shelf_item == null:
+		return false
+	if shelf_item.is_in_backpack():
+		return shelf_backpack.can_place(runtime_id, backpack_origin, shelf_item.get_footprint(), runtime_id)
+	return shelf_backpack.can_place(runtime_id, backpack_origin, shelf_item.get_footprint())
+
+
+func can_move_or_swap_shelf_item_in_backpack(runtime_id: String, backpack_origin: Vector2i) -> bool:
+	if can_place_shelf_item_in_backpack(runtime_id, backpack_origin):
+		return true
+	var shelf_item: RefCounted = get_shelf_item(runtime_id)
+	if shelf_item == null or not shelf_item.is_in_backpack():
+		return false
+	var overlaps := shelf_backpack.get_overlapping_item_ids(backpack_origin, shelf_item.get_footprint(), runtime_id)
+	if overlaps.size() != 1:
+		return false
+	var other_item_id := String(overlaps[0])
+	var other_item = get_shelf_item(other_item_id)
+	if other_item == null:
+		return false
+	return shelf_backpack.can_place(other_item_id, shelf_item.backpack_origin, other_item.get_footprint(), runtime_id)
+
+
+func move_shelf_item_to_backpack(runtime_id: String, backpack_origin: Vector2i) -> bool:
+	var shelf_item: RefCounted = get_shelf_item(runtime_id)
+	if shelf_item == null:
+		return false
+	if shelf_item.is_in_backpack():
+		if not shelf_backpack.try_move_or_swap(runtime_id, backpack_origin):
+			return false
+		shelf_item.backpack_origin = shelf_backpack.get_item_origin(runtime_id)
+		_rebuild_shelf_inventory_counts()
+		return true
+	if shelf_item.is_in_room():
+		return move_shelf_to_backpack(shelf_item.room_anchor_slot_index, backpack_origin)
+	return false
 
 
 func get_shelf_options() -> Array[Dictionary]:
@@ -354,6 +477,68 @@ func get_shelf_count(shelf_id: String) -> int:
 	return int(shelf_inventory.get(shelf_id, 0))
 
 
+func get_shelf_backpack_item_count() -> int:
+	var count := 0
+	for shelf_item in shelf_items.values():
+		if shelf_item != null and shelf_item.is_in_backpack():
+			count += 1
+	return count
+
+
+func get_shelf_backpack_items() -> Array:
+	var items: Array = []
+	for shelf_item in shelf_items.values():
+		if shelf_item != null and shelf_item.is_in_backpack():
+			items.append(shelf_item)
+	items.sort_custom(func(a, b) -> bool:
+		if a.backpack_origin.y == b.backpack_origin.y:
+			return a.backpack_origin.x < b.backpack_origin.x
+		return a.backpack_origin.y < b.backpack_origin.y
+	)
+	return items
+
+
+func get_shelf_item(runtime_id: String):
+	return shelf_items.get(runtime_id, null)
+
+
+func get_room_shelf_anchor_slot_index(room_slot_index: int) -> int:
+	return room.get_shelf_anchor_slot_index(room_slot_index)
+
+
+func get_room_shelf_runtime_id(room_slot_index: int) -> String:
+	var anchor_slot_index := room.get_shelf_anchor_slot_index(room_slot_index)
+	if anchor_slot_index < 0:
+		return ""
+	var shelf_item: RefCounted = _find_room_shelf_item_by_anchor_slot(anchor_slot_index)
+	return String(shelf_item.runtime_id) if shelf_item != null else ""
+
+
+func get_room_shelf_preview(runtime_id: String, room_slot_index: int) -> Dictionary:
+	var preview := {
+		"slot_indices": [],
+		"can_place": false,
+	}
+	var shelf_item: RefCounted = get_shelf_item(runtime_id)
+	if shelf_item == null or room_definition == null:
+		return preview
+
+	var anchor_slot := room_definition.get_slot_cell(room_slot_index)
+	if anchor_slot.is_empty():
+		return preview
+
+	var footprint: Vector2i = shelf_item.get_footprint()
+	var slot_indices: Array[int] = []
+	for row in range(int(anchor_slot.get("row", -1)), int(anchor_slot.get("row", -1)) + footprint.y):
+		for column in range(int(anchor_slot.get("col", -1)), int(anchor_slot.get("col", -1)) + footprint.x):
+			var slot_index := room_definition.get_slot_index_at_grid_cell(row, column)
+			if slot_index >= 0:
+				slot_indices.append(slot_index)
+	preview["slot_indices"] = slot_indices
+	preview["can_place"] = can_place_shelf_item_in_room(runtime_id, room_slot_index)
+	return preview
+
+
 func get_room_definition() -> RoomDefinition:
 	return room_definition
 
@@ -368,10 +553,11 @@ func get_active_room_slot_index() -> int:
 
 
 func set_active_room_slot_index(room_slot_index: int) -> void:
-	if room_slot_index < 0 or room_slot_index >= room.shelf_slots.size():
+	if room_slot_index < 0 or room_slot_index >= room.shelf_slots.size() or room.get_shelf(room_slot_index) == null:
 		active_room_slot_index = -1
 		return
-	active_room_slot_index = room_slot_index
+	var anchor_slot_index := room.get_shelf_anchor_slot_index(room_slot_index)
+	active_room_slot_index = anchor_slot_index if anchor_slot_index >= 0 else room_slot_index
 
 
 func get_active_shelf() -> ShelfInstance:
@@ -403,8 +589,8 @@ func get_modifier_definition(modifier_id: String) -> Resource:
 func tick(delta: float) -> void:
 	_pending_visual_feedback_by_room_slot.clear()
 
-	for room_slot_index in range(room.shelf_slots.size()):
-		var shelf: ShelfInstance = room.shelf_slots[room_slot_index]
+	for room_slot_index in room.get_anchor_slot_indices():
+		var shelf: ShelfInstance = room.get_shelf(room_slot_index)
 		if shelf == null:
 			continue
 		shelf.tick(delta)
@@ -495,8 +681,11 @@ func _load_catalog(catalog: GameCatalog) -> void:
 	shelf_inventory.clear()
 	room_definition = null
 	room = RoomInstance.new()
+	shelf_backpack = GRID_OCCUPANCY_MODEL_SCRIPT.new(SHELF_BACKPACK_COLUMNS, SHELF_BACKPACK_ROWS)
+	shelf_items.clear()
 	active_room_slot_index = -1
 	background_color_hex = "#e3efdf"
+	_next_shelf_runtime_id = 1
 
 	if catalog == null:
 		ensure_shelf_slot_capacity(0)
@@ -560,7 +749,73 @@ func _load_catalog(catalog: GameCatalog) -> void:
 		totem_inventory[totem_id] = int(catalog.starting_totem_inventory[totem_id])
 
 	for shelf_id in catalog.starting_shelf_inventory.keys():
-		shelf_inventory[shelf_id] = int(catalog.starting_shelf_inventory[shelf_id])
+		var shelf_count := int(catalog.starting_shelf_inventory[shelf_id])
+		var definition: ShelfDefinition = shelf_definitions.get(String(shelf_id), null)
+		if definition == null:
+			continue
+		for _index in range(shelf_count):
+			_add_shelf_item_to_backpack(definition)
 
 	background_color_hex = catalog.background_color_hex
+	_rebuild_shelf_inventory_counts()
 	ensure_shelf_slot_capacity(0)
+
+
+func _add_shelf_item_to_backpack(definition: ShelfDefinition) -> void:
+	if definition == null:
+		return
+
+	var runtime_id := _build_next_shelf_runtime_id()
+	var shelf_item = SHELF_ITEM_INSTANCE_SCRIPT.new(runtime_id, definition, room)
+	var backpack_origin := _find_first_backpack_origin(shelf_item.get_footprint())
+	if backpack_origin.x < 0 or backpack_origin.y < 0:
+		return
+
+	if not shelf_backpack.place(runtime_id, backpack_origin, shelf_item.get_footprint()):
+		return
+
+	shelf_item.backpack_origin = backpack_origin
+	shelf_items[runtime_id] = shelf_item
+
+
+func _build_next_shelf_runtime_id() -> String:
+	var runtime_id := "shelf_item_%d" % _next_shelf_runtime_id
+	_next_shelf_runtime_id += 1
+	return runtime_id
+
+
+func _find_first_backpack_origin(footprint: Vector2i) -> Vector2i:
+	for row in range(SHELF_BACKPACK_ROWS):
+		for column in range(SHELF_BACKPACK_COLUMNS):
+			var origin := Vector2i(column, row)
+			if shelf_backpack.can_place("", origin, footprint):
+				return origin
+	return Vector2i(-1, -1)
+
+
+func _rebuild_shelf_inventory_counts() -> void:
+	shelf_inventory.clear()
+	for shelf_item in shelf_items.values():
+		if shelf_item == null or not shelf_item.is_in_backpack() or shelf_item.definition == null:
+			continue
+		shelf_inventory[shelf_item.definition.id] = int(shelf_inventory.get(shelf_item.definition.id, 0)) + 1
+
+
+func _get_first_backpack_shelf_item():
+	for shelf_item in get_shelf_backpack_items():
+		return shelf_item
+	return null
+
+
+func _find_backpack_shelf_item_by_definition_id(shelf_id: String):
+	for shelf_item in get_shelf_backpack_items():
+		if shelf_item.definition != null and shelf_item.definition.id == shelf_id:
+			return shelf_item
+	return null
+
+
+func _find_room_shelf_item_by_anchor_slot(anchor_slot_index: int):
+	for shelf_item in shelf_items.values():
+		if shelf_item != null and shelf_item.room_anchor_slot_index == anchor_slot_index:
+			return shelf_item
+	return null

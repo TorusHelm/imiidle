@@ -12,6 +12,8 @@ extends Control
 
 var _current_definition: TotemDefinition = null
 var _default_slot_size := Vector2(170.0, 280.0)
+var drag_enabled := false
+var drag_payload: Dictionary = {}
 
 
 @onready var totem_texture: TextureRect = $TotemTexture
@@ -20,6 +22,7 @@ var _default_slot_size := Vector2(170.0, 280.0)
 func _ready() -> void:
 	_connect_preview_resource(preview_definition)
 	set_process(Engine.is_editor_hint())
+	totem_texture.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_refresh_preview()
 
 
@@ -30,6 +33,7 @@ func _process(_delta: float) -> void:
 
 func show_empty() -> void:
 	visible = false
+	drag_enabled = false
 	tooltip_text = ""
 
 
@@ -40,6 +44,7 @@ func show_totem(totem: TotemInstance) -> void:
 
 	var definition := totem.definition
 	visible = true
+	drag_enabled = true
 	_apply_definition_layout(definition)
 	tooltip_text = "%s\nTrigger: %s\nRule: %s" % [
 		definition.display_name,
@@ -102,6 +107,29 @@ func _refresh_preview() -> void:
 		return
 
 	show_totem(TotemInstance.new(preview_definition))
+
+
+func _get_drag_data(_at_position: Vector2):
+	if not drag_enabled or drag_payload.is_empty():
+		return null
+
+	var preview := ColorRect.new()
+	preview.custom_minimum_size = size
+	preview.size = size
+	preview.color = Color(1.0, 1.0, 1.0, 0.25)
+	set_drag_preview(preview)
+	return drag_payload.duplicate(true)
+
+
+func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
+	var slot_view = get_parent()
+	return slot_view != null and slot_view.has_method("can_drop_slot_item_data") and slot_view.can_drop_slot_item_data(data)
+
+
+func _drop_data(_at_position: Vector2, data: Variant) -> void:
+	var slot_view = get_parent()
+	if slot_view != null and slot_view.has_method("drop_slot_item_data"):
+		slot_view.drop_slot_item_data(data)
 
 
 func _connect_preview_resource(definition: TotemDefinition) -> void:

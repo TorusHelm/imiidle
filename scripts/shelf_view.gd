@@ -5,6 +5,7 @@ extends Control
 
 signal pot_slot_pressed(slot_index: int)
 signal seed_slot_pressed(slot_index: int)
+signal slot_item_drop_requested(source_room_slot_index: int, source_slot_index: int, target_room_slot_index: int, target_slot_index: int)
 
 const SHELF_SLOT_VIEW_SCENE := preload("res://Ui/ShelfSlotView.tscn")
 const SHELF_MODEL_SCRIPT = preload("res://scripts/shelf_model.gd")
@@ -61,6 +62,7 @@ var _shelf_model = SHELF_MODEL_SCRIPT.new()
 
 
 func _ready() -> void:
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_connect_shelf_resource(preview_shelf_definition)
 	_connect_pot_resource(preview_pot_definition)
 	_connect_plant_resource(preview_plant_definition)
@@ -96,6 +98,7 @@ func update_view(game_state: GameState, room_slot_index := -1) -> void:
 		var slot_view := _slot_views[index]
 		var pot_instance := game_state.get_pot_in_room_slot(room_slot_index, index) if room_slot_index >= 0 else game_state.get_pot_in_slot(index)
 		var totem_instance := game_state.get_totem_in_room_slot(room_slot_index, index) if room_slot_index >= 0 else game_state.get_totem_in_slot(index)
+		slot_view.set_runtime_context(game_state, room_slot_index)
 		slot_view.position = _shelf_model.get_slot_position_by_index(index)
 		if totem_instance != null:
 			slot_view.show_totem(totem_instance)
@@ -236,6 +239,7 @@ func _rebuild_slot_views() -> void:
 		slot_view.set_slot_index(index)
 		slot_view.pot_slot_pressed.connect(_on_pot_button_pressed)
 		slot_view.seed_slot_pressed.connect(_on_seed_button_pressed)
+		slot_view.slot_item_drop_requested.connect(_on_slot_item_drop_requested)
 		_slot_views.append(slot_view)
 
 
@@ -249,6 +253,10 @@ func _apply_definition_layout(definition: ShelfDefinition) -> void:
 	shelf_title.position = definition.title_position
 	shelf_title.size = definition.title_size
 	shelf_title.text = definition.display_name
+
+
+func _on_slot_item_drop_requested(source_room_slot_index: int, source_slot_index: int, target_room_slot_index: int, target_slot_index: int) -> void:
+	slot_item_drop_requested.emit(source_room_slot_index, source_slot_index, target_room_slot_index, target_slot_index)
 
 
 func _queue_preview_refresh() -> void:

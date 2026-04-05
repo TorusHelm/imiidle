@@ -5,6 +5,7 @@ extends Node2D
 
 signal pot_slot_pressed(slot_index: int)
 signal seed_slot_pressed(slot_index: int)
+signal slot_item_drop_requested(source_room_slot_index: int, source_slot_index: int, target_room_slot_index: int, target_slot_index: int)
 
 const STATUS_ICON_SCENE := preload("res://Ui/SlotStatusIcon.tscn")
 const COIN_TEXTURE := preload("res://assets/coin.png")
@@ -68,6 +69,8 @@ const DEFAULT_SLOT_RECT := Rect2(Vector2(-85.0, -202.0), Vector2(170.0, 280.0))
 		_update_editor_preview()
 
 var slot_index := -1
+var _game_state: GameState = null
+var _room_slot_index := -1
 var _status_icon_views: Array[SlotStatusIcon] = []
 var _progress_bar_ratio := 0.0
 
@@ -111,10 +114,17 @@ func set_slot_index(value: int) -> void:
 		pot_view.set_slot_index(value)
 
 
+func set_runtime_context(game_state: GameState, room_slot_index: int) -> void:
+	_game_state = game_state
+	_room_slot_index = room_slot_index
+	_update_drag_payloads()
+
+
 func show_pot(pot_instance: PotInstance, can_place_pot: bool, can_plant_seed: bool) -> void:
 	pot_view.visible = true
 	totem_view.show_empty()
 	pot_view.update_view(pot_instance, can_place_pot, can_plant_seed)
+	_update_drag_payloads()
 	_sync_content_view_positions()
 	_apply_overlay_layout()
 	_update_progress_bar_for_slot(pot_instance, null)
@@ -123,6 +133,7 @@ func show_pot(pot_instance: PotInstance, can_place_pot: bool, can_plant_seed: bo
 func show_totem(totem_instance: TotemInstance) -> void:
 	pot_view.visible = false
 	totem_view.show_totem(totem_instance)
+	_update_drag_payloads()
 	_sync_content_view_positions()
 	_apply_overlay_layout()
 	_update_progress_bar_for_slot(null, totem_instance)
@@ -173,6 +184,31 @@ func _on_pot_button_pressed(_pressed_slot_index: int) -> void:
 
 func _on_seed_button_pressed(_pressed_slot_index: int) -> void:
 	seed_slot_pressed.emit(slot_index)
+
+
+func can_drop_slot_item_data(data: Variant) -> bool:
+	if not (data is Dictionary):
+		return false
+	if String(data.get("type", "")) != "shelf_slot_item":
+		return false
+	if _game_state == null or _room_slot_index < 0:
+		return false
+	var source_room_slot_index := int(data.get("source_room_slot_index", -1))
+	var source_slot_index := int(data.get("source_slot_index", -1))
+	if source_room_slot_index != _room_slot_index:
+		return false
+	return _game_state.can_move_item_in_room_shelf_slot(_room_slot_index, source_slot_index, slot_index)
+
+
+func drop_slot_item_data(data: Variant) -> void:
+	if not can_drop_slot_item_data(data):
+		return
+	slot_item_drop_requested.emit(
+		int(data.get("source_room_slot_index", -1)),
+		int(data.get("source_slot_index", -1)),
+		_room_slot_index,
+		slot_index
+	)
 
 
 func _ensure_status_icon_views() -> void:
@@ -385,6 +421,18 @@ func _set_progress_bar_value(target_value: float) -> void:
 	progress_bar_fill.offset_bottom = progress_bar.size.y
 	progress_bar_fill.offset_right = progress_bar.size.x * _progress_bar_ratio
 	_update_editor_preview()
+
+
+func _update_drag_payloads() -> void:
+	var payload := {}
+	if _room_slot_index >= 0:
+		payload = {
+			"type": "shelf_slot_item",
+			"source_room_slot_index": _room_slot_index,
+			"source_slot_index": slot_index,
+		}
+	pot_view.drag_payload = payload.duplicate(true)
+	totem_view.drag_payload = payload.duplicate(true)
 
 
 func _update_editor_preview() -> void:

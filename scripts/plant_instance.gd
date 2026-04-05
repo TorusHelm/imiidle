@@ -228,6 +228,15 @@ func get_activation_reward(context: Dictionary = {}) -> float:
 	return maxf(modified_reward, 0.0)
 
 
+func reset_runtime_state() -> void:
+	progress_seconds = 0.0
+	age_seconds = 0.0
+	activation_count = 0
+	active_modifiers.clear()
+	_last_charge_activation_age_seconds = -1000000.0
+	_has_pending_charge_activation = false
+
+
 func _find_modifier_index(modifier_type: String) -> int:
 	for index in active_modifiers.size():
 		if active_modifiers[index].get_modifier_type() == modifier_type:

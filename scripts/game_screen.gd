@@ -18,6 +18,7 @@ var _zoom_level := 1.0
 @onready var seeds_value_label: Label = %SeedsValueLabel
 @onready var background: ColorRect = $Background
 @onready var room_view: RoomView = %Room
+@onready var shelf_backpack = %ShelfBackpack
 @onready var world_root: Control = room_view.world_root
 @onready var seed_modal: SeedModal = %SeedModal
 @onready var pot_modal: PotModal = %PotModal
@@ -108,6 +109,22 @@ func _on_seed_selected(slot_index: int, seed_id: String) -> void:
 	_refresh_ui()
 
 
+func _on_slot_item_dropped(room_slot_index: int, source_slot_index: int, target_slot_index: int) -> void:
+	game_state.move_item_in_room_shelf_slot(room_slot_index, source_slot_index, target_slot_index)
+	_refresh_ui()
+
+
+func _on_shelf_dropped_in_room(room_slot_index: int, runtime_id: String) -> void:
+	if game_state.move_shelf_item_to_room(runtime_id, room_slot_index):
+		game_state.set_active_room_slot_index(room_slot_index)
+	_refresh_ui()
+
+
+func _on_shelf_dropped_in_backpack(runtime_id: String, backpack_origin: Vector2i) -> void:
+	game_state.move_shelf_item_to_backpack(runtime_id, backpack_origin)
+	_refresh_ui()
+
+
 func _on_choose_shelf_button_pressed(room_slot_index: int) -> void:
 	_pending_room_slot_index = room_slot_index
 	shelf_modal.open_modal(game_state.get_shelf_options())
@@ -132,6 +149,7 @@ func _refresh_ui() -> void:
 	experience_value_label.text = "%.1f" % game_state.experience
 	seeds_value_label.text = str(game_state.get_total_seed_count())
 	room_view.update_view(game_state)
+	shelf_backpack.update_view(game_state)
 	_clamp_view_offset()
 	_position_world_content()
 
@@ -180,9 +198,13 @@ func _apply_world_transform() -> void:
 
 
 func _connect_ui_signals() -> void:
-	if not room_view.choose_shelf_pressed.is_connected(_on_choose_shelf_button_pressed):
-		room_view.choose_shelf_pressed.connect(_on_choose_shelf_button_pressed)
 	if not room_view.pot_slot_pressed.is_connected(_on_pot_slot_pressed):
 		room_view.pot_slot_pressed.connect(_on_pot_slot_pressed)
 	if not room_view.seed_slot_pressed.is_connected(_on_seed_button_pressed):
 		room_view.seed_slot_pressed.connect(_on_seed_button_pressed)
+	if not room_view.shelf_drop_requested.is_connected(_on_shelf_dropped_in_room):
+		room_view.shelf_drop_requested.connect(_on_shelf_dropped_in_room)
+	if not room_view.slot_item_drop_requested.is_connected(_on_slot_item_dropped):
+		room_view.slot_item_drop_requested.connect(_on_slot_item_dropped)
+	if not shelf_backpack.shelf_drop_requested.is_connected(_on_shelf_dropped_in_backpack):
+		shelf_backpack.shelf_drop_requested.connect(_on_shelf_dropped_in_backpack)

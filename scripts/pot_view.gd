@@ -34,6 +34,8 @@ signal pot_button_pressed(slot_index: int)
 
 var slot_index := -1
 var _current_definition: PotDefinition = null
+var drag_enabled := false
+var drag_payload: Dictionary = {}
 
 
 @onready var slot_button: Button = $SlotButton
@@ -48,6 +50,9 @@ func _ready() -> void:
 	_connect_pot_resource(preview_definition)
 	_connect_plant_resource(preview_plant_definition)
 	set_process(Engine.is_editor_hint())
+	slot_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	pot_texture.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	plant_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_apply_empty_slot_copy()
 	_refresh_preview()
 
@@ -95,6 +100,8 @@ func update_view(pot_instance: PotInstance, can_place_pot: bool, can_plant_seed:
 	_apply_definition_layout(pot_definition)
 
 	if pot_instance == null:
+		drag_enabled = false
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
 		slot_button.visible = true
 		slot_button.disabled = not can_place_pot
 		slot_label.visible = true
@@ -109,6 +116,8 @@ func update_view(pot_instance: PotInstance, can_place_pot: bool, can_plant_seed:
 	pot_texture.visible = true
 	seed_button.visible = true
 	plant_view.visible = true
+	drag_enabled = true
+	mouse_filter = Control.MOUSE_FILTER_STOP
 	pot_texture.texture = load(pot_instance.definition.texture_path) if not pot_instance.definition.texture_path.is_empty() else null
 	seed_button.disabled = not can_plant_seed
 
@@ -144,6 +153,29 @@ func _on_seed_button_pressed() -> void:
 
 func _on_slot_button_pressed() -> void:
 	pot_button_pressed.emit(slot_index)
+
+
+func _get_drag_data(_at_position: Vector2):
+	if not drag_enabled or drag_payload.is_empty():
+		return null
+
+	var preview := ColorRect.new()
+	preview.custom_minimum_size = size
+	preview.size = size
+	preview.color = Color(1.0, 1.0, 1.0, 0.25)
+	set_drag_preview(preview)
+	return drag_payload.duplicate(true)
+
+
+func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
+	var slot_view = get_parent()
+	return slot_view != null and slot_view.has_method("can_drop_slot_item_data") and slot_view.can_drop_slot_item_data(data)
+
+
+func _drop_data(_at_position: Vector2, data: Variant) -> void:
+	var slot_view = get_parent()
+	if slot_view != null and slot_view.has_method("drop_slot_item_data"):
+		slot_view.drop_slot_item_data(data)
 
 
 func _apply_definition_layout(definition: PotDefinition) -> void:
