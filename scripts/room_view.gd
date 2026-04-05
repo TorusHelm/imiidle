@@ -6,7 +6,7 @@ signal pot_slot_pressed(room_slot_index: int, shelf_slot_index: int)
 signal seed_slot_pressed(room_slot_index: int, shelf_slot_index: int)
 
 const ROOM_SLOT_SCENE := preload("res://Ui/RoomShelfSlot.tscn")
-const DEFAULT_ROOM_DEFINITION: RoomDefinition = preload("res://Game/data/default_room.tres")
+const DEFAULT_ROOM_DEFINITION: RoomDefinition = preload("res://Rooms/DefaultRoom/data/default_room.tres")
 
 @export var room_definition: RoomDefinition = DEFAULT_ROOM_DEFINITION
 
@@ -38,11 +38,12 @@ func update_view(game_state: GameState) -> void:
 	for room_slot_index in _room_slot_views.size():
 		var slot_view := _room_slot_views[room_slot_index]
 		var shelf := game_state.get_shelf_in_room_slot(room_slot_index)
+		var room_slot_size := room_definition.get_slot_area_size()
 		if shelf == null:
-			slot_view.show_empty(room_definition.slot_area_size)
+			slot_view.show_empty(room_slot_size)
 			continue
 
-		slot_view.show_shelf(room_definition.slot_area_size, shelf.definition, game_state, room_slot_index)
+		slot_view.show_shelf(room_slot_size, shelf.definition, game_state, room_slot_index)
 
 
 func position_content(_viewport_size: Vector2) -> void:

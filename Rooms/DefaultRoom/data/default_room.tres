@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="RoomDefinition" format=3 uid="uid://gl25hhi1gbn5"]
+[gd_resource type="Resource" script_class="RoomDefinition" format=3 uid="uid://bk7pbvcjs5nwm"]
 
 [ext_resource type="Script" uid="uid://ccyt5w76x5kg0" path="res://scripts/room_definition.gd" id="1_room"]
 [ext_resource type="Resource" uid="uid://dhlxyggm3121l" path="res://Game/data/default_slot_layout.tres" id="2_layout"]
@@ -8,8 +8,8 @@ script = ExtResource("1_room")
 id = "default_room"
 display_name = "Default Room"
 slot_layout = ExtResource("2_layout")
-slot_grid_columns = 6
-slot_grid_rows = 3
+slot_grid_columns = 12
+slot_grid_rows = 6
 slot_area_origin = Vector2(40, 180)
-excluded_grid_origin = Vector2i(2, 1)
-excluded_grid_size = Vector2i(2, 1)
+excluded_grid_origin = Vector2i(3, 1)
+excluded_grid_size = Vector2i(6, 4)

@@ -56,6 +56,21 @@ func get_slot_positions() -> Array[Vector2]:
 	return get_shelf_model().get_slot_positions()
 
 
+func get_slot_work_area_origins() -> Array[Vector2]:
+	var origins: Array[Vector2] = []
+	var resolved_anchor_offset := get_slot_anchor_offset()
+	for slot_position in get_slot_positions():
+		origins.append(slot_position - resolved_anchor_offset)
+	return origins
+
+
+func get_primary_slot_work_area_origin() -> Vector2:
+	var origins := get_slot_work_area_origins()
+	if origins.is_empty():
+		return Vector2.ZERO
+	return origins[0]
+
+
 func get_shelf_model():
 	var resolved_slot_positions := _build_slot_positions()
 	if not use_slot_grid:

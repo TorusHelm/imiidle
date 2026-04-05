@@ -8,7 +8,7 @@ func test_starts_without_active_shelf_and_with_both_shelves_in_inventory() -> vo
 	assert_eq(game_state.get_shelf_count("shelf_a"), 1, "Shelf A should be available once at start.")
 	assert_eq(game_state.get_shelf_count("shelf_b"), 1, "Shelf B should be available once at start.")
 	assert_eq(game_state.get_totem_count("metronome"), 1, "Metronome should exist as a real starter totem in the catalog.")
-	assert_eq(game_state.get_room_definition().get_slot_count(), 4, "Default room should expose multiple shelf slots.")
+	assert_eq(game_state.get_room_definition().get_slot_count(), 16, "Default room should expose the shared room grid slots after excluding the central gap.")
 	assert_eq(game_state.shelf_slots.size(), 0, "No shelf slots should exist before placing a shelf.")
 
 

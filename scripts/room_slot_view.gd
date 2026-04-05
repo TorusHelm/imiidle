@@ -11,6 +11,7 @@ var room_slot_index := -1
 
 
 @onready var shelf_view: ShelfView = $ShelfView
+@onready var slot_frame: TextureRect = $SlotFrame
 @onready var empty_shelf_state: Control = $EmptyShelfState
 @onready var choose_shelf_button: Button = $EmptyShelfState/Panel/Content/ChooseShelfButton
 @onready var empty_shelf_click_area: Button = $EmptyShelfState/Panel/ClickArea
@@ -34,6 +35,9 @@ func set_room_slot_index(value: int) -> void:
 func show_empty(slot_size: Vector2) -> void:
 	custom_minimum_size = slot_size
 	size = slot_size
+	slot_frame.position = Vector2.ZERO
+	slot_frame.custom_minimum_size = slot_size
+	slot_frame.size = slot_size
 	shelf_view.visible = false
 	empty_shelf_state.visible = true
 	empty_shelf_state.position = Vector2.ZERO
@@ -43,12 +47,15 @@ func show_empty(slot_size: Vector2) -> void:
 func show_shelf(slot_size: Vector2, shelf_definition: ShelfDefinition, game_state: GameState, room_slot_index_value: int) -> void:
 	custom_minimum_size = slot_size
 	size = slot_size
+	slot_frame.position = Vector2.ZERO
+	slot_frame.custom_minimum_size = slot_size
+	slot_frame.size = slot_size
 	empty_shelf_state.visible = false
 	shelf_view.visible = true
 	shelf_view.configure(shelf_definition)
 	shelf_view.update_view(game_state, room_slot_index_value)
 	shelf_view.play_visual_feedback(game_state.drain_visual_feedback_in_room_slot(room_slot_index_value))
-	shelf_view.position = (slot_size - shelf_view.size) * 0.5
+	shelf_view.position = -shelf_definition.get_primary_slot_work_area_origin()
 
 
 func _on_choose_shelf_button_pressed() -> void:

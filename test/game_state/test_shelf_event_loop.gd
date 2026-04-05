@@ -4,7 +4,7 @@ extends GutTest
 const SHELF_A: ShelfDefinition = preload("res://Shelfs/ShelfA/data/shelf_a.tres")
 const SHELF_B: ShelfDefinition = preload("res://Shelfs/ShelfB/data/shelf_b.tres")
 const DEFAULT_POT: PotDefinition = preload("res://Pots/DefaultPot/data/pot_default.tres")
-const DEFAULT_ROOM: RoomDefinition = preload("res://Game/data/default_room.tres")
+const DEFAULT_ROOM: RoomDefinition = preload("res://Rooms/DefaultRoom/data/default_room.tres")
 const METRONOME: TotemDefinition = preload("res://Totems/Metronome/data/totem_metronome.tres")
 const SCALES: TotemDefinition = preload("res://Totems/Scales/data/totem_scales.tres")
 const SNAIL: TotemDefinition = preload("res://Totems/Snail/data/totem_snail.tres")

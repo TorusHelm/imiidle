@@ -13,7 +13,7 @@ grow_vertical = 2
 
 [node name="Panel" type="Control" parent="." unique_id=1044029954]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(520, 280)
+custom_minimum_size = Vector2(170, 280)
 layout_mode = 2
 mouse_filter = 1
 script = ExtResource("1_placeholder")
@@ -25,29 +25,29 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -140.0
-offset_top = -62.0
-offset_right = 140.0
-offset_bottom = 62.0
+offset_left = -70.0
+offset_top = -52.0
+offset_right = 70.0
+offset_bottom = 52.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 10
 
 [node name="TitleLabel" type="Label" parent="Panel/Content" unique_id=502907148]
 layout_mode = 2
-theme_override_font_sizes/font_size = 42
+theme_override_font_sizes/font_size = 30
 text = "+"
 horizontal_alignment = 1
 
 [node name="DescriptionLabel" type="Label" parent="Panel/Content" unique_id=136534529]
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 14
 text = "Add shelf"
 horizontal_alignment = 1
 uppercase = true
 
 [node name="ChooseShelfButton" type="Button" parent="Panel/Content" unique_id=866433652]
-custom_minimum_size = Vector2(240, 44)
+custom_minimum_size = Vector2(120, 36)
 layout_mode = 2
 text = "Select Shelf"
 

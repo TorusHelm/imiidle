@@ -3,10 +3,20 @@
 [ext_resource type="Script" path="res://scripts/room_slot_view.gd" id="1_room_slot"]
 [ext_resource type="PackedScene" uid="uid://chrt8p8hrj4v6" path="res://Shelfs/_shared/sceens/Shelf.tscn" id="2_shelf"]
 [ext_resource type="PackedScene" path="res://Ui/EmptyShelfState.tscn" id="3_empty"]
+[ext_resource type="Texture2D" path="res://assets/room-slot.png" id="4_room_slot_texture"]
 
 [node name="RoomShelfSlot" type="Control"]
 layout_mode = 0
 script = ExtResource("1_room_slot")
+
+[node name="SlotFrame" type="TextureRect" parent="."]
+layout_mode = 0
+offset_right = 170.0
+offset_bottom = 280.0
+mouse_filter = 2
+texture = ExtResource("4_room_slot_texture")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="ShelfView" parent="." instance=ExtResource("2_shelf")]
 layout_mode = 0
