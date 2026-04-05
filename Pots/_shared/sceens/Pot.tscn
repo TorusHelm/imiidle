@@ -4,7 +4,7 @@
 [ext_resource type="Script" uid="uid://d2mx4eqpirxoj" path="res://scripts/pot_view.gd" id="2_447lc"]
 
 [node name="Pot" type="Control" unique_id=2064265332]
-custom_minimum_size = Vector2(170, 280)
+custom_minimum_size = Vector2(220, 320)
 layout_mode = 3
 anchors_preset = 0
 offset_right = 220.0
@@ -14,40 +14,26 @@ Choose a pot for this shelf slot."
 script = ExtResource("2_447lc")
 
 [node name="PlantAttachPoint" type="Marker2D" parent="." unique_id=1022001]
-position = Vector2(110, 190)
+position = Vector2(110, 205)
 
 [node name="PotBaseline" type="Marker2D" parent="." unique_id=1022002]
 position = Vector2(110, 300)
 
 [node name="SlotButton" type="Button" parent="." unique_id=2077643061]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -110.0
-offset_top = 18.0
-offset_right = 60.0
-offset_bottom = 132.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 0
+offset_left = 34.0
+offset_top = 178.0
+offset_right = 188.0
+offset_bottom = 292.0
 tooltip_text = "Empty slot
 Choose a pot for this shelf slot."
 
 [node name="SlotLabel" type="Label" parent="." unique_id=1636784625]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -110.0
-offset_top = 50.0
-offset_right = 60.0
-offset_bottom = 99.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 0
+offset_left = 18.0
+offset_top = 210.0
+offset_right = 202.0
+offset_bottom = 259.0
 tooltip_text = "Empty slot
 Choose a pot for this shelf slot."
 text = "Empty Slot
@@ -67,9 +53,9 @@ offset_bottom = 190.0
 visible = false
 layout_mode = 0
 offset_left = 50.0
-offset_top = 190.0
+offset_top = 198.0
 offset_right = 170.0
-offset_bottom = 300.0
+offset_bottom = 308.0
 expand_mode = 1
 stretch_mode = 5
 

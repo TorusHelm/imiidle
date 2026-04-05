@@ -70,6 +70,21 @@ func test_pot_view_exposes_empty_slot_copy_as_properties() -> void:
 	assert_eq(pot_view.slot_label.tooltip_text, pot_view.slot_button.tooltip_text, "Slot label tooltip should stay in sync with the empty slot tooltip property.")
 
 
+func test_empty_pot_scene_geometry_matches_default_editor_layout() -> void:
+	var pot_view: PotView = add_child_autofree(POT_SCENE.instantiate())
+	await wait_process_frames(2)
+
+	pot_view.update_view(null, true, false)
+	await wait_process_frames(2)
+
+	assert_eq(pot_view.custom_minimum_size, Vector2(220.0, 320.0), "Shared Pot scene should keep the default editor preview size from the base PotDefinition contract.")
+	assert_eq(pot_view.get_node("PlantAttachPoint").position, Vector2(110.0, 205.0), "Editor pot scene should keep the default plant attach point used by the empty-slot preview.")
+	assert_eq(pot_view.slot_button.position, Vector2(34.0, 178.0), "Empty slot button should use direct top-left offsets inside the pot widget.")
+	assert_eq(pot_view.slot_button.size, Vector2(154.0, 114.0), "Empty slot button width should match the default PotDefinition instead of stretching to the whole slot.")
+	assert_eq(pot_view.slot_label.position, Vector2(18.0, 210.0), "Empty slot label should keep the default direct offsets in the editor scene.")
+	assert_eq(pot_view.slot_label.size, Vector2(184.0, 49.0), "Empty slot label should keep the default label size from the base PotDefinition contract.")
+
+
 func test_shelf_slot_view_proxies_empty_pot_slot_copy_to_pot_view() -> void:
 	var shelf_slot_view: ShelfSlotView = add_child_autofree(SHELF_SLOT_SCENE.instantiate())
 	await wait_process_frames(2)
