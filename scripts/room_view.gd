@@ -6,6 +6,7 @@ signal pot_slot_pressed(room_slot_index: int, shelf_slot_index: int)
 signal seed_slot_pressed(room_slot_index: int, shelf_slot_index: int)
 signal shelf_drop_requested(room_slot_index: int, runtime_id: String)
 signal slot_item_drop_requested(room_slot_index: int, source_slot_index: int, target_slot_index: int)
+signal backpack_item_drop_requested(runtime_id: String, room_slot_index: int, target_slot_index: int)
 
 const ROOM_SLOT_SCENE := preload("res://Ui/RoomShelfSlot.tscn")
 const SHELF_SCENE := preload("res://Shelfs/_shared/sceens/Shelf.tscn")
@@ -90,6 +91,7 @@ func _rebuild_slot_views() -> void:
 		slot_view.shelf_drag_hovered.connect(_on_shelf_drag_hovered)
 		slot_view.shelf_drag_finished.connect(_on_shelf_drag_finished)
 		slot_view.slot_item_drop_requested.connect(_on_slot_item_drop_requested)
+		slot_view.backpack_item_drop_requested.connect(_on_backpack_item_drop_requested)
 		slots_root.add_child(slot_view)
 		_room_slot_views.append(slot_view)
 
@@ -135,6 +137,21 @@ func _on_slot_item_drop_requested(room_slot_index: int, source_slot_index: int, 
 func clear_drag_preview() -> void:
 	for slot_view in _room_slot_views:
 		slot_view.clear_drop_preview()
+	clear_shelf_drop_previews()
+
+
+func clear_shelf_drop_previews() -> void:
+	for shelf_view in _placed_shelf_views.values():
+		if shelf_view != null and shelf_view.has_method("clear_all_drop_previews"):
+			shelf_view.clear_all_drop_previews()
+
+
+func clear_shelf_drop_previews_except(active_shelf_view: ShelfView) -> void:
+	for shelf_view in _placed_shelf_views.values():
+		if shelf_view == null or shelf_view == active_shelf_view:
+			continue
+		if shelf_view.has_method("clear_all_drop_previews"):
+			shelf_view.clear_all_drop_previews()
 
 
 func _get_room_slot_view(room_slot_index: int) -> RoomSlotView:
@@ -165,6 +182,7 @@ func _sync_shelf_overlays(game_state: GameState) -> void:
 			shelf_view.pot_slot_pressed.connect(_on_overlay_pot_slot_pressed.bind(shelf_view))
 			shelf_view.seed_slot_pressed.connect(_on_overlay_seed_slot_pressed.bind(shelf_view))
 			shelf_view.slot_item_drop_requested.connect(_on_overlay_slot_item_drop_requested)
+			shelf_view.backpack_item_drop_requested.connect(_on_overlay_backpack_item_drop_requested)
 			shelves_root.add_child(shelf_view)
 			_placed_shelf_views[runtime_id] = shelf_view
 
@@ -194,3 +212,11 @@ func _on_overlay_seed_slot_pressed(shelf_slot_index: int, shelf_view: ShelfView)
 
 func _on_overlay_slot_item_drop_requested(source_room_slot_index: int, source_slot_index: int, target_room_slot_index: int, target_slot_index: int) -> void:
 	slot_item_drop_requested.emit(target_room_slot_index, source_slot_index, target_slot_index)
+
+
+func _on_backpack_item_drop_requested(runtime_id: String, room_slot_index: int, target_slot_index: int) -> void:
+	backpack_item_drop_requested.emit(runtime_id, room_slot_index, target_slot_index)
+
+
+func _on_overlay_backpack_item_drop_requested(runtime_id: String, target_room_slot_index: int, target_slot_index: int) -> void:
+	backpack_item_drop_requested.emit(runtime_id, target_room_slot_index, target_slot_index)

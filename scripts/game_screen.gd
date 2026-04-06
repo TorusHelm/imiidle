@@ -115,6 +115,11 @@ func _on_slot_item_dropped(room_slot_index: int, source_slot_index: int, target_
 	_refresh_ui()
 
 
+func _on_backpack_item_dropped_to_shelf(runtime_id: String, room_slot_index: int, target_slot_index: int) -> void:
+	game_state.place_backpack_item_in_room_shelf_slot(runtime_id, room_slot_index, target_slot_index)
+	_refresh_ui()
+
+
 func _on_shelf_dropped_in_room(room_slot_index: int, runtime_id: String) -> void:
 	if game_state.move_shelf_item_to_room(runtime_id, room_slot_index):
 		game_state.set_active_room_slot_index(room_slot_index)
@@ -123,6 +128,16 @@ func _on_shelf_dropped_in_room(room_slot_index: int, runtime_id: String) -> void
 
 func _on_shelf_dropped_in_backpack(runtime_id: String, backpack_origin: Vector2i) -> void:
 	game_state.move_shelf_item_to_backpack(runtime_id, backpack_origin)
+	_refresh_ui()
+
+
+func _on_backpack_item_dropped(runtime_id: String, backpack_origin: Vector2i) -> void:
+	game_state.move_backpack_item(runtime_id, backpack_origin)
+	_refresh_ui()
+
+
+func _on_shelf_slot_item_dropped_in_backpack(room_slot_index: int, slot_index: int, backpack_origin: Vector2i) -> void:
+	game_state.move_room_shelf_item_to_backpack(room_slot_index, slot_index, backpack_origin)
 	_refresh_ui()
 
 
@@ -207,5 +222,11 @@ func _connect_ui_signals() -> void:
 		room_view.shelf_drop_requested.connect(_on_shelf_dropped_in_room)
 	if not room_view.slot_item_drop_requested.is_connected(_on_slot_item_dropped):
 		room_view.slot_item_drop_requested.connect(_on_slot_item_dropped)
+	if not room_view.backpack_item_drop_requested.is_connected(_on_backpack_item_dropped_to_shelf):
+		room_view.backpack_item_drop_requested.connect(_on_backpack_item_dropped_to_shelf)
 	if not shelf_backpack.shelf_drop_requested.is_connected(_on_shelf_dropped_in_backpack):
 		shelf_backpack.shelf_drop_requested.connect(_on_shelf_dropped_in_backpack)
+	if not shelf_backpack.backpack_item_drop_requested.is_connected(_on_backpack_item_dropped):
+		shelf_backpack.backpack_item_drop_requested.connect(_on_backpack_item_dropped)
+	if not shelf_backpack.shelf_slot_item_drop_requested.is_connected(_on_shelf_slot_item_dropped_in_backpack):
+		shelf_backpack.shelf_slot_item_drop_requested.connect(_on_shelf_slot_item_dropped_in_backpack)

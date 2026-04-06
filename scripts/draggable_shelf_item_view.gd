@@ -72,11 +72,19 @@ func _build_drag_preview_control() -> Control:
 	var preview := Control.new()
 	preview.custom_minimum_size = size
 	preview.size = size
+	preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var frame_panel := Panel.new()
+	frame_panel.custom_minimum_size = size
+	frame_panel.size = size
+	frame_panel.self_modulate = Color(1.0, 1.0, 1.0, 0.92)
+	preview.add_child(frame_panel)
 
 	var preview_shelf: ShelfView = SHELF_SCENE.instantiate()
-	preview.add_child(preview_shelf)
+	frame_panel.add_child(preview_shelf)
 	_prepare_shelf_view_for_preview(preview_shelf)
 	_set_control_tree_mouse_filter(preview_shelf, Control.MOUSE_FILTER_IGNORE)
+	preview_shelf.position = Vector2(4.0, 4.0)
 	preview_shelf.scale = _build_shelf_scale(definition.get_resolved_view_size())
 
 	return preview

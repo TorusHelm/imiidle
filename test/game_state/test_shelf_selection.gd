@@ -8,6 +8,7 @@ func test_starts_without_active_shelf_and_with_both_shelves_in_inventory() -> vo
 	assert_eq(game_state.get_shelf_count("shelf_a"), 1, "Shelf A should be available once at start.")
 	assert_eq(game_state.get_shelf_count("shelf_b"), 1, "Shelf B should be available once at start.")
 	assert_eq(game_state.get_totem_count("metronome"), 1, "Metronome should exist as a real starter totem in the catalog.")
+	assert_eq(game_state.get_item_backpack_items().size(), 13, "Starter pots, totems, and seeds should exist as real backpack items, not only as counters.")
 	assert_eq(game_state.get_room_definition().get_slot_count(), 48, "Default room should expose the full 12x6 perimeter grid after excluding the central gap.")
 	assert_eq(game_state.shelf_slots.size(), 0, "No shelf slots should exist before placing a shelf.")
 	assert_eq(game_state.get_shelf_backpack_item_count(), 2, "Starter shelves should exist as movable backpack items, not only as counters.")
@@ -65,6 +66,63 @@ func test_totem_is_placed_into_shelf_slot_through_room_aware_game_state() -> voi
 	assert_true(placed, "GameState should place a real Metronome into the active shelf through Shelf.")
 	assert_not_null(game_state.get_totem_in_room_slot(0, 1), "Placed totem should live inside the shelf slot.")
 	assert_eq(game_state.get_totem_count("metronome"), 0, "Placed totem should be consumed from inventory.")
+
+
+func test_backpack_item_can_be_placed_directly_into_shelf_slot() -> void:
+	var game_state := GameState.new()
+	assert_true(game_state.place_shelf(0, "shelf_a"), "Expected first room slot to accept Shelf A.")
+
+	var pot_item = game_state.get_item_backpack_items().filter(func(item): return item.kind == "pot" and item.get_display_definition().id == "default_pot")[0]
+
+	assert_true(game_state.place_backpack_item_in_room_shelf_slot(pot_item.runtime_id, 0, 0), "Dragging a pot from the item backpack into a shelf slot should place it there.")
+	assert_not_null(game_state.get_pot_in_room_slot(0, 0), "Dragged backpack pot should appear inside the shelf slot.")
+	assert_eq(game_state.get_pot_count("default_pot"), 2, "Placing one default pot from the backpack should reduce the derived inventory count.")
+
+
+func test_room_shelf_item_can_be_moved_back_to_item_backpack() -> void:
+	var game_state := GameState.new()
+	assert_true(game_state.place_shelf(0, "shelf_a"), "Expected first room slot to accept Shelf A.")
+	assert_true(game_state.place_pot(0, "default_pot"), "Expected first slot to accept a pot from inventory.")
+	assert_true(game_state.plant_seed(0, "gerbera"), "Expected placed pot to accept a plant before moving back to the backpack.")
+
+	var backpack_origin := Vector2i(-1, -1)
+	for row in range(game_state.SHELF_BACKPACK_ROWS):
+		for column in range(game_state.SHELF_BACKPACK_COLUMNS):
+			var candidate := Vector2i(column, row)
+			if game_state.shelf_backpack.can_place("", candidate, Vector2i.ONE):
+				backpack_origin = candidate
+				break
+		if backpack_origin.x >= 0:
+			break
+
+	assert_true(backpack_origin.x >= 0, "Test setup should find a free backpack cell for the returned pot.")
+
+	assert_true(game_state.move_room_shelf_item_to_backpack(0, 0, backpack_origin), "Dragging a shelf pot back into the item backpack should succeed.")
+	assert_null(game_state.get_pot_in_room_slot(0, 0), "Source shelf slot should become empty after moving the item back to the backpack.")
+	assert_eq(game_state.get_item_backpack_items().filter(func(item): return item.kind == "pot" and item.backpack_origin == backpack_origin).size(), 1, "Returned pot should occupy the requested backpack grid cell.")
+
+
+func test_item_backpack_item_can_move_to_empty_grid_cell() -> void:
+	var game_state := GameState.new()
+	var backpack_item = game_state.get_item_backpack_items()[0]
+	var target_origin := Vector2i(10, 2)
+
+	assert_true(game_state.can_move_or_swap_backpack_item(backpack_item.runtime_id, target_origin), "Item backpack should allow moving an item into a free grid cell.")
+	assert_true(game_state.move_backpack_item(backpack_item.runtime_id, target_origin), "Moving an item inside the backpack should succeed when the target cell is empty.")
+	assert_eq(backpack_item.backpack_origin, target_origin, "Moved backpack item should update its stored grid origin.")
+
+
+func test_item_backpack_items_can_swap_positions() -> void:
+	var game_state := GameState.new()
+	var first_item = game_state.get_item_backpack_items()[0]
+	var second_item = game_state.get_item_backpack_items()[1]
+	var first_origin: Vector2i = first_item.backpack_origin
+	var second_origin: Vector2i = second_item.backpack_origin
+
+	assert_true(game_state.can_move_or_swap_backpack_item(first_item.runtime_id, second_origin), "Backpack should allow swapping two occupied item cells.")
+	assert_true(game_state.move_backpack_item(first_item.runtime_id, second_origin), "Dropping an item onto another occupied cell should swap their backpack positions.")
+	assert_eq(first_item.backpack_origin, second_origin, "Dragged item should occupy the target cell after swap.")
+	assert_eq(second_item.backpack_origin, first_origin, "Overlapped item should move back into the dragged item's original cell after swap.")
 
 
 func test_moving_pot_between_shelf_slots_resets_plant_runtime_state() -> void:

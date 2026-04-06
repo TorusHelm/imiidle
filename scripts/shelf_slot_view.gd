@@ -6,6 +6,7 @@ extends Node2D
 signal pot_slot_pressed(slot_index: int)
 signal seed_slot_pressed(slot_index: int)
 signal slot_item_drop_requested(source_room_slot_index: int, source_slot_index: int, target_room_slot_index: int, target_slot_index: int)
+signal backpack_item_drop_requested(runtime_id: String, target_room_slot_index: int, target_slot_index: int)
 
 const STATUS_ICON_SCENE := preload("res://Ui/SlotStatusIcon.tscn")
 const COIN_TEXTURE := preload("res://assets/coin.png")
@@ -79,6 +80,7 @@ var _progress_bar_ratio := 0.0
 @onready var totem_view: TotemView = $TotemView
 @onready var content_slot: Control = $ContentSlot
 @onready var content_slot_preview: ColorRect = $ContentSlot/ContentSlotPreview
+@onready var drop_preview_mount: Control = $ContentSlot/DropPreviewMount
 @onready var status_bar: Control = $ContentSlot/StatusBar
 @onready var status_bar_preview: ColorRect = $ContentSlot/StatusBar/StatusBarPreview
 @onready var status_icons_layer: Control = $ContentSlot/StatusBar/StatusIconsLayer
@@ -102,6 +104,14 @@ func _ready() -> void:
 		pot_view.pot_button_pressed.connect(_on_pot_button_pressed)
 	if not pot_view.seed_button_pressed.is_connected(_on_seed_button_pressed):
 		pot_view.seed_button_pressed.connect(_on_seed_button_pressed)
+	if not pot_view.mouse_exited.is_connected(_on_drop_target_mouse_exited):
+		pot_view.mouse_exited.connect(_on_drop_target_mouse_exited)
+	if not pot_view.slot_button.mouse_exited.is_connected(_on_drop_target_mouse_exited):
+		pot_view.slot_button.mouse_exited.connect(_on_drop_target_mouse_exited)
+	if not pot_view.seed_button.mouse_exited.is_connected(_on_drop_target_mouse_exited):
+		pot_view.seed_button.mouse_exited.connect(_on_drop_target_mouse_exited)
+	if not totem_view.mouse_exited.is_connected(_on_drop_target_mouse_exited):
+		totem_view.mouse_exited.connect(_on_drop_target_mouse_exited)
 	_sync_content_view_positions()
 	_apply_overlay_layout()
 	_rebuild_status_icon_views()
@@ -186,29 +196,54 @@ func _on_seed_button_pressed(_pressed_slot_index: int) -> void:
 	seed_slot_pressed.emit(slot_index)
 
 
+func _on_drop_target_mouse_exited() -> void:
+	_clear_drop_preview()
+
+
 func can_drop_slot_item_data(data: Variant) -> bool:
 	if not (data is Dictionary):
-		return false
-	if String(data.get("type", "")) != "shelf_slot_item":
+		_clear_drop_preview()
 		return false
 	if _game_state == null or _room_slot_index < 0:
+		_clear_drop_preview()
 		return false
-	var source_room_slot_index := int(data.get("source_room_slot_index", -1))
-	var source_slot_index := int(data.get("source_slot_index", -1))
-	if source_room_slot_index != _room_slot_index:
-		return false
-	return _game_state.can_move_item_in_room_shelf_slot(_room_slot_index, source_slot_index, slot_index)
+	var can_drop := false
+	match String(data.get("type", "")):
+		"shelf_slot_item":
+			var source_room_slot_index := int(data.get("source_room_slot_index", -1))
+			var source_slot_index := int(data.get("source_slot_index", -1))
+			if source_room_slot_index != _room_slot_index:
+				_clear_drop_preview()
+				return false
+			can_drop = _game_state.can_move_item_in_room_shelf_slot(_room_slot_index, source_slot_index, slot_index)
+		"inventory_item":
+			can_drop = _game_state.can_place_backpack_item_in_room_shelf_slot(String(data.get("runtime_id", "")), _room_slot_index, slot_index)
+		_:
+			_clear_drop_preview()
+			return false
+	_show_drop_preview(data, can_drop)
+	return can_drop
 
 
 func drop_slot_item_data(data: Variant) -> void:
 	if not can_drop_slot_item_data(data):
 		return
-	slot_item_drop_requested.emit(
-		int(data.get("source_room_slot_index", -1)),
-		int(data.get("source_slot_index", -1)),
-		_room_slot_index,
-		slot_index
-	)
+	match String(data.get("type", "")):
+		"shelf_slot_item":
+			slot_item_drop_requested.emit(
+				int(data.get("source_room_slot_index", -1)),
+				int(data.get("source_slot_index", -1)),
+				_room_slot_index,
+				slot_index
+			)
+		"inventory_item":
+			backpack_item_drop_requested.emit(String(data.get("runtime_id", "")), _room_slot_index, slot_index)
+	_clear_drop_preview()
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_DRAG_END:
+		_clear_drop_preview()
 
 
 func _ensure_status_icon_views() -> void:
@@ -391,6 +426,7 @@ func _apply_overlay_layout() -> void:
 	content_slot.size = slot_rect.size
 
 	content_slot_preview.size = content_slot.size
+	drop_preview_mount.size = content_slot.size
 	status_bar_preview.size = status_bar.size
 	progress_bar_preview.size = progress_bar.size
 	coin_preview.size = coin_slot.size
@@ -467,3 +503,59 @@ func _update_editor_preview() -> void:
 		progress_bar_fill.offset_top = 0.0
 		progress_bar_fill.offset_bottom = progress_bar.size.y
 		progress_bar_fill.offset_right = progress_bar.size.x * _progress_bar_ratio
+
+
+func _show_drop_preview(data: Dictionary, is_valid: bool) -> void:
+	if not is_valid:
+		_clear_drop_preview_visuals()
+		return
+	var shelf_view = _get_parent_shelf_view()
+	var room_view = _get_parent_room_view()
+	if room_view != null and room_view.has_method("clear_shelf_drop_previews_except"):
+		room_view.clear_shelf_drop_previews_except(shelf_view)
+	if shelf_view != null and shelf_view.has_method("set_active_drop_preview_slot"):
+		shelf_view.set_active_drop_preview_slot(slot_index)
+	content_slot_preview.visible = true
+	content_slot_preview.color = Color(0.32, 0.84, 0.45, 0.14)
+	content_slot_preview.guide_color = Color(0.32, 0.84, 0.45, 0.95)
+
+
+func _clear_drop_preview() -> void:
+	var shelf_view = _get_parent_shelf_view()
+	if shelf_view != null and shelf_view.has_method("clear_active_drop_preview_slot"):
+		shelf_view.clear_active_drop_preview_slot(slot_index)
+	_clear_drop_preview_visuals()
+
+
+func clear_drop_preview_from_parent() -> void:
+	_clear_drop_preview_visuals()
+
+
+func _clear_drop_preview_visuals() -> void:
+	if Engine.is_editor_hint():
+		_update_editor_preview()
+		return
+	content_slot_preview.visible = false
+	content_slot_preview.color = Color(1.0, 1.0, 1.0, 0.0)
+	for child in drop_preview_mount.get_children():
+		if child is CanvasItem:
+			(child as CanvasItem).visible = false
+		child.queue_free()
+
+
+func _get_parent_shelf_view():
+	var current: Node = get_parent()
+	while current != null:
+		if current is ShelfView:
+			return current
+		current = current.get_parent()
+	return null
+
+
+func _get_parent_room_view():
+	var current: Node = get_parent()
+	while current != null:
+		if current is RoomView:
+			return current
+		current = current.get_parent()
+	return null

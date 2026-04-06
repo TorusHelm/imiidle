@@ -9,6 +9,7 @@ signal shelf_drop_requested(room_slot_index: int, runtime_id: String)
 signal shelf_drag_hovered(room_slot_index: int, runtime_id: String)
 signal shelf_drag_finished()
 signal slot_item_drop_requested(room_slot_index: int, source_slot_index: int, target_slot_index: int)
+signal backpack_item_drop_requested(runtime_id: String, room_slot_index: int, target_slot_index: int)
 
 
 var room_slot_index := -1
@@ -32,6 +33,8 @@ func _ready() -> void:
 		shelf_view.seed_slot_pressed.connect(_on_seed_button_pressed)
 	if not shelf_view.slot_item_drop_requested.is_connected(_on_slot_item_drop_requested):
 		shelf_view.slot_item_drop_requested.connect(_on_slot_item_drop_requested)
+	if not shelf_view.backpack_item_drop_requested.is_connected(_on_backpack_item_drop_requested):
+		shelf_view.backpack_item_drop_requested.connect(_on_backpack_item_drop_requested)
 	if not choose_shelf_button.pressed.is_connected(_on_choose_shelf_button_pressed):
 		choose_shelf_button.pressed.connect(_on_choose_shelf_button_pressed)
 	if not empty_shelf_click_area.pressed.is_connected(_on_choose_shelf_button_pressed):
@@ -185,3 +188,7 @@ func _notification(what: int) -> void:
 
 func _on_slot_item_drop_requested(_source_room_slot_index: int, source_slot_index: int, _target_room_slot_index: int, target_slot_index: int) -> void:
 	slot_item_drop_requested.emit(room_slot_index, source_slot_index, target_slot_index)
+
+
+func _on_backpack_item_drop_requested(runtime_id: String, _target_room_slot_index: int, target_slot_index: int) -> void:
+	backpack_item_drop_requested.emit(runtime_id, room_slot_index, target_slot_index)

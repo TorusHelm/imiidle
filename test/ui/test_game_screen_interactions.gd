@@ -10,7 +10,7 @@ func test_backpack_renders_starter_shelves_as_mini_items() -> void:
 
 	var backpack: ShelfBackpackView = _get_backpack_view(game)
 
-	assert_eq(backpack.get_node("ItemsRoot").get_child_count(), 2, "Backpack should render the two starter shelves as draggable mini items.")
+	assert_eq(backpack.get_node("ItemsRoot").get_child_count(), 15, "Unified backpack should render shelves, seeds, pots, and totems together as draggable mini items.")
 	assert_eq(backpack.columns, 15, "Backpack should render half as many inventory columns so shelf items read more clearly.")
 	assert_eq(backpack.cell_size, Vector2(24.0, 24.0), "Backpack cells should be larger so shelf silhouettes are easier to identify.")
 	assert_eq(backpack.custom_minimum_size, Vector2(402.0, 537.0), "Backpack view size should match the updated 15x20 grid with larger cells and gaps.")
@@ -70,6 +70,28 @@ func test_backpack_item_preview_builds_without_ready_errors() -> void:
 
 	assert_not_null(preview, "Backpack item should be able to build drag preview control.")
 	assert_eq(preview.get_child_count(), 1, "Drag preview should contain a single shelf preview control.")
+
+
+func test_backpack_drag_preview_shows_visible_item_frame() -> void:
+	var game = add_child_autofree(GAME_SCENE.instantiate())
+	await wait_process_frames(3)
+
+	var backpack: ShelfBackpackView = _get_backpack_view(game)
+	var item_view: DraggableBackpackItemView = backpack.get_node("ItemsRoot").get_children().filter(func(child): return child is DraggableBackpackItemView)[0] as DraggableBackpackItemView
+	var preview: Control = autofree(item_view._build_drag_preview_control())
+
+	assert_true(preview.get_child_count() >= 1, "Dragged inventory item should show a visible preview on the cursor.")
+	assert_true(preview.modulate.a > 0.0 or preview.get_child(0) != null, "Drag preview should not be an empty transparent control.")
+
+
+func test_unified_backpack_renders_starter_pots_totems_and_seeds() -> void:
+	var game = add_child_autofree(GAME_SCENE.instantiate())
+	await wait_process_frames(3)
+
+	var backpack: ShelfBackpackView = _get_backpack_view(game)
+
+	assert_eq(game.game_state.get_item_backpack_items().filter(func(item): return item.kind == "seed").size(), 5, "Unified runtime backpack should contain starter seed items.")
+	assert_eq(backpack.get_node("ItemsRoot").get_child_count(), 15, "Unified backpack should render all starter inventory entries on one grid.")
 
 
 func test_room_slot_drop_places_shelf_from_backpack() -> void:
@@ -194,6 +216,255 @@ func test_second_shelf_slot_stays_addressable_after_placing_first_pot() -> void:
 
 	assert_true(pot_modal.visible, "Second slot should still open the modal after the first slot receives a pot.")
 	assert_eq(pot_modal.current_slot_index, 1, "Second slot should still target shelf slot index 1 after the first slot receives a pot.")
+
+
+func test_dropping_item_backpack_pot_into_empty_shelf_slot_places_it() -> void:
+	var game = add_child_autofree(GAME_SCENE.instantiate())
+	await wait_process_frames(3)
+
+	var shelf_item = game.game_state.get_shelf_backpack_items().filter(func(item): return item.definition.id == "shelf_a")[0]
+	_get_room_slot_view(game, 0)._drop_data(Vector2.ZERO, {"type": "shelf", "runtime_id": shelf_item.runtime_id})
+	await wait_process_frames(3)
+
+	var backpack_item = game.game_state.get_item_backpack_items().filter(func(item): return item.kind == "pot")[0]
+	var shelf_view: ShelfView = _get_room_shelf_view(game, 0)
+	var target_pot_view: PotView = shelf_view.get_pot_view(0)
+
+	target_pot_view._drop_data(Vector2.ZERO, {"type": "inventory_item", "runtime_id": backpack_item.runtime_id})
+	await wait_process_frames(3)
+
+	assert_not_null(game.game_state.get_pot_in_room_slot(0, 0), "Dropping a pot from the item backpack into a shelf slot should place it into the room shelf.")
+
+
+func test_shelf_slot_shows_drop_outline_for_inventory_hover() -> void:
+	var game = add_child_autofree(GAME_SCENE.instantiate())
+	await wait_process_frames(3)
+
+	var shelf_item = game.game_state.get_shelf_backpack_items().filter(func(item): return item.definition.id == "shelf_a")[0]
+	_get_room_slot_view(game, 0)._drop_data(Vector2.ZERO, {"type": "shelf", "runtime_id": shelf_item.runtime_id})
+	await wait_process_frames(3)
+
+	var backpack_item = game.game_state.get_item_backpack_items().filter(func(item): return item.kind == "pot")[0]
+	var shelf_view: ShelfView = _get_room_shelf_view(game, 0)
+	var slot_view = shelf_view.get_slot_view(0)
+	var target_pot_view: PotView = shelf_view.get_pot_view(0)
+
+	assert_true(target_pot_view._can_drop_data(Vector2.ZERO, {"type": "inventory_item", "runtime_id": backpack_item.runtime_id}), "Setup should allow the hovered inventory item to drop into the shelf slot.")
+	assert_true(slot_view.get_node("ContentSlot/ContentSlotPreview").visible, "Shelf slot should show a contour preview while a valid inventory item hovers over it.")
+	assert_eq(slot_view.get_node("ContentSlot/DropPreviewMount").get_child_count(), 0, "Shelf slot hover should keep only the green contour and should not spawn a ghost preview with empty-slot copy.")
+
+
+func test_hovering_another_shelf_slot_clears_previous_drop_preview() -> void:
+	var game = add_child_autofree(GAME_SCENE.instantiate())
+	await wait_process_frames(3)
+
+	var shelf_item = game.game_state.get_shelf_backpack_items().filter(func(item): return item.definition.id == "shelf_a")[0]
+	_get_room_slot_view(game, 0)._drop_data(Vector2.ZERO, {"type": "shelf", "runtime_id": shelf_item.runtime_id})
+	await wait_process_frames(3)
+
+	var backpack_item = game.game_state.get_item_backpack_items().filter(func(item): return item.kind == "pot")[0]
+	var shelf_view: ShelfView = _get_room_shelf_view(game, 0)
+	var first_slot_view = shelf_view.get_slot_view(0)
+	var second_slot_view = shelf_view.get_slot_view(1)
+
+	assert_true(shelf_view.get_pot_view(0)._can_drop_data(Vector2.ZERO, {"type": "inventory_item", "runtime_id": backpack_item.runtime_id}), "First slot should accept the hovered item.")
+	assert_true(first_slot_view.get_node("ContentSlot/ContentSlotPreview").visible, "First slot should show hover preview after hover enters it.")
+
+	assert_true(shelf_view.get_pot_view(1)._can_drop_data(Vector2.ZERO, {"type": "inventory_item", "runtime_id": backpack_item.runtime_id}), "Second slot should also accept the hovered item.")
+	assert_false(first_slot_view.get_node("ContentSlot/ContentSlotPreview").visible, "Previous slot preview should clear when hover moves to another shelf slot.")
+	assert_true(second_slot_view.get_node("ContentSlot/ContentSlotPreview").visible, "Newly hovered slot should keep the preview.")
+
+
+func test_hovering_slot_on_another_shelf_clears_previous_shelf_preview() -> void:
+	var game = add_child_autofree(GAME_SCENE.instantiate())
+	await wait_process_frames(3)
+
+	var first_shelf_item = game.game_state.get_shelf_backpack_items().filter(func(item): return item.definition.id == "shelf_a")[0]
+	_get_room_slot_view(game, 0)._drop_data(Vector2.ZERO, {"type": "shelf", "runtime_id": first_shelf_item.runtime_id})
+	await wait_process_frames(3)
+
+	var second_shelf_item = game.game_state.get_shelf_backpack_items()[0]
+	var second_room_slot_index := -1
+	for room_slot_index in game.game_state.get_room_definition().get_slot_count():
+		if game.game_state.can_place_shelf_item_in_room(second_shelf_item.runtime_id, room_slot_index):
+			second_room_slot_index = room_slot_index
+			break
+
+	assert_ne(second_room_slot_index, -1, "Setup should find a second room anchor for another shelf.")
+	_get_room_slot_view(game, second_room_slot_index)._drop_data(Vector2.ZERO, {"type": "shelf", "runtime_id": second_shelf_item.runtime_id})
+	await wait_process_frames(3)
+
+	var backpack_item = game.game_state.get_item_backpack_items().filter(func(item): return item.kind == "pot")[0]
+	var first_shelf_view: ShelfView = _get_room_shelf_view(game, 0)
+	var second_shelf_view: ShelfView = _get_room_shelf_view(game, second_room_slot_index)
+	var first_slot_view = first_shelf_view.get_slot_view(0)
+	var second_slot_view = second_shelf_view.get_slot_view(0)
+
+	assert_true(first_shelf_view.get_pot_view(0)._can_drop_data(Vector2.ZERO, {"type": "inventory_item", "runtime_id": backpack_item.runtime_id}), "First shelf slot should accept the hovered item.")
+	assert_true(first_slot_view.get_node("ContentSlot/ContentSlotPreview").visible, "First shelf should show hover preview after hover enters it.")
+
+	assert_true(second_shelf_view.get_pot_view(0)._can_drop_data(Vector2.ZERO, {"type": "inventory_item", "runtime_id": backpack_item.runtime_id}), "Second shelf slot should also accept the hovered item.")
+	assert_false(first_slot_view.get_node("ContentSlot/ContentSlotPreview").visible, "Hovering a slot on another shelf should clear the previous shelf preview.")
+	assert_true(second_slot_view.get_node("ContentSlot/ContentSlotPreview").visible, "Target shelf should keep the current hover preview.")
+
+
+func test_mouse_exit_clears_shelf_drop_preview() -> void:
+	var game = add_child_autofree(GAME_SCENE.instantiate())
+	await wait_process_frames(3)
+
+	var shelf_item = game.game_state.get_shelf_backpack_items().filter(func(item): return item.definition.id == "shelf_a")[0]
+	_get_room_slot_view(game, 0)._drop_data(Vector2.ZERO, {"type": "shelf", "runtime_id": shelf_item.runtime_id})
+	await wait_process_frames(3)
+
+	var backpack_item = game.game_state.get_item_backpack_items().filter(func(item): return item.kind == "pot")[0]
+	var shelf_view: ShelfView = _get_room_shelf_view(game, 0)
+	var slot_view = shelf_view.get_slot_view(0)
+	var target_pot_view: PotView = shelf_view.get_pot_view(0)
+
+	assert_true(target_pot_view._can_drop_data(Vector2.ZERO, {"type": "inventory_item", "runtime_id": backpack_item.runtime_id}), "Hovered slot should accept the dragged inventory item.")
+	assert_true(slot_view.get_node("ContentSlot/ContentSlotPreview").visible, "Hovered slot should show drop preview before mouse exit.")
+
+	target_pot_view.slot_button.mouse_exited.emit()
+	await wait_process_frames(1)
+
+	assert_false(slot_view.get_node("ContentSlot/ContentSlotPreview").visible, "Leaving the shelf slot hover target should clear the drop preview.")
+
+
+func test_pot_slot_buttons_do_not_block_drag_drop_hit_path() -> void:
+	var game = add_child_autofree(GAME_SCENE.instantiate())
+	await wait_process_frames(3)
+
+	var shelf_item = game.game_state.get_shelf_backpack_items().filter(func(item): return item.definition.id == "shelf_a")[0]
+	_get_room_slot_view(game, 0)._drop_data(Vector2.ZERO, {"type": "shelf", "runtime_id": shelf_item.runtime_id})
+	await wait_process_frames(3)
+
+	var pot_item = game.game_state.get_item_backpack_items().filter(func(item): return item.kind == "pot")[0]
+	var shelf_view: ShelfView = _get_room_shelf_view(game, 0)
+	var empty_pot_view: PotView = shelf_view.get_pot_view(0)
+
+	assert_eq(empty_pot_view.slot_button.mouse_filter, Control.MOUSE_FILTER_PASS, "Empty pot slot button must pass mouse so PotView can still receive drag/drop.")
+	assert_true(empty_pot_view._can_drop_data(Vector2.ZERO, {"type": "inventory_item", "runtime_id": pot_item.runtime_id}), "PotView should accept backpack pot drops for an empty slot.")
+
+	game.game_state.set_active_room_slot_index(0)
+	assert_true(game.game_state.place_pot(0, "default_pot"), "Setup should place a pot into slot 0.")
+	game._refresh_ui()
+	await wait_process_frames(2)
+
+	var seeded_pot_view: PotView = _get_room_shelf_view(game, 0).get_pot_view(0)
+	var seed_item = game.game_state.get_item_backpack_items().filter(func(item): return item.kind == "seed")[0]
+
+	assert_eq(seeded_pot_view.seed_button.mouse_filter, Control.MOUSE_FILTER_PASS, "Seed button must pass mouse so PotView can still receive seed drag/drop.")
+	assert_true(seeded_pot_view._can_drop_data(Vector2.ZERO, {"type": "inventory_item", "runtime_id": seed_item.runtime_id}), "Potted empty slot should accept seed drops from the unified backpack.")
+
+
+func test_dragging_shelf_pot_back_into_item_backpack_removes_it_from_shelf() -> void:
+	var game = add_child_autofree(GAME_SCENE.instantiate())
+	await wait_process_frames(3)
+
+	var shelf_item = game.game_state.get_shelf_backpack_items().filter(func(item): return item.definition.id == "shelf_a")[0]
+	_get_room_slot_view(game, 0)._drop_data(Vector2.ZERO, {"type": "shelf", "runtime_id": shelf_item.runtime_id})
+	await wait_process_frames(3)
+
+	game.game_state.set_active_room_slot_index(0)
+	assert_true(game.game_state.place_pot(0, "default_pot"), "Setup should place a pot into slot 0.")
+	game._refresh_ui()
+	await wait_process_frames(2)
+
+	var backpack: ShelfBackpackView = _get_backpack_view(game)
+	backpack._drop_data(Vector2(0.0, 0.0), {"type": "shelf_slot_item", "source_room_slot_index": 0, "source_slot_index": 0})
+	await wait_process_frames(3)
+
+	assert_null(game.game_state.get_pot_in_room_slot(0, 0), "Dragging a shelf item back into the item backpack should clear the shelf slot.")
+
+
+func test_dropping_item_inside_item_backpack_moves_it_to_new_cell() -> void:
+	var game = add_child_autofree(GAME_SCENE.instantiate())
+	await wait_process_frames(3)
+
+	var item_backpack: ShelfBackpackView = _get_backpack_view(game)
+	var backpack_item = game.game_state.get_item_backpack_items()[0]
+	var target_origin := Vector2i(10, 2)
+	var target_position := Vector2(
+		target_origin.x * (item_backpack.cell_size.x + item_backpack.cell_gap.x) + 1.0,
+		target_origin.y * (item_backpack.cell_size.y + item_backpack.cell_gap.y) + 1.0
+	)
+
+	item_backpack._drop_data(target_position, {"type": "inventory_item", "runtime_id": backpack_item.runtime_id})
+	await wait_process_frames(3)
+
+	assert_eq(backpack_item.backpack_origin, target_origin, "Dropping an item onto a free item-backpack cell should move it there.")
+
+
+func test_dropping_seed_from_unified_backpack_into_empty_pot_plants_it() -> void:
+	var game = add_child_autofree(GAME_SCENE.instantiate())
+	await wait_process_frames(3)
+
+	var shelf_item = game.game_state.get_shelf_backpack_items().filter(func(item): return item.definition.id == "shelf_a")[0]
+	_get_room_slot_view(game, 0)._drop_data(Vector2.ZERO, {"type": "shelf", "runtime_id": shelf_item.runtime_id})
+	await wait_process_frames(3)
+
+	game.game_state.set_active_room_slot_index(0)
+	assert_true(game.game_state.place_pot(0, "default_pot"), "Setup should place a pot into slot 0.")
+	game._refresh_ui()
+	await wait_process_frames(2)
+
+	var seed_item = game.game_state.get_item_backpack_items().filter(func(item): return item.kind == "seed")[0]
+	var shelf_view: ShelfView = _get_room_shelf_view(game, 0)
+	var target_pot_view: PotView = shelf_view.get_pot_view(0)
+
+	target_pot_view._drop_data(Vector2.ZERO, {"type": "inventory_item", "runtime_id": seed_item.runtime_id})
+	await wait_process_frames(3)
+
+	assert_not_null(game.game_state.get_pot_in_room_slot(0, 0).active_plant, "Dropping a seed from the unified backpack onto an empty potted slot should plant it.")
+
+
+func test_dropping_backpack_totem_onto_potted_flower_swaps_them() -> void:
+	var game = add_child_autofree(GAME_SCENE.instantiate())
+	await wait_process_frames(3)
+
+	var shelf_item = game.game_state.get_shelf_backpack_items().filter(func(item): return item.definition.id == "shelf_a")[0]
+	_get_room_slot_view(game, 0)._drop_data(Vector2.ZERO, {"type": "shelf", "runtime_id": shelf_item.runtime_id})
+	await wait_process_frames(3)
+
+	game.game_state.set_active_room_slot_index(0)
+	assert_true(game.game_state.place_pot(0, "default_pot"), "Setup should place a pot into slot 0.")
+	assert_true(game.game_state.plant_seed(0, "gerbera"), "Setup should plant a flower into slot 0.")
+	game._refresh_ui()
+	await wait_process_frames(2)
+
+	var totem_item = game.game_state.get_item_backpack_items().filter(func(item): return item.kind == "totem")[0]
+	var target_pot_view: PotView = _get_room_shelf_view(game, 0).get_pot_view(0)
+
+	target_pot_view._drop_data(Vector2.ZERO, {"type": "inventory_item", "runtime_id": totem_item.runtime_id})
+	await wait_process_frames(3)
+
+	assert_not_null(game.game_state.get_totem_in_room_slot(0, 0), "Dropping a backpack totem onto a potted flower should replace the slot with the totem.")
+	assert_null(game.game_state.get_pot_in_room_slot(0, 0), "Swapped slot should no longer contain the original pot.")
+	assert_true(game.game_state.get_item_backpack_items().any(func(item): return item.kind == "pot" and item.pot != null and item.pot.active_plant != null), "Original planted pot should return to the backpack as a swapped item.")
+
+
+func test_dropping_backpack_pot_onto_totem_swaps_them() -> void:
+	var game = add_child_autofree(GAME_SCENE.instantiate())
+	await wait_process_frames(3)
+
+	var shelf_item = game.game_state.get_shelf_backpack_items().filter(func(item): return item.definition.id == "shelf_a")[0]
+	_get_room_slot_view(game, 0)._drop_data(Vector2.ZERO, {"type": "shelf", "runtime_id": shelf_item.runtime_id})
+	await wait_process_frames(3)
+
+	game.game_state.set_active_room_slot_index(0)
+	assert_true(game.game_state.place_totem(1, "metronome"), "Setup should place a totem into slot 1.")
+	game._refresh_ui()
+	await wait_process_frames(2)
+
+	var pot_item = game.game_state.get_item_backpack_items().filter(func(item): return item.kind == "pot")[0]
+	var target_totem_view: TotemView = _get_room_shelf_view(game, 0).get_totem_view(1)
+
+	target_totem_view._drop_data(Vector2.ZERO, {"type": "inventory_item", "runtime_id": pot_item.runtime_id})
+	await wait_process_frames(3)
+
+	assert_not_null(game.game_state.get_pot_in_room_slot(0, 1), "Dropping a backpack pot onto a totem should replace the slot with the pot.")
+	assert_null(game.game_state.get_totem_in_room_slot(0, 1), "Swapped slot should no longer contain the original totem.")
+	assert_true(game.game_state.get_item_backpack_items().any(func(item): return item.kind == "totem"), "Original totem should return to the backpack as a swapped item.")
 
 
 func test_dragging_pot_to_other_shelf_slot_moves_it_and_resets_progress() -> void:

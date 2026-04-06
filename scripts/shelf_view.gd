@@ -6,6 +6,7 @@ extends Control
 signal pot_slot_pressed(slot_index: int)
 signal seed_slot_pressed(slot_index: int)
 signal slot_item_drop_requested(source_room_slot_index: int, source_slot_index: int, target_room_slot_index: int, target_slot_index: int)
+signal backpack_item_drop_requested(runtime_id: String, target_room_slot_index: int, target_slot_index: int)
 
 const SHELF_SLOT_VIEW_SCENE := preload("res://Ui/ShelfSlotView.tscn")
 const SHELF_MODEL_SCRIPT = preload("res://scripts/shelf_model.gd")
@@ -54,6 +55,7 @@ const SHELF_MODEL_SCRIPT = preload("res://scripts/shelf_model.gd")
 var _slot_views: Array[ShelfSlotView] = []
 var _current_shelf_id := ""
 var _shelf_model = SHELF_MODEL_SCRIPT.new()
+var _active_drop_preview_slot_index := -1
 
 
 @onready var slots_root: Node2D = $SlotsRoot
@@ -200,6 +202,35 @@ func get_slot_view(slot_index: int) -> ShelfSlotView:
 	return _slot_views[slot_index]
 
 
+func clear_drop_previews_except(slot_index: int) -> void:
+	for index in _slot_views.size():
+		if index == slot_index:
+			continue
+		var slot_view := _slot_views[index]
+		if slot_view != null and slot_view.has_method("clear_drop_preview_from_parent"):
+			slot_view.clear_drop_preview_from_parent()
+
+
+func set_active_drop_preview_slot(slot_index: int) -> void:
+	if _active_drop_preview_slot_index == slot_index:
+		return
+	clear_drop_previews_except(slot_index)
+	_active_drop_preview_slot_index = slot_index
+
+
+func clear_active_drop_preview_slot(slot_index: int = -1) -> void:
+	if slot_index >= 0 and _active_drop_preview_slot_index != slot_index:
+		return
+	_active_drop_preview_slot_index = -1
+
+
+func clear_all_drop_previews() -> void:
+	_active_drop_preview_slot_index = -1
+	for slot_view in _slot_views:
+		if slot_view != null and slot_view.has_method("clear_drop_preview_from_parent"):
+			slot_view.clear_drop_preview_from_parent()
+
+
 func _on_pot_button_pressed(slot_index: int) -> void:
 	pot_slot_pressed.emit(slot_index)
 
@@ -240,6 +271,7 @@ func _rebuild_slot_views() -> void:
 		slot_view.pot_slot_pressed.connect(_on_pot_button_pressed)
 		slot_view.seed_slot_pressed.connect(_on_seed_button_pressed)
 		slot_view.slot_item_drop_requested.connect(_on_slot_item_drop_requested)
+		slot_view.backpack_item_drop_requested.connect(_on_backpack_item_drop_requested)
 		_slot_views.append(slot_view)
 
 
@@ -257,6 +289,10 @@ func _apply_definition_layout(definition: ShelfDefinition) -> void:
 
 func _on_slot_item_drop_requested(source_room_slot_index: int, source_slot_index: int, target_room_slot_index: int, target_slot_index: int) -> void:
 	slot_item_drop_requested.emit(source_room_slot_index, source_slot_index, target_room_slot_index, target_slot_index)
+
+
+func _on_backpack_item_drop_requested(runtime_id: String, target_room_slot_index: int, target_slot_index: int) -> void:
+	backpack_item_drop_requested.emit(runtime_id, target_room_slot_index, target_slot_index)
 
 
 func _queue_preview_refresh() -> void:

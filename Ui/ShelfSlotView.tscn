@@ -44,6 +44,12 @@ script = ExtResource("4_guide_rect")
 guide_color = Color(1, 0.25, 0.25, 0.95)
 metadata/_edit_use_anchors_ = true
 
+[node name="DropPreviewMount" type="Control" parent="ContentSlot"]
+layout_mode = 0
+offset_right = 170.0
+offset_bottom = 280.0
+mouse_filter = 2
+
 [node name="StatusBar" type="Control" parent="ContentSlot" unique_id=987152061]
 custom_minimum_size = Vector2(102, 44)
 anchors_preset = 0

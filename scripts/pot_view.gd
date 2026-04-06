@@ -50,8 +50,10 @@ func _ready() -> void:
 	_connect_pot_resource(preview_definition)
 	_connect_plant_resource(preview_plant_definition)
 	set_process(Engine.is_editor_hint())
+	slot_button.mouse_filter = Control.MOUSE_FILTER_PASS
 	slot_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	pot_texture.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	seed_button.mouse_filter = Control.MOUSE_FILTER_PASS
 	plant_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_apply_empty_slot_copy()
 	_refresh_preview()

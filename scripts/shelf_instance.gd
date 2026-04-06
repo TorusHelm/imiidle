@@ -93,6 +93,41 @@ func can_move_slot_item(from_slot_index: int, to_slot_index: int) -> bool:
 	return not source_slot.is_empty()
 
 
+func can_set_slot_item(slot_index: int, pot_instance: PotInstance, totem_instance: TotemInstance) -> bool:
+	var slot := get_slot(slot_index)
+	if slot == null:
+		return false
+	if pot_instance != null and totem_instance != null:
+		return false
+	return true
+
+
+func set_slot_item(slot_index: int, pot_instance: PotInstance, totem_instance: TotemInstance, reset_runtime := true) -> bool:
+	if not can_set_slot_item(slot_index, pot_instance, totem_instance):
+		return false
+
+	var slot := get_slot(slot_index)
+	slot.pot = pot_instance
+	slot.totem = totem_instance
+	if reset_runtime:
+		_reset_slot_runtime_state(slot)
+	return true
+
+
+func remove_slot_item(slot_index: int) -> Dictionary:
+	var slot := get_slot(slot_index)
+	if slot == null or slot.is_empty():
+		return {}
+
+	var removed_item := {
+		"pot": slot.pot,
+		"totem": slot.totem,
+	}
+	slot.pot = null
+	slot.totem = null
+	return removed_item
+
+
 func move_slot_item(from_slot_index: int, to_slot_index: int) -> bool:
 	if not can_move_slot_item(from_slot_index, to_slot_index):
 		return false

@@ -2,8 +2,11 @@ class_name ShelfBackpackView
 extends Control
 
 signal shelf_drop_requested(runtime_id: String, backpack_origin: Vector2i)
+signal backpack_item_drop_requested(runtime_id: String, backpack_origin: Vector2i)
+signal shelf_slot_item_drop_requested(room_slot_index: int, slot_index: int, backpack_origin: Vector2i)
 
 const DRAGGABLE_SHELF_ITEM_VIEW_SCENE := preload("res://Ui/DraggableShelfItemView.tscn")
+const DRAGGABLE_BACKPACK_ITEM_VIEW_SCENE := preload("res://Ui/DraggableBackpackItemView.tscn")
 
 @export var cell_size := Vector2(24.0, 24.0)
 @export var cell_gap := Vector2(3.0, 3.0)
@@ -14,6 +17,7 @@ var _game_state: GameState = null
 var _preview_origin := Vector2i(-1, -1)
 var _preview_runtime_id := ""
 var _preview_can_place := false
+var _preview_footprint := Vector2i.ONE
 var _rendered_signature := ""
 
 @onready var items_root: Control = $ItemsRoot
@@ -44,13 +48,13 @@ func _draw() -> void:
 	if _preview_origin.x < 0 or _preview_origin.y < 0 or _game_state == null:
 		return
 
-	var shelf_item = _game_state.get_shelf_item(_preview_runtime_id)
-	if shelf_item == null:
+	var backpack_entry = _game_state.get_backpack_entry(_preview_runtime_id)
+	if backpack_entry == null:
 		return
 
 	var preview_color := Color(0.32, 0.84, 0.45, 0.28) if _preview_can_place else Color(0.96, 0.28, 0.28, 0.28)
-	for row in range(_preview_origin.y, _preview_origin.y + shelf_item.get_footprint().y):
-		for column in range(_preview_origin.x, _preview_origin.x + shelf_item.get_footprint().x):
+	for row in range(_preview_origin.y, _preview_origin.y + _preview_footprint.y):
+		for column in range(_preview_origin.x, _preview_origin.x + _preview_footprint.x):
 			if column < 0 or column >= columns or row < 0 or row >= rows:
 				continue
 			var rect := Rect2(Vector2(column * cell_extent.x, row * cell_extent.y), cell_size)
@@ -59,14 +63,31 @@ func _draw() -> void:
 
 
 func _can_drop_data(at_position: Vector2, data: Variant) -> bool:
-	if not (data is Dictionary) or String(data.get("type", "")) != "shelf" or _game_state == null:
+	if not (data is Dictionary) or _game_state == null:
 		return false
 
-	var runtime_id := String(data.get("runtime_id", ""))
 	var origin := _position_to_grid(at_position)
-	_preview_runtime_id = runtime_id
 	_preview_origin = origin
-	_preview_can_place = _game_state.can_move_or_swap_shelf_item_in_backpack(runtime_id, origin)
+	_preview_runtime_id = String(data.get("runtime_id", ""))
+	_preview_footprint = Vector2i.ONE
+	match String(data.get("type", "")):
+		"shelf":
+			var shelf_item = _game_state.get_shelf_item(_preview_runtime_id)
+			_preview_footprint = shelf_item.get_footprint() if shelf_item != null else Vector2i.ONE
+			_preview_can_place = _game_state.can_move_or_swap_shelf_item_in_backpack(_preview_runtime_id, origin)
+		"inventory_item":
+			var backpack_item = _game_state.get_item_backpack_item(_preview_runtime_id)
+			_preview_footprint = backpack_item.get_footprint() if backpack_item != null else Vector2i.ONE
+			_preview_can_place = _game_state.can_move_or_swap_backpack_item(_preview_runtime_id, origin)
+		"shelf_slot_item":
+			_preview_footprint = Vector2i.ONE
+			_preview_can_place = _game_state.can_move_room_shelf_item_to_backpack(
+				int(data.get("source_room_slot_index", -1)),
+				int(data.get("source_slot_index", -1)),
+				origin
+			)
+		_:
+			_preview_can_place = false
 	queue_redraw()
 	return _preview_can_place
 
@@ -74,9 +95,18 @@ func _can_drop_data(at_position: Vector2, data: Variant) -> bool:
 func _drop_data(at_position: Vector2, data: Variant) -> void:
 	if not (data is Dictionary):
 		return
-	var runtime_id := String(data.get("runtime_id", ""))
 	var origin := _position_to_grid(at_position)
-	shelf_drop_requested.emit(runtime_id, origin)
+	match String(data.get("type", "")):
+		"shelf":
+			shelf_drop_requested.emit(String(data.get("runtime_id", "")), origin)
+		"inventory_item":
+			backpack_item_drop_requested.emit(String(data.get("runtime_id", "")), origin)
+		"shelf_slot_item":
+			shelf_slot_item_drop_requested.emit(
+				int(data.get("source_room_slot_index", -1)),
+				int(data.get("source_slot_index", -1)),
+				origin
+			)
 	_clear_preview()
 
 
@@ -92,19 +122,25 @@ func _rebuild_items() -> void:
 	if _game_state == null:
 		return
 
-	for shelf_item in _game_state.get_shelf_backpack_items():
-		var item_view = DRAGGABLE_SHELF_ITEM_VIEW_SCENE.instantiate()
-		var footprint: Vector2i = shelf_item.get_footprint()
-		item_view.position = _grid_to_position(shelf_item.backpack_origin)
-		item_view.configure(
-			shelf_item.runtime_id,
-			shelf_item.definition,
-			footprint,
-			Vector2(
-				footprint.x * cell_size.x + max(footprint.x - 1, 0) * cell_gap.x,
-				footprint.y * cell_size.y + max(footprint.y - 1, 0) * cell_gap.y
-			)
+	for backpack_entry in _game_state.get_backpack_entries():
+		var footprint: Vector2i = backpack_entry.get_footprint()
+		var target_size := Vector2(
+			footprint.x * cell_size.x + max(footprint.x - 1, 0) * cell_gap.x,
+			footprint.y * cell_size.y + max(footprint.y - 1, 0) * cell_gap.y
 		)
+		var item_view: Control = null
+		if backpack_entry is ShelfItemInstance:
+			item_view = DRAGGABLE_SHELF_ITEM_VIEW_SCENE.instantiate() as Control
+			item_view.configure(
+				backpack_entry.runtime_id,
+				backpack_entry.definition,
+				footprint,
+				target_size
+			)
+		else:
+			item_view = DRAGGABLE_BACKPACK_ITEM_VIEW_SCENE.instantiate() as Control
+			item_view.configure(backpack_entry, target_size)
+		item_view.position = _grid_to_position(backpack_entry.backpack_origin)
 		items_root.add_child(item_view)
 
 
@@ -113,13 +149,21 @@ func _build_items_signature() -> String:
 		return ""
 
 	var parts: PackedStringArray = []
-	for shelf_item in _game_state.get_shelf_backpack_items():
-		var footprint: Vector2i = shelf_item.get_footprint()
-		parts.append("%s|%s|%d|%d|%d|%d" % [
-			shelf_item.runtime_id,
-			shelf_item.definition.id if shelf_item.definition != null else "",
-			shelf_item.backpack_origin.x,
-			shelf_item.backpack_origin.y,
+	for backpack_entry in _game_state.get_backpack_entries():
+		var footprint: Vector2i = backpack_entry.get_footprint()
+		var entry_type := "shelf" if backpack_entry is ShelfItemInstance else String(backpack_entry.kind)
+		var definition_id := ""
+		if backpack_entry is ShelfItemInstance:
+			definition_id = backpack_entry.definition.id if backpack_entry.definition != null else ""
+		else:
+			var definition = backpack_entry.get_display_definition()
+			definition_id = definition.id if definition != null else ""
+		parts.append("%s|%s|%s|%d|%d|%d|%d" % [
+			backpack_entry.runtime_id,
+			entry_type,
+			definition_id,
+			backpack_entry.backpack_origin.x,
+			backpack_entry.backpack_origin.y,
 			footprint.x,
 			footprint.y,
 		])
@@ -152,4 +196,5 @@ func _clear_preview() -> void:
 	_preview_runtime_id = ""
 	_preview_origin = Vector2i(-1, -1)
 	_preview_can_place = false
+	_preview_footprint = Vector2i.ONE
 	queue_redraw()

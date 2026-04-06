@@ -4,6 +4,7 @@ extends RefCounted
 const DEFAULT_CATALOG: GameCatalog = preload("res://Game/data/default_catalog.tres")
 const GRID_OCCUPANCY_MODEL_SCRIPT = preload("res://scripts/grid_occupancy_model.gd")
 const SHELF_ITEM_INSTANCE_SCRIPT = preload("res://scripts/shelf_item_instance.gd")
+const BACKPACK_ITEM_INSTANCE_SCRIPT = preload("res://scripts/backpack_item_instance.gd")
 const SHELF_BACKPACK_COLUMNS := 15
 const SHELF_BACKPACK_ROWS := 20
 
@@ -26,9 +27,11 @@ var shelf_slots: Array = []
 var room := RoomInstance.new()
 var shelf_backpack = GRID_OCCUPANCY_MODEL_SCRIPT.new(SHELF_BACKPACK_COLUMNS, SHELF_BACKPACK_ROWS)
 var shelf_items: Dictionary = {}
+var backpack_items: Dictionary = {}
 var active_room_slot_index := -1
 var _pending_visual_feedback_by_room_slot: Dictionary = {}
 var _next_shelf_runtime_id := 1
+var _next_backpack_item_runtime_id := 1
 
 
 func _init() -> void:
@@ -83,14 +86,16 @@ func place_pot(slot_index: int, pot_id: String) -> bool:
 	if not can_place_pot(slot_index, pot_id):
 		return false
 
-	var definition: PotDefinition = pot_definitions.get(pot_id)
-	if definition == null:
+	var backpack_item = _find_backpack_item_by_definition_id("pot", pot_id)
+	if backpack_item == null or backpack_item.pot == null:
 		return false
 
-	if not active_shelf.place_pot(slot_index, definition):
+	if not active_shelf.set_slot_item(slot_index, backpack_item.pot, null):
 		return false
 
-	pot_inventory[pot_id] = get_pot_count(pot_id) - 1
+	shelf_backpack.remove(backpack_item.runtime_id)
+	backpack_item.backpack_origin = Vector2i(-1, -1)
+	_rebuild_item_inventory_counts()
 	_sync_shelf_slots()
 	return true
 
@@ -111,14 +116,16 @@ func plant_seed(slot_index: int, seed_id: String) -> bool:
 	if not can_plant_seed_in_slot(slot_index, seed_id):
 		return false
 
-	var definition: PlantDefinition = plant_definitions.get(seed_id)
-	if definition == null:
+	var backpack_item = _find_backpack_item_by_definition_id("seed", seed_id)
+	if backpack_item == null or backpack_item.seed_definition == null:
 		return false
 
-	if not active_shelf.plant_seed(slot_index, definition):
+	if not active_shelf.plant_seed(slot_index, backpack_item.seed_definition):
 		return false
 
-	seed_inventory[seed_id] = get_seed_count(seed_id) - 1
+	shelf_backpack.remove(backpack_item.runtime_id)
+	backpack_item.backpack_origin = Vector2i(-1, -1)
+	_rebuild_item_inventory_counts()
 	_sync_shelf_slots()
 	return true
 
@@ -238,14 +245,16 @@ func place_totem(slot_index: int, totem_id: String) -> bool:
 	if not can_place_totem(slot_index, totem_id):
 		return false
 
-	var definition: TotemDefinition = totem_definitions.get(totem_id)
-	if definition == null:
+	var backpack_item = _find_backpack_item_by_definition_id("totem", totem_id)
+	if backpack_item == null or backpack_item.totem == null:
 		return false
 
-	if not active_shelf.place_totem(slot_index, TotemInstance.new(definition)):
+	if not active_shelf.set_slot_item(slot_index, null, backpack_item.totem):
 		return false
 
-	totem_inventory[totem_id] = get_totem_count(totem_id) - 1
+	shelf_backpack.remove(backpack_item.runtime_id)
+	backpack_item.backpack_origin = Vector2i(-1, -1)
+	_rebuild_item_inventory_counts()
 	_sync_shelf_slots()
 	return true
 
@@ -317,6 +326,185 @@ func move_item_in_room_shelf_slot(room_slot_index: int, from_slot_index: int, to
 	var shelf := get_shelf_in_room_slot(room_slot_index)
 	if shelf == null or not shelf.move_slot_item(from_slot_index, to_slot_index):
 		return false
+	if active_room_slot_index == room_slot_index:
+		_sync_shelf_slots()
+	return true
+
+
+func get_item_backpack_items() -> Array:
+	var items: Array = []
+	for backpack_item in backpack_items.values():
+		if backpack_item != null and backpack_item.is_in_backpack():
+			items.append(backpack_item)
+	items.sort_custom(func(a, b) -> bool:
+		if a.backpack_origin.y == b.backpack_origin.y:
+			return a.backpack_origin.x < b.backpack_origin.x
+		return a.backpack_origin.y < b.backpack_origin.y
+	)
+	return items
+
+
+func get_item_backpack_item(runtime_id: String):
+	return backpack_items.get(runtime_id, null)
+
+
+func can_move_or_swap_backpack_item(runtime_id: String, backpack_origin: Vector2i) -> bool:
+	var backpack_item = get_item_backpack_item(runtime_id)
+	if backpack_item == null or not backpack_item.is_in_backpack():
+		return false
+	if shelf_backpack.can_place(runtime_id, backpack_origin, backpack_item.get_footprint(), runtime_id):
+		return true
+	var overlaps := shelf_backpack.get_overlapping_item_ids(backpack_origin, backpack_item.get_footprint(), runtime_id)
+	if overlaps.size() != 1:
+		return false
+	var other_item_id := String(overlaps[0])
+	var other_item = get_backpack_entry(other_item_id)
+	if other_item == null:
+		return false
+	return shelf_backpack.can_place(other_item_id, backpack_item.backpack_origin, other_item.get_footprint(), runtime_id)
+
+
+func move_backpack_item(runtime_id: String, backpack_origin: Vector2i) -> bool:
+	var backpack_item = get_item_backpack_item(runtime_id)
+	if backpack_item == null or not backpack_item.is_in_backpack():
+		return false
+	var previous_origin: Vector2i = backpack_item.backpack_origin
+	var overlaps := shelf_backpack.get_overlapping_item_ids(backpack_origin, backpack_item.get_footprint(), runtime_id)
+	if not shelf_backpack.try_move_or_swap(runtime_id, backpack_origin):
+		return false
+	if overlaps.size() == 1:
+		var swapped_item = get_backpack_entry(String(overlaps[0]))
+		if swapped_item != null:
+			swapped_item.backpack_origin = previous_origin
+	backpack_item.backpack_origin = shelf_backpack.get_item_origin(runtime_id)
+	_rebuild_item_inventory_counts()
+	_rebuild_shelf_inventory_counts()
+	return true
+
+
+func can_place_backpack_item_in_room_shelf_slot(runtime_id: String, room_slot_index: int, slot_index: int) -> bool:
+	var backpack_item = get_item_backpack_item(runtime_id)
+	var shelf := get_shelf_in_room_slot(room_slot_index)
+	if backpack_item == null or shelf == null or not backpack_item.is_in_backpack():
+		return false
+	match String(backpack_item.kind):
+		"pot":
+			return shelf.get_slot(slot_index) != null
+		"totem":
+			return shelf.get_slot(slot_index) != null
+		"seed":
+			return shelf.can_plant_seed(slot_index)
+		_:
+			return false
+
+
+func place_backpack_item_in_room_shelf_slot(runtime_id: String, room_slot_index: int, slot_index: int) -> bool:
+	var backpack_item = get_item_backpack_item(runtime_id)
+	var shelf := get_shelf_in_room_slot(room_slot_index)
+	if backpack_item == null or shelf == null or not backpack_item.is_in_backpack():
+		return false
+
+	if backpack_item.kind == "seed":
+		if backpack_item.seed_definition == null or not shelf.plant_seed(slot_index, backpack_item.seed_definition):
+			return false
+		shelf_backpack.remove(runtime_id)
+		backpack_item.backpack_origin = Vector2i(-1, -1)
+		_rebuild_item_inventory_counts()
+		if active_room_slot_index == room_slot_index:
+			_sync_shelf_slots()
+		return true
+
+	var target_slot := shelf.get_slot(slot_index)
+	if target_slot == null:
+		return false
+
+	var origin: Vector2i = backpack_item.backpack_origin
+	var existing_item: RefCounted = _build_backpack_item_from_slot_item(shelf.remove_slot_item(slot_index))
+	if not _set_shelf_slot_from_backpack_item(shelf, slot_index, backpack_item):
+		if existing_item != null:
+			_set_shelf_slot_from_backpack_item(shelf, slot_index, existing_item, false)
+		return false
+
+	shelf_backpack.remove(runtime_id)
+	backpack_item.backpack_origin = Vector2i(-1, -1)
+
+	if existing_item != null:
+		existing_item.runtime_id = _build_next_backpack_item_runtime_id()
+		existing_item.backpack_origin = origin
+		if not shelf_backpack.place(existing_item.runtime_id, origin, existing_item.get_footprint()):
+			shelf.remove_slot_item(slot_index)
+			_set_shelf_slot_from_backpack_item(shelf, slot_index, backpack_item, false)
+			shelf_backpack.place(runtime_id, origin, backpack_item.get_footprint())
+			backpack_item.backpack_origin = origin
+			return false
+		backpack_items[existing_item.runtime_id] = existing_item
+		existing_item.reset_runtime_state()
+
+	backpack_item.reset_runtime_state()
+	_rebuild_item_inventory_counts()
+	if active_room_slot_index == room_slot_index:
+		_sync_shelf_slots()
+	return true
+
+
+func can_move_room_shelf_item_to_backpack(room_slot_index: int, slot_index: int, backpack_origin: Vector2i) -> bool:
+	var shelf := get_shelf_in_room_slot(room_slot_index)
+	if shelf == null:
+		return false
+	var slot := shelf.get_slot(slot_index)
+	if slot == null or slot.is_empty():
+		return false
+	if shelf_backpack.can_place("", backpack_origin, Vector2i.ONE):
+		return true
+	var overlaps := shelf_backpack.get_overlapping_item_ids(backpack_origin, Vector2i.ONE)
+	if overlaps.size() != 1:
+		return false
+	var target_item = get_item_backpack_item(String(overlaps[0]))
+	return target_item != null
+
+
+func move_room_shelf_item_to_backpack(room_slot_index: int, slot_index: int, backpack_origin: Vector2i) -> bool:
+	var shelf := get_shelf_in_room_slot(room_slot_index)
+	if shelf == null:
+		return false
+	var removed_item: RefCounted = _build_backpack_item_from_slot_item(shelf.remove_slot_item(slot_index))
+	if removed_item == null:
+		return false
+
+	var overlaps := shelf_backpack.get_overlapping_item_ids(backpack_origin, Vector2i.ONE)
+	if overlaps.is_empty():
+		removed_item.runtime_id = _build_next_backpack_item_runtime_id()
+		removed_item.backpack_origin = backpack_origin
+		removed_item.reset_runtime_state()
+		if not shelf_backpack.place(removed_item.runtime_id, backpack_origin, removed_item.get_footprint()):
+			_restore_removed_item_to_shelf(shelf, slot_index, removed_item)
+			return false
+		backpack_items[removed_item.runtime_id] = removed_item
+	else:
+		var swap_item = get_item_backpack_item(String(overlaps[0]))
+		if swap_item == null:
+			_restore_removed_item_to_shelf(shelf, slot_index, removed_item)
+			return false
+		shelf_backpack.remove(swap_item.runtime_id)
+		swap_item.backpack_origin = Vector2i(-1, -1)
+		if not _set_shelf_slot_from_backpack_item(shelf, slot_index, swap_item):
+			shelf_backpack.place(swap_item.runtime_id, backpack_origin, swap_item.get_footprint())
+			swap_item.backpack_origin = backpack_origin
+			_restore_removed_item_to_shelf(shelf, slot_index, removed_item)
+			return false
+		removed_item.runtime_id = swap_item.runtime_id
+		removed_item.backpack_origin = backpack_origin
+		if removed_item.has_method("reset_runtime_state"):
+			removed_item.reset_runtime_state()
+		backpack_items.erase(swap_item.runtime_id)
+		backpack_items[removed_item.runtime_id] = removed_item
+		if not shelf_backpack.place(removed_item.runtime_id, backpack_origin, removed_item.get_footprint()):
+			backpack_items.erase(removed_item.runtime_id)
+			_restore_removed_item_to_shelf(shelf, slot_index, removed_item)
+			return false
+
+	_rebuild_item_inventory_counts()
+	_rebuild_shelf_inventory_counts()
 	if active_room_slot_index == room_slot_index:
 		_sync_shelf_slots()
 	return true
@@ -447,8 +635,14 @@ func move_shelf_item_to_backpack(runtime_id: String, backpack_origin: Vector2i) 
 	if shelf_item == null:
 		return false
 	if shelf_item.is_in_backpack():
+		var previous_origin: Vector2i = shelf_item.backpack_origin
+		var overlaps := shelf_backpack.get_overlapping_item_ids(backpack_origin, shelf_item.get_footprint(), runtime_id)
 		if not shelf_backpack.try_move_or_swap(runtime_id, backpack_origin):
 			return false
+		if overlaps.size() == 1:
+			var swapped_item = get_shelf_item(String(overlaps[0]))
+			if swapped_item != null:
+				swapped_item.backpack_origin = previous_origin
 		shelf_item.backpack_origin = shelf_backpack.get_item_origin(runtime_id)
 		_rebuild_shelf_inventory_counts()
 		return true
@@ -500,6 +694,27 @@ func get_shelf_backpack_items() -> Array:
 
 func get_shelf_item(runtime_id: String):
 	return shelf_items.get(runtime_id, null)
+
+
+func get_backpack_entry(runtime_id: String):
+	var shelf_item = get_shelf_item(runtime_id)
+	if shelf_item != null:
+		return shelf_item
+	return get_item_backpack_item(runtime_id)
+
+
+func get_backpack_entries() -> Array:
+	var entries: Array = []
+	for shelf_item in get_shelf_backpack_items():
+		entries.append(shelf_item)
+	for backpack_item in get_item_backpack_items():
+		entries.append(backpack_item)
+	entries.sort_custom(func(a, b) -> bool:
+		if a.backpack_origin.y == b.backpack_origin.y:
+			return a.backpack_origin.x < b.backpack_origin.x
+		return a.backpack_origin.y < b.backpack_origin.y
+	)
+	return entries
 
 
 func get_room_shelf_anchor_slot_index(room_slot_index: int) -> int:
@@ -683,9 +898,11 @@ func _load_catalog(catalog: GameCatalog) -> void:
 	room = RoomInstance.new()
 	shelf_backpack = GRID_OCCUPANCY_MODEL_SCRIPT.new(SHELF_BACKPACK_COLUMNS, SHELF_BACKPACK_ROWS)
 	shelf_items.clear()
+	backpack_items.clear()
 	active_room_slot_index = -1
 	background_color_hex = "#e3efdf"
 	_next_shelf_runtime_id = 1
+	_next_backpack_item_runtime_id = 1
 
 	if catalog == null:
 		ensure_shelf_slot_capacity(0)
@@ -739,15 +956,6 @@ func _load_catalog(catalog: GameCatalog) -> void:
 			continue
 		shelf_definitions[definition.id] = definition
 
-	for seed_id in catalog.starting_seed_inventory.keys():
-		seed_inventory[seed_id] = int(catalog.starting_seed_inventory[seed_id])
-
-	for pot_id in catalog.starting_pot_inventory.keys():
-		pot_inventory[pot_id] = int(catalog.starting_pot_inventory[pot_id])
-
-	for totem_id in catalog.starting_totem_inventory.keys():
-		totem_inventory[totem_id] = int(catalog.starting_totem_inventory[totem_id])
-
 	for shelf_id in catalog.starting_shelf_inventory.keys():
 		var shelf_count := int(catalog.starting_shelf_inventory[shelf_id])
 		var definition: ShelfDefinition = shelf_definitions.get(String(shelf_id), null)
@@ -756,8 +964,33 @@ func _load_catalog(catalog: GameCatalog) -> void:
 		for _index in range(shelf_count):
 			_add_shelf_item_to_backpack(definition)
 
+	for seed_id in catalog.starting_seed_inventory.keys():
+		var seed_count := int(catalog.starting_seed_inventory[seed_id])
+		var seed_definition: PlantDefinition = plant_definitions.get(String(seed_id), null)
+		if seed_definition == null:
+			continue
+		for _index in range(seed_count):
+			_add_backpack_item_to_backpack("seed", seed_definition)
+
+	for pot_id in catalog.starting_pot_inventory.keys():
+		var pot_count := int(catalog.starting_pot_inventory[pot_id])
+		var pot_definition: PotDefinition = pot_definitions.get(String(pot_id), null)
+		if pot_definition == null:
+			continue
+		for _index in range(pot_count):
+			_add_backpack_item_to_backpack("pot", pot_definition)
+
+	for totem_id in catalog.starting_totem_inventory.keys():
+		var totem_count := int(catalog.starting_totem_inventory[totem_id])
+		var totem_definition: TotemDefinition = totem_definitions.get(String(totem_id), null)
+		if totem_definition == null:
+			continue
+		for _index in range(totem_count):
+			_add_backpack_item_to_backpack("totem", totem_definition)
+
 	background_color_hex = catalog.background_color_hex
 	_rebuild_shelf_inventory_counts()
+	_rebuild_item_inventory_counts()
 	ensure_shelf_slot_capacity(0)
 
 
@@ -784,6 +1017,12 @@ func _build_next_shelf_runtime_id() -> String:
 	return runtime_id
 
 
+func _build_next_backpack_item_runtime_id() -> String:
+	var runtime_id := "backpack_item_%d" % _next_backpack_item_runtime_id
+	_next_backpack_item_runtime_id += 1
+	return runtime_id
+
+
 func _find_first_backpack_origin(footprint: Vector2i) -> Vector2i:
 	for row in range(SHELF_BACKPACK_ROWS):
 		for column in range(SHELF_BACKPACK_COLUMNS):
@@ -791,6 +1030,66 @@ func _find_first_backpack_origin(footprint: Vector2i) -> Vector2i:
 			if shelf_backpack.can_place("", origin, footprint):
 				return origin
 	return Vector2i(-1, -1)
+
+
+func _add_backpack_item_to_backpack(kind: String, definition: Resource) -> void:
+	var backpack_item = _build_backpack_item_from_definition(kind, definition)
+	if backpack_item == null:
+		return
+	var backpack_origin := _find_first_backpack_origin(backpack_item.get_footprint())
+	if backpack_origin.x < 0 or backpack_origin.y < 0:
+		return
+	backpack_item.runtime_id = _build_next_backpack_item_runtime_id()
+	backpack_item.backpack_origin = backpack_origin
+	if not shelf_backpack.place(backpack_item.runtime_id, backpack_origin, backpack_item.get_footprint()):
+		return
+	backpack_items[backpack_item.runtime_id] = backpack_item
+
+
+func _build_backpack_item_from_definition(kind: String, definition: Resource):
+	match kind:
+		"pot":
+			if definition == null:
+				return null
+			return BACKPACK_ITEM_INSTANCE_SCRIPT.new("", "pot", PotInstance.new(definition), null)
+		"totem":
+			if definition == null:
+				return null
+			return BACKPACK_ITEM_INSTANCE_SCRIPT.new("", "totem", null, TotemInstance.new(definition))
+		"seed":
+			if definition == null:
+				return null
+			return BACKPACK_ITEM_INSTANCE_SCRIPT.new("", "seed", null, null, definition)
+		_:
+			return null
+
+
+func _build_backpack_item_from_slot_item(slot_item: Dictionary):
+	if slot_item.is_empty():
+		return null
+	var pot_instance: PotInstance = slot_item.get("pot", null)
+	var totem_instance: TotemInstance = slot_item.get("totem", null)
+	if pot_instance != null:
+		return BACKPACK_ITEM_INSTANCE_SCRIPT.new("", "pot", pot_instance, null)
+	if totem_instance != null:
+		return BACKPACK_ITEM_INSTANCE_SCRIPT.new("", "totem", null, totem_instance)
+	return null
+
+
+func _set_shelf_slot_from_backpack_item(shelf: ShelfInstance, slot_index: int, backpack_item, reset_runtime := true) -> bool:
+	if shelf == null or backpack_item == null:
+		return false
+	if backpack_item.kind == "pot":
+		return shelf.set_slot_item(slot_index, backpack_item.pot, null, reset_runtime)
+	if backpack_item.kind == "totem":
+		return shelf.set_slot_item(slot_index, null, backpack_item.totem, reset_runtime)
+	return false
+
+
+func _restore_removed_item_to_shelf(shelf: ShelfInstance, slot_index: int, backpack_item) -> void:
+	if shelf == null or backpack_item == null:
+		return
+	_set_shelf_slot_from_backpack_item(shelf, slot_index, backpack_item, false)
 
 
 func _rebuild_shelf_inventory_counts() -> void:
@@ -801,9 +1100,37 @@ func _rebuild_shelf_inventory_counts() -> void:
 		shelf_inventory[shelf_item.definition.id] = int(shelf_inventory.get(shelf_item.definition.id, 0)) + 1
 
 
+func _rebuild_item_inventory_counts() -> void:
+	seed_inventory.clear()
+	pot_inventory.clear()
+	totem_inventory.clear()
+	for backpack_item in backpack_items.values():
+		if backpack_item == null or not backpack_item.is_in_backpack():
+			continue
+		var definition = backpack_item.get_display_definition()
+		if definition == null:
+			continue
+		if backpack_item.kind == "seed":
+			seed_inventory[definition.id] = int(seed_inventory.get(definition.id, 0)) + 1
+		elif backpack_item.kind == "pot":
+			pot_inventory[definition.id] = int(pot_inventory.get(definition.id, 0)) + 1
+		elif backpack_item.kind == "totem":
+			totem_inventory[definition.id] = int(totem_inventory.get(definition.id, 0)) + 1
+
+
 func _get_first_backpack_shelf_item():
 	for shelf_item in get_shelf_backpack_items():
 		return shelf_item
+	return null
+
+
+func _find_backpack_item_by_definition_id(kind: String, definition_id: String):
+	for backpack_item in get_item_backpack_items():
+		if backpack_item.kind != kind:
+			continue
+		var definition = backpack_item.get_display_definition()
+		if definition != null and definition.id == definition_id:
+			return backpack_item
 	return null
 
 
