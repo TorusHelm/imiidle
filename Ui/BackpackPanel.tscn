@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://cq1sp8tnmfuya"]
+
+[ext_resource type="PackedScene" path="res://Ui/ShelfBackpackView.tscn" id="1_backpack"]
+
+[node name="BackpackPanel" type="PanelContainer" unique_id=1711248742]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 160.0
+offset_right = 690.0
+offset_bottom = 640.0
+
+[node name="BackpackContent" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="BackpackTitle" type="Label" parent="BackpackContent"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Backpack"
+
+[node name="ShelfBackpack" parent="BackpackContent" instance=ExtResource("1_backpack")]
+unique_name_in_owner = true
+layout_mode = 2

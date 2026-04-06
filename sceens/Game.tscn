@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://brxgjxcjr4el8" path="res://scripts/game_screen.gd" id="1_s8r8u"]
 [ext_resource type="PackedScene" path="res://sceens/Room.tscn" id="2_room"]
-[ext_resource type="PackedScene" path="res://Ui/ShelfBackpackView.tscn" id="2_backpack"]
+[ext_resource type="PackedScene" path="res://Ui/BackpackPanel.tscn" id="2_backpack_panel"]
 [ext_resource type="Script" uid="uid://crvlhsjxasb0b" path="res://scripts/seed_modal.gd" id="3_3ui8b"]
 [ext_resource type="Script" uid="uid://c8m2lvh1dic43" path="res://scripts/pot_modal.gd" id="4_qk2u3"]
 [ext_resource type="Script" uid="uid://cxaq2btg4wuc6" path="res://scripts/shelf_modal.gd" id="5_11wqp"]
@@ -95,25 +95,8 @@ offset_right = 244.0
 offset_bottom = 140.0
 text = "Back to Menu"
 
-[node name="BackpackPanel" type="PanelContainer" parent="." unique_id=1711248742]
-layout_mode = 0
-offset_left = 24.0
-offset_top = 160.0
-offset_right = 690.0
-offset_bottom = 640.0
-
-[node name="BackpackContent" type="VBoxContainer" parent="BackpackPanel"]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="BackpackTitle" type="Label" parent="BackpackPanel/BackpackContent"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "Backpack"
-
-[node name="ShelfBackpack" parent="BackpackPanel/BackpackContent" instance=ExtResource("2_backpack")]
+[node name="BackpackPanel" parent="." unique_id=1711248742 instance=ExtResource("2_backpack_panel")]
 unique_name_in_owner = true
-layout_mode = 2
 
 [node name="SeedModal" type="Control" parent="." unique_id=1320918375]
 unique_name_in_owner = true
