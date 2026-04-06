@@ -66,6 +66,40 @@ func test_room_slot_drop_places_shelf_from_backpack() -> void:
 	assert_eq(game.game_state.get_shelf_backpack_item_count(), 1, "Placed shelf should be removed from the backpack grid.")
 
 
+func test_room_slots_covered_by_shelf_hide_placeholder_visuals() -> void:
+	var game = add_child_autofree(GAME_SCENE.instantiate())
+	await wait_process_frames(3)
+
+	var shelf_item = game.game_state.get_shelf_backpack_items().filter(func(item): return item.definition.id == "shelf_a")[0]
+	_get_room_slot_view(game, 0)._drop_data(Vector2.ZERO, {"type": "shelf", "runtime_id": shelf_item.runtime_id})
+	await wait_process_frames(3)
+
+	var covered_room_slot_view := _get_room_slot_view(game, 1)
+
+	assert_not_null(game.game_state.get_shelf_in_room_slot(1), "Setup should cover the next room cell with the placed shelf footprint.")
+	assert_eq(game.game_state.get_room_shelf_anchor_slot_index(1), 0, "Covered room cell should point back to the shelf anchor.")
+	assert_true(covered_room_slot_view.visible, "Covered room slot should stay in the tree so preview overlays can still render there.")
+	assert_false(covered_room_slot_view.get_node("SlotFrame").visible, "Covered room cell should hide the room slot frame once a shelf occupies it.")
+	assert_false(covered_room_slot_view.get_node("EmptyShelfState").visible, "Covered room cell should not show the empty-slot placeholder while occupied by a shelf.")
+
+
+func test_room_shelf_anchor_slot_hides_placeholder_visuals() -> void:
+	var game = add_child_autofree(GAME_SCENE.instantiate())
+	await wait_process_frames(3)
+
+	var shelf_item = game.game_state.get_shelf_backpack_items().filter(func(item): return item.definition.id == "shelf_a")[0]
+	_get_room_slot_view(game, 0)._drop_data(Vector2.ZERO, {"type": "shelf", "runtime_id": shelf_item.runtime_id})
+	await wait_process_frames(3)
+
+	var anchor_room_slot_view := _get_room_slot_view(game, 0)
+
+	assert_not_null(game.game_state.get_shelf_in_room_slot(0), "Setup should place the shelf into the anchor room cell.")
+	assert_eq(game.game_state.get_room_shelf_anchor_slot_index(0), 0, "Anchor room cell should point to itself as the shelf anchor.")
+	assert_true(anchor_room_slot_view.visible, "Anchor room slot should stay in the tree so drag and preview plumbing still works.")
+	assert_false(anchor_room_slot_view.get_node("SlotFrame").visible, "Anchor room cell should hide the room slot frame once the shelf is rendered in the room.")
+	assert_false(anchor_room_slot_view.get_node("EmptyShelfState").visible, "Anchor room cell should not show the empty-slot placeholder while occupied by a shelf.")
+
+
 func test_room_drop_preview_marks_entire_shelf_footprint() -> void:
 	var game = add_child_autofree(GAME_SCENE.instantiate())
 	await wait_process_frames(3)

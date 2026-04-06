@@ -50,12 +50,14 @@ func show_empty(slot_size: Vector2) -> void:
 	_is_shelf_anchor = false
 	_shelf_runtime_id = ""
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	visible = true
 	custom_minimum_size = slot_size
 	size = slot_size
 	modulate = Color.WHITE
 	slot_frame.position = Vector2.ZERO
 	slot_frame.custom_minimum_size = slot_size
 	slot_frame.size = slot_size
+	slot_frame.visible = true
 	preview_overlay.position = Vector2.ZERO
 	preview_overlay.size = slot_size
 	preview_overlay.visible = false
@@ -73,11 +75,14 @@ func show_occupied(slot_size: Vector2) -> void:
 	_is_shelf_anchor = false
 	_shelf_runtime_id = ""
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	visible = true
 	custom_minimum_size = slot_size
 	size = slot_size
+	modulate = Color.WHITE
 	slot_frame.position = Vector2.ZERO
 	slot_frame.custom_minimum_size = slot_size
 	slot_frame.size = slot_size
+	slot_frame.visible = false
 	preview_overlay.position = Vector2.ZERO
 	preview_overlay.size = slot_size
 	preview_overlay.visible = false
@@ -85,7 +90,6 @@ func show_occupied(slot_size: Vector2) -> void:
 	shelf_view.position = Vector2.ZERO
 	shelf_view.visible = false
 	empty_shelf_state.visible = false
-	modulate = Color(1.0, 1.0, 1.0, 0.4)
 
 
 func show_shelf(slot_size: Vector2, shelf_definition: ShelfDefinition, game_state: GameState, room_slot_index_value: int, shelf_runtime_id := "", show_embedded_view := true) -> void:
@@ -93,12 +97,14 @@ func show_shelf(slot_size: Vector2, shelf_definition: ShelfDefinition, game_stat
 	_is_shelf_anchor = true
 	_shelf_runtime_id = shelf_runtime_id
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	visible = true
 	custom_minimum_size = slot_size
 	size = slot_size
 	modulate = Color.WHITE
 	slot_frame.position = Vector2.ZERO
 	slot_frame.custom_minimum_size = slot_size
 	slot_frame.size = slot_size
+	slot_frame.visible = false
 	preview_overlay.position = Vector2.ZERO
 	preview_overlay.size = slot_size
 	preview_overlay.visible = false
