@@ -8,9 +8,29 @@ func test_backpack_renders_starter_shelves_as_mini_items() -> void:
 	var game = add_child_autofree(GAME_SCENE.instantiate())
 	await wait_process_frames(3)
 
-	var backpack: Control = _get_backpack_view(game)
+	var backpack: ShelfBackpackView = _get_backpack_view(game)
 
 	assert_eq(backpack.get_node("ItemsRoot").get_child_count(), 2, "Backpack should render the two starter shelves as draggable mini items.")
+	assert_eq(backpack.columns, 15, "Backpack should render half as many inventory columns so shelf items read more clearly.")
+	assert_eq(backpack.cell_size, Vector2(24.0, 24.0), "Backpack cells should be larger so shelf silhouettes are easier to identify.")
+	assert_eq(backpack.custom_minimum_size, Vector2(402.0, 537.0), "Backpack view size should match the updated 15x20 grid with larger cells and gaps.")
+
+
+func test_backpack_item_size_scales_with_larger_inventory_cells() -> void:
+	var game = add_child_autofree(GAME_SCENE.instantiate())
+	await wait_process_frames(3)
+
+	var backpack: ShelfBackpackView = _get_backpack_view(game)
+	var item_view: DraggableShelfItemView = backpack.get_node("ItemsRoot").get_child(0) as DraggableShelfItemView
+	var shelf_item = game.game_state.get_shelf_backpack_items()[0]
+	var footprint: Vector2i = shelf_item.get_footprint()
+	var expected_size := Vector2(
+		footprint.x * backpack.cell_size.x + max(footprint.x - 1, 0) * backpack.cell_gap.x,
+		footprint.y * backpack.cell_size.y + max(footprint.y - 1, 0) * backpack.cell_gap.y
+	)
+
+	assert_not_null(item_view, "Backpack should create an item view for the starter shelf.")
+	assert_eq(item_view.size, expected_size, "Backpack shelf item should grow with the larger inventory cells.")
 
 
 func test_backpack_item_views_are_not_rebuilt_on_every_refresh() -> void:

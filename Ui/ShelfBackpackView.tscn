@@ -1,12 +1,16 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://bodlyp75psma5"]
 
-[ext_resource type="Script" path="res://scripts/shelf_backpack_view.gd" id="1_backpack"]
+[ext_resource type="Script" uid="uid://c2nxxeao0nnrs" path="res://scripts/shelf_backpack_view.gd" id="1_backpack"]
 
-[node name="ShelfBackpackView" type="Control"]
-layout_mode = 0
+[node name="ShelfBackpackView" type="Control" unique_id=1766341128]
+layout_mode = 3
+anchors_preset = 0
 script = ExtResource("1_backpack")
+cell_size = Vector2(24, 24)
+columns = 15
+rows = 20
 
-[node name="ItemsRoot" type="Control" parent="."]
+[node name="ItemsRoot" type="Control" parent="." unique_id=1626821244]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

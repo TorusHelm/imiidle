@@ -5,9 +5,9 @@ signal shelf_drop_requested(runtime_id: String, backpack_origin: Vector2i)
 
 const DRAGGABLE_SHELF_ITEM_VIEW_SCENE := preload("res://Ui/DraggableShelfItemView.tscn")
 
-@export var cell_size := Vector2(18.0, 18.0)
-@export var cell_gap := Vector2(2.0, 2.0)
-@export var columns := 30
+@export var cell_size := Vector2(24.0, 24.0)
+@export var cell_gap := Vector2(3.0, 3.0)
+@export var columns := 15
 @export var rows := 20
 
 var _game_state: GameState = null

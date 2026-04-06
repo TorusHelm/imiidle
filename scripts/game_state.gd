@@ -4,7 +4,7 @@ extends RefCounted
 const DEFAULT_CATALOG: GameCatalog = preload("res://Game/data/default_catalog.tres")
 const GRID_OCCUPANCY_MODEL_SCRIPT = preload("res://scripts/grid_occupancy_model.gd")
 const SHELF_ITEM_INSTANCE_SCRIPT = preload("res://scripts/shelf_item_instance.gd")
-const SHELF_BACKPACK_COLUMNS := 30
+const SHELF_BACKPACK_COLUMNS := 15
 const SHELF_BACKPACK_ROWS := 20
 
 var coins := 0.0
